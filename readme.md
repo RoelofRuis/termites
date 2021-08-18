@@ -8,3 +8,5 @@ Termites is a reactive/dataflow framework. It aims to ease code inspection by al
 
 `termites-debug` contains a powerful web debugger that can be hooked into a graph for inspection (and is itself a graph as well..!).
 
+`termites-ws` contains a websocket implementation for easy interaction with browser based applications.
+(THIS IS A WORK IN PROGRESS!)
