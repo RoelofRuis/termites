@@ -8,7 +8,7 @@ type GraphOptions func(conf *graphConfig)
 
 func WithoutSigtermHandler() GraphOptions {
 	return func(conf *graphConfig) {
-		conf.withSigtermHandler = true
+		conf.withSigtermHandler = false
 	}
 }
 

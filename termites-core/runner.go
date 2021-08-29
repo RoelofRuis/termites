@@ -55,7 +55,7 @@ func (r *runner) OnNodeRegistered(n Node) {
 }
 
 func (r *runner) OnGraphTeardown() {
-	fmt.Printf("Shutting down\n")
+	fmt.Printf("Stopping Runner...\n")
 
 	wg := sync.WaitGroup{}
 	wg.Add(len(r.shutdownFuncs))
@@ -64,7 +64,7 @@ func (r *runner) OnGraphTeardown() {
 		go func(f func(timeout time.Duration) error) {
 			err := f(r.shutdownTimeout)
 			if err != nil {
-				fmt.Printf("Error when shuttingdown node: %v", err.Error())
+				fmt.Printf("Error when shutting down node: %v", err.Error())
 			}
 			wg.Done()
 		}(shutdown)
