@@ -64,7 +64,7 @@ func main() {
 
 	graph.ConnectTo(nodeA.Out, nodeB.In)
 
-	graph.Run()
+	<-graph.Close
 }
 ```
 
@@ -85,8 +85,6 @@ func main() {
 	graph := termites.NewGraph(debug.WithDebugger(4242))
 
 	// ... graph setup code
-
-	graph.Run()
 }
 ```
 
