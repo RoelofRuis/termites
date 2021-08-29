@@ -11,39 +11,36 @@ import (
 )
 
 type Graph struct {
-	name        string
-	runLock     sync.Mutex
-	blockingRun bool
+	name    string
+	runLock sync.Mutex
 	isRunning   bool
 
-	hooks             []GraphHook
+	registeredNodes   map[NodeId]*node
+	observers         []GraphObserver
 	connectionFactory *connectionFactory
 
-	nodeRegistry NodeRegistry
-
-	shutdown chan struct{}
+	Close chan struct{}
 }
 
-type GraphHook interface {
-	Setup(registry NodeRegistry)
-	Teardown()
+type GraphObserver interface {
+	Name() string
+	OnNodeRegistered(n Node)
+	OnGraphTeardown()
 }
 
 type graphConfig struct {
-	hooks              []GraphHook
+	observers          []GraphObserver
 	withSigtermHandler bool
 	addRunner          bool
 	addLogger          bool
-	blockingRun        bool
 }
 
 func NewGraph(opts ...GraphOptions) *Graph {
 	config := &graphConfig{
-		hooks:              nil,
+		observers:          nil,
 		withSigtermHandler: true,
 		addRunner:          true,
 		addLogger:          false,
-		blockingRun:        true,
 	}
 
 	for _, opt := range opts {
@@ -51,28 +48,31 @@ func NewGraph(opts ...GraphOptions) *Graph {
 	}
 
 	if config.addLogger {
-		config.hooks = append(config.hooks, newLogger())
+		config.observers = append(config.observers, newLogger())
 	}
 
 	if config.addRunner {
-		config.hooks = append(config.hooks, newRunner())
+		config.observers = append(config.observers, newRunner())
 	}
 
 	g := &Graph{
 		name:              "graph-" + uuid.New().String(),
-		hooks:             config.hooks,
+		registeredNodes:   make(map[NodeId]*node),
+		observers:         config.observers,
 		connectionFactory: newConnectionFactory(),
 
-		nodeRegistry: newNodeRegistry(),
-		runLock:      sync.Mutex{},
-		blockingRun:  config.blockingRun,
-		isRunning:    false,
+		runLock:     sync.Mutex{},
+		isRunning:   true,
 
-		shutdown: nil,
+		Close: make(chan struct{}),
 	}
 
 	if config.withSigtermHandler {
 		g.setupSigtermHandler()
+	}
+
+	for _, o := range g.observers {
+		fmt.Printf("Graph [%s] has observer [%s]\n", g.name, o.Name())
 	}
 
 	return g
@@ -83,50 +83,31 @@ func (g *Graph) ConnectTo(out *OutPort, in *InPort, opts ...ConnectionOption) {
 }
 
 func (g *Graph) Connect(out *OutPort, opts ...ConnectionOption) {
-	if g.isRunning {
-		panic(fmt.Errorf("graph is already running"))
-	}
-
 	connection, err := g.connectionFactory.newConnection(out, opts...)
 	if err != nil {
 		panic(fmt.Errorf("node connection error: %w", err))
 	}
 
 	out.connections = append(out.connections, *connection)
-	g.nodeRegistry.register(out.owner)
+	g.registerNode(out.owner)
 	if connection.mailbox != nil && connection.mailbox.to != nil {
-		g.nodeRegistry.register(connection.mailbox.to.owner)
-	}
-}
-
-func (g *Graph) Run() {
-	g.runLock.Lock()
-	if g.isRunning {
-		panic(fmt.Errorf("cannot run graph twice"))
-	}
-	g.isRunning = true
-	g.runLock.Unlock()
-
-	for _, h := range g.hooks {
-		h.Setup(g.nodeRegistry)
-	}
-	g.shutdown = make(chan struct{})
-	if g.blockingRun {
-		<-g.shutdown
+		g.registerNode(connection.mailbox.to.owner)
 	}
 }
 
 func (g *Graph) Shutdown() {
+	fmt.Printf("Shutting down graph [%s]\n", g.name)
 	g.runLock.Lock()
 	defer g.runLock.Unlock()
 	if !g.isRunning {
 		return
 	}
-	for _, h := range g.hooks {
-		h.Teardown()
+	for _, o := range g.observers {
+		o.OnGraphTeardown()
 	}
-	close(g.shutdown)
+	close(g.Close)
 	g.isRunning = false
+	fmt.Printf("Graph [%s] stopped\n", g.name)
 }
 
 func (g *Graph) setupSigtermHandler() {
@@ -136,4 +117,14 @@ func (g *Graph) setupSigtermHandler() {
 		<-c
 		g.Shutdown()
 	}()
+}
+
+func (g *Graph) registerNode(n *node) {
+	_, has := g.registeredNodes[n.id]
+	if !has {
+		g.registeredNodes[n.id] = n
+		for _, o := range g.observers {
+			o.OnNodeRegistered(n)
+		}
+	}
 }

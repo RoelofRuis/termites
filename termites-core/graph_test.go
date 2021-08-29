@@ -4,37 +4,23 @@ import (
 	"testing"
 )
 
-func TestCannotRunTwice(t *testing.T) {
-	g := NewGraph(NonblockingRun())
+// TODO: test shutdown twice
 
-	defer func() { recover() }()
-
-	g.Run()
-	g.Run()
-
-	t.Errorf("no panic upon running twice") // expected not to be reached because of panic
-}
-
-func TestCanRunGraphMultipleTimes(t *testing.T) {
-	g := NewGraph(NonblockingRun())
-
-	g.Run()
-	g.Shutdown()
-	g.Run()
-	g.Shutdown()
-}
-
-type TestHook struct {
+type TestObserver struct {
 	setupCalls    uint8
 	teardownCalls uint8
 }
 
-func (h *TestHook) Setup(r NodeRegistry) { h.setupCalls += 1 }
-func (h *TestHook) Teardown()            { h.teardownCalls += 1 }
+func (h *TestObserver) Name() string {
+	return "Test Observer"
+}
+
+func (h *TestObserver) OnNodeRegistered(Node) {}
+func (h *TestObserver) OnGraphTeardown() { h.teardownCalls += 1 }
 
 func TestHooks(t *testing.T) {
-	testHook := &TestHook{}
-	g := NewGraph(AddHook(testHook), NonblockingRun())
+	testHook := &TestObserver{}
+	g := NewGraph(AddObserver(testHook))
 
 	if testHook.setupCalls != 0 {
 		t.Errorf("expected setup to be called zero times")
@@ -52,7 +38,6 @@ func TestHooks(t *testing.T) {
 		t.Errorf("expected teardown to be called zero times")
 	}
 
-	g.Run()
 	if testHook.setupCalls != 1 {
 		t.Errorf("expected setup to be called once")
 	}

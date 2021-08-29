@@ -24,18 +24,12 @@ func WithoutRunner() GraphOptions {
 	}
 }
 
-func NonblockingRun() GraphOptions {
-	return func(conf *graphConfig) {
-		conf.blockingRun = false
-	}
-}
-
 func CloseOnShutdown(c io.Closer) GraphOptions {
-	return AddHook(closeOnShutdown{closer: c})
+	return AddObserver(closeOnShutdown{closer: c})
 }
 
-func AddHook(hook GraphHook) GraphOptions {
+func AddObserver(obs GraphObserver) GraphOptions {
 	return func(conf *graphConfig) {
-		conf.hooks = append(conf.hooks, hook)
+		conf.observers = append(conf.observers, obs)
 	}
 }

@@ -11,17 +11,23 @@ type logger struct {
 }
 
 func newLogger() *logger {
-	return &logger{
+	logger := &logger{
 		msgChan: make(chan MessageRef, 1024),
 		close:   make(chan bool),
 	}
+	logger.run()
+	return logger
 }
 
-func (l *logger) Setup(registry NodeRegistry) {
-	for _, n := range registry.Iterate() {
-		n.SetMessageRefChannel(l.msgChan)
-	}
+func (l *logger) Name() string {
+	return "Logger"
+}
 
+func (l *logger) OnNodeRegistered(n Node) {
+	n.SetMessageRefChannel(l.msgChan)
+}
+
+func (l *logger) run() {
 	go func() {
 		for {
 			select {
@@ -45,7 +51,7 @@ func (l *logger) Setup(registry NodeRegistry) {
 	}()
 }
 
-func (l *logger) Teardown() {
+func (l *logger) OnGraphTeardown() {
 	l.close <- true
 }
 

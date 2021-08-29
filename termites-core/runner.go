@@ -21,37 +21,40 @@ func newRunner() *runner {
 	}
 }
 
-func (r *runner) Setup(registry NodeRegistry) {
-	for _, n := range registry.Iterate() {
-		privateNode := n.getNode()
-		if privateNode.shutdown != nil {
-			r.shutdownFuncs = append(r.shutdownFuncs, privateNode.shutdown)
-		}
-
-		go func(node *node) {
-			node.setRunningStatus(NodeRunning)
-			defer func() {
-				if err := recover(); err != nil {
-					fmt.Printf("Node [%s] crashed\nPanic: %s\n", node.name, err)
-					debug.PrintStack()
-					node.SetError()
-					node.setRunningStatus(NodeTerminated)
-				}
-			}()
-
-			err := node.run(node)
-			if err != nil {
-				fmt.Printf("Node [%s] exited with error\nError was: %v\n", node.name, err)
-				node.SetError()
-				node.setRunningStatus(NodeTerminated)
-				return
-			}
-			node.setRunningStatus(NodeTerminated)
-		}(privateNode)
-	}
+func (r *runner) Name() string {
+	return "Runner"
 }
 
-func (r *runner) Teardown() {
+func (r *runner) OnNodeRegistered(n Node) {
+	privateNode := n.getNode()
+
+	if privateNode.shutdown != nil {
+		r.shutdownFuncs = append(r.shutdownFuncs, privateNode.shutdown)
+	}
+
+	go func(node *node) {
+		node.setRunningStatus(NodeRunning)
+		defer func() {
+			if err := recover(); err != nil {
+				fmt.Printf("Node [%s] crashed\nPanic: %s\n", node.name, err)
+				debug.PrintStack()
+				node.SetError()
+				node.setRunningStatus(NodeTerminated)
+			}
+		}()
+
+		err := node.run(node)
+		if err != nil {
+			fmt.Printf("Node [%s] exited with error\nError was: %v\n", node.name, err)
+			node.SetError()
+			node.setRunningStatus(NodeTerminated)
+			return
+		}
+		node.setRunningStatus(NodeTerminated)
+	}(privateNode)
+}
+
+func (r *runner) OnGraphTeardown() {
 	fmt.Printf("Shutting down\n")
 
 	wg := sync.WaitGroup{}

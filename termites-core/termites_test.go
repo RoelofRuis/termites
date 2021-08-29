@@ -111,7 +111,7 @@ func (c *DelayedIntNode) Run(_ NodeControl) error {
 // TESTS
 
 func TestConnections(t *testing.T) {
-	graph := NewGraph(NonblockingRun())
+	graph := NewGraph()
 
 	nodeA := NewInspectableIntNode("Component A")
 	nodeB := NewInspectableIntNode("Component B")
@@ -121,8 +121,6 @@ func TestConnections(t *testing.T) {
 	graph.ConnectTo(nodeA.Out, nodeB.In)
 	graph.ConnectTo(nodeB.Out, nodeC.In)
 	graph.ConnectTo(nodeB.Out, nodeD.In)
-
-	graph.Run()
 
 	nodeA.Send <- 42
 
@@ -136,7 +134,7 @@ func TestConnections(t *testing.T) {
 }
 
 func TestAdapter(t *testing.T) {
-	graph := NewGraph(NonblockingRun())
+	graph := NewGraph()
 
 	adapter := NewAdapter(
 		"string to int",
@@ -159,7 +157,6 @@ func TestAdapter(t *testing.T) {
 	nodeB := NewInspectableIntNode("Component B")
 
 	graph.ConnectTo(nodeA.Out, nodeB.In, Via(adapter))
-	graph.Run()
 
 	nodeA.Out.Send("skip")
 	nodeA.Out.Send("42")
@@ -173,13 +170,12 @@ func TestAdapter(t *testing.T) {
 }
 
 func TestNodePanic(t *testing.T) {
-	graph := NewGraph(NonblockingRun())
+	graph := NewGraph()
 
 	nodeA := NewInspectableIntNode("Component A")
 	nodeB := NewInspectableIntNode("Component B")
 
 	graph.ConnectTo(nodeA.Out, nodeB.In)
-	graph.Run()
 
 	nodeA.Send <- -1
 
@@ -188,13 +184,12 @@ func TestNodePanic(t *testing.T) {
 }
 
 func TestTimeout(t *testing.T) {
-	graph := NewGraph(NonblockingRun())
+	graph := NewGraph()
 
 	nodeA := NewDelayedIntNode("Component A", 0*time.Second)
 	nodeB := NewDelayedIntNode("Component B", 2*time.Second) // Should time out
 
 	graph.ConnectTo(nodeA.Out, nodeB.In)
-	graph.Run()
 
 	go func() {
 		nodeA.Out.Send(41)
@@ -223,7 +218,7 @@ func TestTimeout(t *testing.T) {
 }
 
 func TestAsyncSendTiming(t *testing.T) {
-	graph := NewGraph(NonblockingRun())
+	graph := NewGraph()
 
 	nodeA := NewDelayedIntNode("Component A", 0*time.Second)
 	nodeB := NewDelayedIntNode("Component B", 500*time.Millisecond)
@@ -233,7 +228,6 @@ func TestAsyncSendTiming(t *testing.T) {
 	graph.ConnectTo(nodeA.Out, nodeB.In)
 	graph.ConnectTo(nodeA.Out, nodeC.In)
 	graph.ConnectTo(nodeA.Out, nodeD.In)
-	graph.Run()
 
 	wg := sync.WaitGroup{}
 	wg.Add(3)

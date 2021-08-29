@@ -10,5 +10,5 @@ func main() {
 	graph := termites.NewGraph(debug.WithDebugger(4242), termites.WithoutRunner())
 	_ = debug.ConfigureDebugGraph(graph, 4243)
 
-	graph.Run()
+	<-graph.Close
 }

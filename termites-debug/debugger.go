@@ -7,9 +7,9 @@ import (
 )
 
 func WithDebugger(httpPort int) termites.GraphOptions {
-	d := ConfigureDebugGraph(termites.NewGraph(termites.NonblockingRun()), httpPort)
+	d := ConfigureDebugGraph(termites.NewGraph(), httpPort)
 
-	return termites.AddHook(d)
+	return termites.AddObserver(d)
 }
 
 func ConfigureDebugGraph(graph *termites.Graph, httpPort int) *debugger {
@@ -36,14 +36,14 @@ type debugger struct {
 	graph       *termites.Graph
 }
 
-func (d *debugger) Setup(registry termites.NodeRegistry) {
-	d.graph.Run()
-
-	for _, n := range registry.Iterate() {
-		n.SetNodeRefChannel(d.refReceiver.refChan)
-	}
+func (d *debugger) Name() string {
+	return "Debugger"
 }
 
-func (d *debugger) Teardown() {
+func (d *debugger) OnNodeRegistered(n termites.Node) {
+	n.SetNodeRefChannel(d.refReceiver.refChan)
+}
+
+func (d *debugger) OnGraphTeardown() {
 	d.graph.Shutdown()
 }
