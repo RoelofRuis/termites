@@ -96,6 +96,7 @@ func (g *Graph) Connect(out *OutPort, opts ...ConnectionOption) {
 	}
 
 	out.connections = append(out.connections, *connection)
+
 	g.registerNode(out.owner)
 	if connection.mailbox != nil && connection.mailbox.to != nil {
 		g.registerNode(connection.mailbox.to.owner)
@@ -103,23 +104,31 @@ func (g *Graph) Connect(out *OutPort, opts ...ConnectionOption) {
 }
 
 func (g *Graph) Shutdown() {
-	fmt.Printf("Shutting down graph [%s]\n", g.name)
 	g.runLock.Lock()
 	defer g.runLock.Unlock()
+
+	fmt.Printf("Shutting down graph [%s]\n", g.name)
+
 	if !g.isRunning {
 		return
 	}
+
 	for _, o := range g.observers {
 		o.OnGraphTeardown()
 	}
+
 	close(g.Close)
+
 	g.isRunning = false
+
 	fmt.Printf("Graph [%s] stopped\n", g.name)
 }
 
 func (g *Graph) setupSigtermHandler() {
 	c := make(chan os.Signal)
+
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+
 	go func() {
 		<-c
 		g.Shutdown()
@@ -130,6 +139,7 @@ func (g *Graph) registerNode(n *node) {
 	_, has := g.registeredNodes[n.id]
 	if !has {
 		g.registeredNodes[n.id] = n
+		
 		for _, o := range g.observers {
 			o.OnNodeRegistered(n)
 		}
