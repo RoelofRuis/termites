@@ -12,6 +12,12 @@ func WithoutSigtermHandler() GraphOptions {
 	}
 }
 
+func Named(name string) GraphOptions {
+	return func(conf *graphConfig) {
+		conf.name = name
+	}
+}
+
 func WithLogger() GraphOptions {
 	return func(conf *graphConfig) {
 		conf.addLogger = true

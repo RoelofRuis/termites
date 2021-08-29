@@ -11,9 +11,9 @@ import (
 )
 
 type Graph struct {
-	name    string
-	runLock sync.Mutex
-	isRunning   bool
+	name      string
+	runLock   sync.Mutex
+	isRunning bool
 
 	registeredNodes   map[NodeId]*node
 	observers         []GraphObserver
@@ -29,6 +29,7 @@ type GraphObserver interface {
 }
 
 type graphConfig struct {
+	name               string
 	observers          []GraphObserver
 	withSigtermHandler bool
 	addRunner          bool
@@ -37,6 +38,7 @@ type graphConfig struct {
 
 func NewGraph(opts ...GraphOptions) *Graph {
 	config := &graphConfig{
+		name:               "",
 		observers:          nil,
 		withSigtermHandler: true,
 		addRunner:          true,
@@ -55,14 +57,19 @@ func NewGraph(opts ...GraphOptions) *Graph {
 		config.observers = append(config.observers, newRunner())
 	}
 
+	name := config.name
+	if name == "" {
+		name = "graph-" + uuid.New().String()
+	}
+
 	g := &Graph{
-		name:              "graph-" + uuid.New().String(),
+		name:              name,
 		registeredNodes:   make(map[NodeId]*node),
 		observers:         config.observers,
 		connectionFactory: newConnectionFactory(),
 
-		runLock:     sync.Mutex{},
-		isRunning:   true,
+		runLock:   sync.Mutex{},
+		isRunning: true,
 
 		Close: make(chan struct{}),
 	}

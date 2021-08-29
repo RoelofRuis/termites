@@ -7,7 +7,13 @@ import (
 )
 
 func WithDebugger(httpPort int) termites.GraphOptions {
-	d := ConfigureDebugGraph(termites.NewGraph(), httpPort)
+	d := ConfigureDebugGraph(
+		termites.NewGraph(
+			termites.Named("Termites Debugger"),
+			termites.WithoutSigtermHandler(),
+		),
+		httpPort,
+	)
 
 	return termites.AddObserver(d)
 }
