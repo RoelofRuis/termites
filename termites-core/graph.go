@@ -101,6 +101,9 @@ func (g *Graph) Connect(out *OutPort, opts ...ConnectionOption) {
 	if connection.mailbox != nil && connection.mailbox.to != nil {
 		g.registerNode(connection.mailbox.to.owner)
 	}
+
+	// update ref to ensure listeners are notified of new connections
+	out.owner.updateRef()
 }
 
 func (g *Graph) Shutdown() {
