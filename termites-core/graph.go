@@ -103,6 +103,7 @@ func (g *Graph) Connect(out *OutPort, opts ...ConnectionOption) {
 	}
 
 	// update ref to ensure listeners are notified of new connections
+	// TODO: rethink this, if we split it up so that connections are their own concept, we might not have to do this here
 	out.owner.updateRef()
 }
 
