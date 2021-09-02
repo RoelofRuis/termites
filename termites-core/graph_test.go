@@ -13,44 +13,52 @@ func TestShutdownTwice(t *testing.T) {
 	<-g.Close
 }
 
-type TestObserver struct {
+type TestSubscriber struct {
 	registerCalls uint8
 	teardownCalls uint8
 }
 
-func (h *TestObserver) Name() string {
-	return "Test Observer"
+func (t *TestSubscriber) SetEventBus(e *EventBus) {
+	e.Subscribe(GraphTeardown, t.OnGraphTeardown)
+	e.Subscribe(NodeRegistered, t.OnNodeRegistered)
 }
 
-func (h *TestObserver) OnNodeRegistered(Node) { h.registerCalls += 1 }
-func (h *TestObserver) OnGraphTeardown() { h.teardownCalls += 1 }
+func (h *TestSubscriber) OnNodeRegistered(_ Event) error {
+	h.registerCalls += 1
+	return nil
+}
+
+func (h *TestSubscriber) OnGraphTeardown(_ Event) error {
+	h.teardownCalls += 1
+	return nil
+}
 
 func TestObservers(t *testing.T) {
-	testHook := &TestObserver{}
-	g := NewGraph(AddObserver(testHook))
+	testSubscriber := &TestSubscriber{}
+	g := NewGraph(AddEventSubscriber(testSubscriber))
 
-	if testHook.registerCalls != 0 {
+	if testSubscriber.registerCalls != 0 {
 		t.Errorf("expected OnNodeRegistered to be called zero times")
 	}
-	if testHook.teardownCalls != 0 {
+	if testSubscriber.teardownCalls != 0 {
 		t.Errorf("expected OnGraphTeardown to be called zero times")
 	}
 
 	node := NewInspectableIntNode("A")
 	g.ConnectTo(node.Out, node.In)
 
-	if testHook.registerCalls != 1 {
+	if testSubscriber.registerCalls != 1 {
 		t.Errorf("expected OnNodeRegistered to be called once")
 	}
-	if testHook.teardownCalls != 0 {
+	if testSubscriber.teardownCalls != 0 {
 		t.Errorf("expected OnGraphTeardown to be called zero times")
 	}
 
 	g.Shutdown()
-	if testHook.registerCalls != 1 {
+	if testSubscriber.registerCalls != 1 {
 		t.Errorf("expected setup to be called once")
 	}
-	if testHook.teardownCalls != 1 {
+	if testSubscriber.teardownCalls != 1 {
 		t.Errorf("expected OnGraphTeardown to be called once")
 	}
 }

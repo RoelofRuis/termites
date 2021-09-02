@@ -5,12 +5,15 @@ import (
 )
 
 type Node interface {
-	SetNodeRefChannel(chan<- NodeRef)
-	SetMessageRefChannel(chan<- MessageRef)
+	// Deprecated
+	SetNodeRefChannel(chan<- NodeRef) // should be passed via mediator
+	// Deprecated
+	SetMessageRefChannel(chan<- MessageRef) // should be passed via mediator
+	// TODO: see if we can remove this entirely
 	getNode() *node
 }
 
-type NodeControl interface { // TODO: add error logging via control
+type NodeControl interface { // TODO: add error logging via mediator, combine in some way
 	SetSuspended()
 	SetActive()
 	SetError()

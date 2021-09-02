@@ -1,21 +1,21 @@
 package termites
 
 import (
+	"fmt"
 	"io"
-	"log"
 )
 
 type closeOnShutdown struct {
 	closer io.Closer
 }
 
-func (c closeOnShutdown) Name() string {
-	return "Close On Shutdown"
+func (c closeOnShutdown) SetEventBus(m *EventBus) {
+	m.Subscribe(GraphTeardown, c.OnGraphTeardown)
 }
 
-func (c closeOnShutdown) OnNodeRegistered(Node) {}
-func (c closeOnShutdown) OnGraphTeardown() {
+func (c closeOnShutdown) OnGraphTeardown(_ Event) error {
 	if err := c.closer.Close(); err != nil {
-		log.Printf("Error closing: %s", err)
+		return fmt.Errorf("error closing resource: %w", err)
 	}
+	return nil
 }

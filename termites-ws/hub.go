@@ -1,9 +1,8 @@
 package cliserv
 
 import (
+	"github.com/RoelofRuis/termites/termites-core"
 	"sync"
-
-	"github.com/google/uuid"
 )
 
 type Hub interface {
@@ -97,7 +96,7 @@ func NewHub() *MessageHub {
 }
 
 func (e *MessageHub) RegisterClient(id string) *Client {
-	var clientId = ClientId(uuid.NewString()) // TODO: refactor so uuid can be removed
+	var clientId = ClientId(termites.RandomID())
 
 	e.clientsLock.RLock()
 	if c, has := e.clients[ClientId(id)]; has && c == nil {

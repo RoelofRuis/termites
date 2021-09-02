@@ -7,8 +7,6 @@ import (
 	"time"
 )
 
-// TODO: standardise error messages
-
 type runner struct {
 	shutdownFuncs   []func(timeout time.Duration) error
 	shutdownTimeout time.Duration
@@ -21,12 +19,18 @@ func newRunner() *runner {
 	}
 }
 
-func (r *runner) Name() string {
-	return "Runner"
+func (r *runner) SetEventBus(m *EventBus) {
+	m.Subscribe(NodeRegistered, r.OnNodeRegistered)
+	m.Subscribe(GraphTeardown, r.OnGraphTeardown)
 }
 
-func (r *runner) OnNodeRegistered(n Node) {
-	privateNode := n.getNode()
+func (r *runner) OnNodeRegistered(e Event) error {
+	n, ok := e.Data.(NodeRegisteredEvent)
+	if !ok {
+		return InvalidEventError
+	}
+
+	privateNode := n.Node.getNode()
 
 	if privateNode.shutdown != nil {
 		r.shutdownFuncs = append(r.shutdownFuncs, privateNode.shutdown)
@@ -52,9 +56,12 @@ func (r *runner) OnNodeRegistered(n Node) {
 		}
 		node.setRunningStatus(NodeTerminated)
 	}(privateNode)
+
+	return nil
 }
 
-func (r *runner) OnGraphTeardown() {
+func (r *runner) OnGraphTeardown(_ Event) error {
+	// TODO: logging etc
 	fmt.Printf("Stopping Runner...\n")
 
 	wg := sync.WaitGroup{}
@@ -83,4 +90,6 @@ func (r *runner) OnGraphTeardown() {
 	case <-time.NewTimer(r.shutdownTimeout).C:
 		fmt.Printf("Shutdown timeout reached, force exit\n")
 	}
+
+	return nil
 }

@@ -15,7 +15,7 @@ func WithDebugger(httpPort int) termites.GraphOptions {
 		httpPort,
 	)
 
-	return termites.AddObserver(d)
+	return termites.AddEventSubscriber(d)
 }
 
 func ConfigureDebugGraph(graph *termites.Graph, httpPort int) *debugger {
@@ -42,14 +42,21 @@ type debugger struct {
 	graph       *termites.Graph
 }
 
-func (d *debugger) Name() string {
-	return "Debugger"
+func (d *debugger) SetEventBus(b *termites.EventBus) {
+	b.Subscribe(termites.NodeRegistered, d.OnNodeRegistered)
+	b.Subscribe(termites.GraphTeardown, d.OnGraphTeardown)
 }
 
-func (d *debugger) OnNodeRegistered(n termites.Node) {
-	n.SetNodeRefChannel(d.refReceiver.refChan)
+func (d *debugger) OnNodeRegistered(e termites.Event) error {
+	n, ok := e.Data.(termites.NodeRegisteredEvent)
+	if !ok {
+		return termites.InvalidEventError
+	}
+	n.Node.SetNodeRefChannel(d.refReceiver.refChan)
+	return nil
 }
 
-func (d *debugger) OnGraphTeardown() {
+func (d *debugger) OnGraphTeardown(_ termites.Event) error {
 	d.graph.Shutdown()
+	return nil
 }

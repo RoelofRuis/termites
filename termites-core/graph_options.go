@@ -31,11 +31,11 @@ func WithoutRunner() GraphOptions {
 }
 
 func CloseOnShutdown(c io.Closer) GraphOptions {
-	return AddObserver(closeOnShutdown{closer: c})
+	return AddEventSubscriber(closeOnShutdown{closer: c})
 }
 
-func AddObserver(obs GraphObserver) GraphOptions {
+func AddEventSubscriber(sub EventSubscriber) GraphOptions {
 	return func(conf *graphConfig) {
-		conf.observers = append(conf.observers, obs)
+		conf.subscribers = append(conf.subscribers, sub)
 	}
 }

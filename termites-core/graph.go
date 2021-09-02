@@ -6,8 +6,6 @@ import (
 	"os/signal"
 	"sync"
 	"syscall"
-
-	"github.com/google/uuid"
 )
 
 type Graph struct {
@@ -16,21 +14,15 @@ type Graph struct {
 	isRunning bool
 
 	registeredNodes   map[NodeId]*node
-	observers         []GraphObserver
 	connectionFactory *connectionFactory
+	eventBus          *EventBus
 
 	Close chan struct{}
 }
 
-type GraphObserver interface {
-	Name() string
-	OnNodeRegistered(n Node)
-	OnGraphTeardown()
-}
-
 type graphConfig struct {
 	name               string
-	observers          []GraphObserver
+	subscribers        []EventSubscriber
 	withSigtermHandler bool
 	addRunner          bool
 	addLogger          bool
@@ -39,7 +31,7 @@ type graphConfig struct {
 func NewGraph(opts ...GraphOptions) *Graph {
 	config := &graphConfig{
 		name:               "",
-		observers:          nil,
+		subscribers:        nil,
 		withSigtermHandler: true,
 		addRunner:          true,
 		addLogger:          false,
@@ -50,36 +42,37 @@ func NewGraph(opts ...GraphOptions) *Graph {
 	}
 
 	if config.addLogger {
-		config.observers = append(config.observers, newLogger())
+		config.subscribers = append(config.subscribers, NewConsoleLogger())
 	}
 
 	if config.addRunner {
-		config.observers = append(config.observers, newRunner())
+		config.subscribers = append(config.subscribers, newRunner())
+	}
+
+	bus := NewEventBus()
+	for _, subscriber := range config.subscribers {
+		subscriber.SetEventBus(bus)
 	}
 
 	name := config.name
 	if name == "" {
-		name = "graph-" + uuid.New().String() // TODO: replace, so uuid can be removed
+		name = "graph-" + RandomID()
 	}
 
 	g := &Graph{
 		name:              name,
 		registeredNodes:   make(map[NodeId]*node),
-		observers:         config.observers,
 		connectionFactory: newConnectionFactory(),
 
 		runLock:   sync.Mutex{},
 		isRunning: true,
+		eventBus:  bus,
 
 		Close: make(chan struct{}),
 	}
 
 	if config.withSigtermHandler {
 		g.setupSigtermHandler()
-	}
-
-	for _, o := range g.observers {
-		fmt.Printf("Graph [%s] has observer [%s]\n", g.name, o.Name())
 	}
 
 	return g
@@ -116,9 +109,7 @@ func (g *Graph) Shutdown() {
 	fmt.Printf("Shutting down graph [%s]\n", g.name)
 	g.runLock.Unlock()
 
-	for _, o := range g.observers {
-		o.OnGraphTeardown()
-	}
+	g.eventBus.Send(Event{Type: GraphTeardown})
 
 	close(g.Close)
 	fmt.Printf("Graph [%s] stopped\n", g.name)
@@ -140,8 +131,11 @@ func (g *Graph) registerNode(n *node) {
 	if !has {
 		g.registeredNodes[n.id] = n
 
-		for _, o := range g.observers {
-			o.OnNodeRegistered(n)
-		}
+		g.eventBus.Send(Event{
+			Type: NodeRegistered,
+			Data: NodeRegisteredEvent{
+				Node: n,
+			},
+		})
 	}
 }
