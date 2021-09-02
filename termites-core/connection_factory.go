@@ -2,7 +2,6 @@ package termites
 
 import (
 	"fmt"
-	"github.com/google/uuid"
 	"time"
 )
 
@@ -89,7 +88,7 @@ func (f *connectionFactory) newConnection(out *OutPort, opts ...ConnectionOption
 	}
 
 	return &connection{
-		id:      ConnectionId(uuid.New()),
+		id:      ConnectionId(NewIdentifier("connection")),
 		mailbox: mailbox,
 		adapter: config.adapter,
 	}, nil

@@ -59,7 +59,7 @@ func NewGraph(opts ...GraphOptions) *Graph {
 
 	name := config.name
 	if name == "" {
-		name = "graph-" + uuid.New().String()
+		name = "graph-" + uuid.New().String() // TODO: replace, so uuid can be removed
 	}
 
 	g := &Graph{

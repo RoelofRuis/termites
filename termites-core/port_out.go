@@ -3,8 +3,6 @@ package termites
 import (
 	"log"
 	"sync"
-
-	"github.com/google/uuid"
 )
 
 type OutPort struct {
@@ -19,7 +17,7 @@ type OutPort struct {
 // Create via the termites.Builder
 func newOutPort(name string, dataType string, owner *node) *OutPort {
 	return &OutPort{
-		id:          OutPortId(uuid.New()),
+		id:          OutPortId(NewIdentifier("out-port")),
 		name:        name,
 		dataType:    dataType,
 		owner:       owner,

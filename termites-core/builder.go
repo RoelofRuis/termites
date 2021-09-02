@@ -2,8 +2,6 @@ package termites
 
 import (
 	"time"
-
-	"github.com/google/uuid"
 )
 
 type Builder struct {
@@ -13,7 +11,7 @@ type Builder struct {
 func NewBuilder(name string) Builder {
 	return Builder{
 		node: &node{
-			id:            NodeId(uuid.New()),
+			id:            NodeId(NewIdentifier("node")),
 			name:          name,
 			status:        NodeActive,
 			runningStatus: NodePreStarted,

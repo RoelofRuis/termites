@@ -97,7 +97,7 @@ func NewHub() *MessageHub {
 }
 
 func (e *MessageHub) RegisterClient(id string) *Client {
-	var clientId = ClientId(uuid.NewString())
+	var clientId = ClientId(uuid.NewString()) // TODO: refactor so uuid can be removed
 
 	e.clientsLock.RLock()
 	if c, has := e.clients[ClientId(id)]; has && c == nil {

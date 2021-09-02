@@ -1,11 +1,9 @@
 package termites
 
-import "github.com/google/uuid"
-
-type NodeId uuid.UUID
-type InPortId uuid.UUID
-type OutPortId uuid.UUID
-type ConnectionId uuid.UUID
+type NodeId Identifier
+type InPortId Identifier
+type OutPortId Identifier
+type ConnectionId Identifier
 
 type NodeStatus uint8
 

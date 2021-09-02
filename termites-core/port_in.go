@@ -1,7 +1,5 @@
 package termites
 
-import "github.com/google/uuid"
-
 type InPort struct {
 	id       InPortId
 	name     string
@@ -13,7 +11,7 @@ type InPort struct {
 // Create via the termites.Builder
 func newInPort(name string, dataType string, owner *node) *InPort {
 	return &InPort{
-		id:       InPortId(uuid.New()),
+		id:       InPortId(NewIdentifier("in-port")),
 		name:     name,
 		dataType: dataType,
 		owner:    owner,
