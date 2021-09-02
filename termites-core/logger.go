@@ -12,32 +12,42 @@ func NewConsoleLogger() *ConsoleLogger {
 }
 
 func (l *ConsoleLogger) SetEventBus(m *EventBus) {
-	m.Subscribe(Log, l.OnMessageLogged)
+	m.Subscribe(Log, l.OnLog)
+	m.Subscribe(MessageSent, l.OnMessageSent)
 }
 
-func (l *ConsoleLogger) OnMessageLogged(e Event) error {
+func (l *ConsoleLogger) OnLog(e Event) error {
 	ev, ok := e.Data.(LogEvent)
 	if !ok {
-		return fmt.Errorf("logger received event [%+v] of invalid type", e)
+		return InvalidEventError
 	}
 
 	log.Printf(ev.Message)
 	return nil
 }
 
-// TODO: where should this go?
-func formatRoute(ref MessageRef) string {
+func (l *ConsoleLogger) OnMessageSent(e Event) error {
+	ev, ok := e.Data.(MessageSentEvent)
+	if !ok {
+		return InvalidEventError
+	}
+
+	log.Printf(formatMessage(ev))
+	return nil
+}
+
+func formatMessage(ref MessageSentEvent) string {
 	adapterString := ""
-	if ref.adapterName != "" {
-		adapterString = fmt.Sprintf("(%s) -> ", ref.adapterName)
+	if ref.AdapterName != "" {
+		adapterString = fmt.Sprintf("(%s) -> ", ref.AdapterName)
 	}
 	ownerString := ""
-	if ref.toName != "" {
-		ownerString = fmt.Sprintf("%s:%s", ref.toName, ref.toPortName)
+	if ref.ToName != "" {
+		ownerString = fmt.Sprintf("%s:%s", ref.ToName, ref.ToPortName)
 	}
 	return fmt.Sprintf("[%s:%s -> %s%s]",
-		ref.fromName,
-		ref.fromPortName,
+		ref.FromName,
+		ref.FromPortName,
 		adapterString,
 		ownerString,
 	)

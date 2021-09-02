@@ -43,16 +43,16 @@ type debugger struct {
 }
 
 func (d *debugger) SetEventBus(b *termites.EventBus) {
-	b.Subscribe(termites.NodeRegistered, d.OnNodeRegistered)
+	b.Subscribe(termites.NodeRefUpdated, d.OnNodeRefUpdated)
 	b.Subscribe(termites.GraphTeardown, d.OnGraphTeardown)
 }
 
-func (d *debugger) OnNodeRegistered(e termites.Event) error {
-	n, ok := e.Data.(termites.NodeRegisteredEvent)
+func (d *debugger) OnNodeRefUpdated(e termites.Event) error {
+	n, ok := e.Data.(termites.NodeUpdatedEvent)
 	if !ok {
 		return termites.InvalidEventError
 	}
-	n.Node.SetNodeRefChannel(d.refReceiver.refChan)
+	d.refReceiver.refChan <- n.Ref
 	return nil
 }
 

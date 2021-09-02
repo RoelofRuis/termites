@@ -5,10 +5,6 @@ import (
 )
 
 type Node interface {
-	// Deprecated
-	SetNodeRefChannel(chan<- NodeRef) // should be passed via mediator
-	// Deprecated
-	SetMessageRefChannel(chan<- MessageRef) // should be passed via mediator
 	// TODO: see if we can remove this entirely
 	getNode() *node
 }
@@ -32,17 +28,7 @@ type node struct {
 	run      func(nodeController NodeControl) error
 	shutdown func(timeout time.Duration) error
 
-	nodeRefChannel    chan<- NodeRef
-	messageRefChannel chan<- MessageRef
-}
-
-func (n *node) SetNodeRefChannel(c chan<- NodeRef) {
-	n.nodeRefChannel = c
-	n.updateRef()
-}
-
-func (n *node) SetMessageRefChannel(c chan<- MessageRef) {
-	n.messageRefChannel = c
+	bus LoggerSender
 }
 
 func (n *node) getNode() *node {
@@ -80,11 +66,14 @@ func (n *node) setRunningStatus(s NodeRunningStatus) {
 }
 
 func (n *node) updateRef() {
-	if n.nodeRefChannel == nil {
+	if n.bus == nil {
 		return
 	}
 
-	n.nodeRefChannel <- n.ref()
+	n.bus.Send(Event{
+		Type: NodeRefUpdated,
+		Data: NodeUpdatedEvent{Ref: n.ref()},
+	})
 }
 
 func (n *node) ref() NodeRef {

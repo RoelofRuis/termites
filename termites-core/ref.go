@@ -58,13 +58,3 @@ type FunctionInfo struct {
 	File string
 	Line int
 }
-
-type MessageRef struct {
-	fromName     string
-	fromPortName string
-	toName       string
-	toPortName   string
-	adapterName  string
-	data         interface{}
-	error        error
-}

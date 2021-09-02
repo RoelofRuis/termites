@@ -1,7 +1,6 @@
 package termites
 
 import (
-	"log"
 	"sync"
 )
 
@@ -35,8 +34,8 @@ func (p *OutPort) Send(data interface{}) {
 		wg.Add(1)
 		go func(conn connection) {
 			err, sentData := conn.send(data)
-			if p.owner.messageRefChannel != nil {
-				// TODO: probably clean up this logic and push as much as possible down to logger
+			if p.owner.bus != nil {
+				// TODO: clean up and push as much as possible down into event
 				toName := ""
 				toPortName := ""
 				if conn.mailbox != nil {
@@ -47,20 +46,18 @@ func (p *OutPort) Send(data interface{}) {
 				if conn.adapter != nil {
 					adapterName = conn.adapter.name
 				}
-				ref := MessageRef{
-					fromName:     p.owner.name,
-					fromPortName: p.name,
-					toName:       toName,
-					toPortName:   toPortName,
-					adapterName:  adapterName,
-					data:         sentData,
-					error:        err,
-				}
-				select {
-				case p.owner.messageRefChannel <- ref:
-				default:
-					log.Print("DROPPED MESSAGE REF\n")
-				}
+				p.owner.bus.Send(Event{
+					Type: MessageSent,
+					Data: MessageSentEvent{
+						FromName:     p.owner.name,
+						FromPortName: p.name,
+						ToName:       toName,
+						ToPortName:   toPortName,
+						AdapterName:  adapterName,
+						Data:         sentData,
+						Error:        err,
+					},
+				})
 			}
 			wg.Done()
 		}(conn)
