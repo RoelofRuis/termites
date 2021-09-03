@@ -1,6 +1,7 @@
 package termites
 
 import (
+	"sync"
 	"time"
 )
 
@@ -11,14 +12,20 @@ type Builder struct {
 func NewBuilder(name string) Builder {
 	return Builder{
 		node: &node{
-			id:            NodeId(NewIdentifier("node")),
-			name:          name,
+			id:   NodeId(NewIdentifier("node")),
+			name: name,
+
 			status:        NodeActive,
 			runningStatus: NodePreStarted,
-			inPorts:       nil,
-			outPorts:      nil,
-			run:           nil,
-			shutdown:      nil,
+
+			inPorts:  nil,
+			outPorts: nil,
+
+			run:      nil,
+			shutdown: nil,
+
+			nodeLock: &sync.Mutex{},
+			bus:      nil,
 		},
 	}
 }

@@ -10,6 +10,7 @@ import (
 type runner struct {
 	shutdownFuncs   []func(timeout time.Duration) error
 	shutdownTimeout time.Duration
+	bus             *EventBus
 }
 
 func newRunner() *runner {
@@ -19,9 +20,10 @@ func newRunner() *runner {
 	}
 }
 
-func (r *runner) SetEventBus(m *EventBus) {
-	m.Subscribe(NodeRegistered, r.OnNodeRegistered)
-	m.Subscribe(GraphTeardown, r.OnGraphTeardown)
+func (r *runner) SetEventBus(b *EventBus) {
+	b.Subscribe(NodeRegistered, r.OnNodeRegistered)
+	b.Subscribe(GraphTeardown, r.OnGraphTeardown)
+	r.bus = b
 }
 
 func (r *runner) OnNodeRegistered(e Event) error {
@@ -37,6 +39,7 @@ func (r *runner) OnNodeRegistered(e Event) error {
 	}
 
 	go func(node *node) {
+		node.setBus(r.bus)
 		node.setRunningStatus(NodeRunning)
 		defer func() {
 			if err := recover(); err != nil {

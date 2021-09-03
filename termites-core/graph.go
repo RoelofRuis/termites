@@ -13,8 +13,8 @@ type Graph struct {
 	runLock   sync.Mutex
 	isRunning bool
 
-	registeredNodes   map[NodeId]*node
-	eventBus          *EventBus
+	registeredNodes map[NodeId]*node
+	eventBus        *EventBus
 
 	Close chan struct{}
 }
@@ -48,9 +48,9 @@ func NewGraph(opts ...GraphOptions) *Graph {
 		config.subscribers = append(config.subscribers, newRunner())
 	}
 
-	bus := NewEventBus()
+	eventBus := NewEventBus()
 	for _, subscriber := range config.subscribers {
-		subscriber.SetEventBus(bus)
+		subscriber.SetEventBus(eventBus)
 	}
 
 	name := config.name
@@ -59,12 +59,12 @@ func NewGraph(opts ...GraphOptions) *Graph {
 	}
 
 	g := &Graph{
-		name:              name,
-		registeredNodes:   make(map[NodeId]*node),
+		name:            name,
+		registeredNodes: make(map[NodeId]*node),
 
 		runLock:   sync.Mutex{},
 		isRunning: true,
-		eventBus:  bus,
+		eventBus:  eventBus,
 
 		Close: make(chan struct{}),
 	}
@@ -81,21 +81,15 @@ func (g *Graph) ConnectTo(out *OutPort, in *InPort, opts ...ConnectionOption) {
 }
 
 func (g *Graph) Connect(out *OutPort, opts ...ConnectionOption) {
-	connection, err := newConnection(out, opts...)
+	connection, err := out.connect(opts...)
 	if err != nil {
-		panic(fmt.Errorf("node connection error: %w", err))
+		panic(fmt.Errorf("node connection error: %w", err)) // TODO: refactor to pass panic up
 	}
-
-	out.connections = append(out.connections, *connection)
 
 	g.registerNode(out.owner)
 	if connection.mailbox != nil && connection.mailbox.to != nil {
 		g.registerNode(connection.mailbox.to.owner)
 	}
-
-	// update ref to ensure listeners are notified of new connections
-	// TODO: rethink this, if we split it up so that connections are their own concept, we might not have to do this here
-	out.owner.updateRef()
 }
 
 func (g *Graph) Shutdown() {

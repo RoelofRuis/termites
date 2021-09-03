@@ -1,5 +1,9 @@
 package termites
 
+import (
+	"sync"
+)
+
 type EventSubscriber interface {
 	SetEventBus(m *EventBus)
 }
@@ -15,32 +19,47 @@ type LoggerSender interface {
 }
 
 type EventBus struct {
-	subscriptions map[EventType][]func(event Event) error
+	subscriptionLock *sync.RWMutex
+	subscriptions    map[EventType][]func(event Event) error
+	eventChan        chan Event
 }
 
 func NewEventBus() *EventBus {
-	return &EventBus{
-		subscriptions: make(map[EventType][]func(event Event) error),
+	bus := &EventBus{
+		subscriptionLock: &sync.RWMutex{},
+		subscriptions:    make(map[EventType][]func(event Event) error),
+		eventChan:        make(chan Event, 1000),
 	}
+
+	go func() {
+		for e := range bus.eventChan {
+			bus.subscriptionLock.RLock()
+			for _, s := range bus.subscriptions[e.Type] {
+				err := s(e)
+				if err != nil {
+					bus.LogError("unable to notify subscriber", err)
+				}
+			}
+			bus.subscriptionLock.RUnlock()
+		}
+	}()
+
+	return bus
 }
 
 func (m *EventBus) Subscribe(t EventType, f func(Event) error) {
-	subs, has := m.subscriptions[t]
+	m.subscriptionLock.Lock()
+	_, has := m.subscriptions[t]
 	if !has {
-		subs = []func(event Event) error{}
+		m.subscriptions[t] = []func(event Event) error{}
 	}
-	subs = append(subs, f)
-	m.subscriptions[t] = subs
+	m.subscriptions[t] = append(m.subscriptions[t], f)
+	m.subscriptionLock.Unlock()
 }
 
 func (m *EventBus) Send(e Event) {
-	// TODO: should this be async? Should there be another decoupling?
-	for _, s := range m.subscriptions[e.Type] {
-		err := s(e)
-		if err != nil {
-			m.LogError("unable to notify subscriber", err)
-		}
-	}
+	// TODO: add timeout? If we can't send here, we are in serious trouble
+	m.eventChan <- e
 }
 
 func (m *EventBus) LogInfo(msg string) {

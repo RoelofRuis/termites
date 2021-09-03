@@ -1,6 +1,7 @@
 package termites
 
 import (
+	"sync"
 	"time"
 )
 
@@ -28,7 +29,8 @@ type node struct {
 	run      func(nodeController NodeControl) error
 	shutdown func(timeout time.Duration) error
 
-	bus LoggerSender
+	nodeLock sync.Locker
+	bus      LoggerSender
 }
 
 func (n *node) getNode() *node {
@@ -47,13 +49,19 @@ func (n *node) SetError() {
 	n.setStatus(NodeError)
 }
 
+func (n *node) setBus(bus *EventBus) {
+	n.nodeLock.Lock()
+	n.bus = bus
+	n.nodeLock.Unlock()
+}
+
 func (n *node) setStatus(s NodeStatus) {
 	if n.status == s {
 		return
 	}
 
 	n.status = s
-	n.updateRef()
+	n.sendRef()
 }
 
 func (n *node) setRunningStatus(s NodeRunningStatus) {
@@ -62,17 +70,28 @@ func (n *node) setRunningStatus(s NodeRunningStatus) {
 	}
 
 	n.runningStatus = s
-	n.updateRef()
+	n.sendRef()
 }
 
-func (n *node) updateRef() {
+func (n *node) sendEvent(e Event) {
+	n.nodeLock.Lock()
 	if n.bus == nil {
+		n.nodeLock.Unlock()
 		return
 	}
+	n.nodeLock.Unlock()
 
-	n.bus.Send(Event{
+	n.bus.Send(e)
+}
+
+func (n *node) sendRef() {
+	n.nodeLock.Lock()
+	ref := n.ref()
+	n.nodeLock.Unlock()
+
+	n.sendEvent(Event{
 		Type: NodeRefUpdated,
-		Data: NodeUpdatedEvent{Ref: n.ref()},
+		Data: NodeUpdatedEvent{Ref: ref},
 	})
 }
 
