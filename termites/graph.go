@@ -104,9 +104,11 @@ func (g *Graph) onSysExit(_ Event) error {
 func (g *Graph) Shutdown() {
 	g.runLock.Lock()
 	if !g.isRunning {
+		g.runLock.Unlock()
 		return
 	}
 	g.isRunning = false
+	g.runLock.Unlock()
 	close(g.Close)
 	g.eventBus.Send(LogInfoEvent(fmt.Sprintf("Graph [%s] stopped", g.name)))
 }
