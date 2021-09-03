@@ -44,7 +44,7 @@ func (r *runner) OnNodeRegistered(e Event) error {
 		node.setRunningStatus(NodeRunning)
 		defer func() {
 			if err := recover(); err != nil {
-				fmt.Printf("Node [%s] crashed\nPanic: %s\n", node.name, err)
+				r.bus.Send(LogErrorEvent(fmt.Sprintf("Node [%s] crashed: %v", node.name, err), nil))
 				debug.PrintStack()
 				node.SetError()
 				node.setRunningStatus(NodeTerminated)
@@ -53,7 +53,7 @@ func (r *runner) OnNodeRegistered(e Event) error {
 
 		err := node.run(node)
 		if err != nil {
-			fmt.Printf("Node [%s] exited with error\nError was: %v\n", node.name, err)
+			r.bus.Send(LogErrorEvent(fmt.Sprintf("Node [%s] exited with error", node.name), err))
 			node.SetError()
 			node.setRunningStatus(NodeTerminated)
 			return
