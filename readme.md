@@ -66,7 +66,7 @@ func main() {
 
 	graph.ConnectTo(nodeA.Out, nodeB.In)
 
-	<-graph.Close
+	graph.Wait()
 }
 ```
 
@@ -79,7 +79,7 @@ To customise graph/library behaviour, options can be passed to the graph constru
 termites.NewGraph(termites.WithConsoleLogger())
 ```
 
-#### Close a resource on graph shutdown
+#### Close a resource on graph teardown
 ```golang
 closeable io.Closer := YourClosable()
 termites.NewGraph(termites.CloseOnShutdown("resource name", closeable))

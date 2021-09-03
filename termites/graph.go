@@ -6,14 +6,10 @@ import (
 )
 
 type Graph struct {
-	name      string
-	runLock   sync.Mutex
-	isRunning bool
-
+	name            string
 	registeredNodes map[NodeId]*node
 	eventBus        *eventBus
-
-	Close chan struct{}
+	close           *sync.WaitGroup
 }
 
 type graphConfig struct {
@@ -43,23 +39,20 @@ func NewGraph(opts ...GraphOptions) *Graph {
 	}
 
 	bus := NewEventBus()
+	closer := &sync.WaitGroup{}
+	closer.Add(1)
 
 	g := &Graph{
 		name:            name,
 		registeredNodes: make(map[NodeId]*node),
 
-		runLock:   sync.Mutex{},
-		isRunning: true,
-		eventBus:  bus,
+		eventBus: bus,
 
-		Close: make(chan struct{}),
+		close: closer,
 	}
 
-	bus.Subscribe(SysExit, g.onSysExit)
-
-	if config.withSigtermHandler {
-		g.Subscribe(NewSigtermHandler())
-	}
+	bus.Subscribe(Exit, g.onExit)
+	g.Subscribe(NewTeardownHandler(config.withSigtermHandler))
 
 	if config.addConsoleLogger {
 		g.Subscribe(NewConsoleLogger())
@@ -74,6 +67,20 @@ func NewGraph(opts ...GraphOptions) *Graph {
 	}
 
 	return g
+}
+
+func (g *Graph) onExit(_ Event) error {
+	g.close.Done()
+	g.eventBus.Send(LogInfoEvent(fmt.Sprintf("Graph [%s] closed", g.name)))
+	return nil
+}
+
+func (g *Graph) Wait() {
+	g.close.Wait()
+}
+
+func (g *Graph) Kill() {
+	g.eventBus.Send(Event{Type: Kill})
 }
 
 func (g *Graph) Subscribe(sub EventSubscriber) {
@@ -94,23 +101,6 @@ func (g *Graph) Connect(out *OutPort, opts ...ConnectionOption) {
 	if connection.mailbox != nil && connection.mailbox.to != nil {
 		g.registerNode(connection.mailbox.to.owner)
 	}
-}
-
-func (g *Graph) onSysExit(_ Event) error {
-	g.Shutdown()
-	return nil
-}
-
-func (g *Graph) Shutdown() {
-	g.runLock.Lock()
-	if !g.isRunning {
-		g.runLock.Unlock()
-		return
-	}
-	g.isRunning = false
-	g.runLock.Unlock()
-	close(g.Close)
-	g.eventBus.Send(LogInfoEvent(fmt.Sprintf("Graph [%s] stopped", g.name)))
 }
 
 func (g *Graph) registerNode(n *node) {

@@ -4,13 +4,23 @@ import (
 	"testing"
 )
 
-func TestShutdownTwice(t *testing.T) {
-	g := NewGraph()
+type testCloser struct {
+	done chan interface{}
+}
 
-	g.Shutdown()
-	g.Shutdown()
+func (c *testCloser) Close() error {
+	close(c.done)
+	return nil
+}
 
-	<-g.Close
+func TestKill(t *testing.T) {
+	closer := &testCloser{done: make(chan interface{})}
+	graph := NewGraph(CloseOnTeardown("test", closer))
+
+	graph.Kill()
+
+	<-closer.done
+	t.Log("Closer was closed correctly")
 }
 
 type TestSubscriber struct {

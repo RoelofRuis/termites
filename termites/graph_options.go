@@ -12,7 +12,7 @@ func WithConsoleLogger() GraphOptions {
 	}
 }
 
-func CloseOnShutdown(resourceName string, c io.Closer) GraphOptions {
+func CloseOnTeardown(resourceName string, c io.Closer) GraphOptions {
 	return AddEventSubscriber(closeOnTeardown{name: resourceName, closer: c})
 }
 

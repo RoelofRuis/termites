@@ -11,5 +11,5 @@ func main() {
 	debugger := termites_dbg.InitGraph(graph, 4242)
 	graph.Subscribe(debugger)
 
-	<-graph.Close
+	graph.Wait()
 }
