@@ -24,7 +24,7 @@ func (l *ConsoleLogger) OnLog(e Event) error {
 		return InvalidEventError
 	}
 
-	log.Printf(ev.Message)
+	log.Printf("LOG: %s", ev.Message)
 	return nil
 }
 
@@ -34,7 +34,7 @@ func (l *ConsoleLogger) OnMessageSent(e Event) error {
 		return InvalidEventError
 	}
 
-	log.Printf(formatMessage(ev))
+	log.Printf("MESSAGE: %s", formatMessage(ev))
 	return nil
 }
 
