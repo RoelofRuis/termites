@@ -1,4 +1,4 @@
-package cliserv
+package termites_ws
 
 import "encoding/json"
 

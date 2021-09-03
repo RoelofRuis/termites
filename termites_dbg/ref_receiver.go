@@ -1,6 +1,6 @@
-package debug
+package termites_dbg
 
-import "github.com/RoelofRuis/termites/termites-core"
+import "github.com/RoelofRuis/termites/termites"
 
 type refReceiver struct {
 	refChan        chan termites.NodeRef

@@ -1,4 +1,4 @@
-package debug
+package termites_dbg
 
 import (
 	"fmt"
@@ -12,7 +12,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/RoelofRuis/termites/termites-core"
+	"github.com/RoelofRuis/termites/termites"
 )
 
 type WebController struct {

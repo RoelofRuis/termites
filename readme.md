@@ -5,7 +5,7 @@ between them.
 
 ## Modules
 
-### `termites-core`
+### `termites`
 
 The core module contains code for creating processing graphs.
 
@@ -14,7 +14,7 @@ Create a component using the `builder`
 ```go
 package yourpackage
 
-import "github.com/RoelofRuis/termites/termites-core"
+import "github.com/RoelofRuis/termites/termites"
 
 type YourNode struct {
 	In  *termites.InPort  // Receive messages through InPort
@@ -53,7 +53,7 @@ Tie your components together in a graph:
 ```go
 package main
 
-import "github.com/RoelofRuis/termites/termites-core"
+import "github.com/RoelofRuis/termites/termites"
 import "yourpackage"
 
 func main() {
@@ -68,7 +68,7 @@ func main() {
 }
 ```
 
-### `termites-debug`
+### `termites_dbg`
 
 The debug module contains a powerful web debugger that can be hooked into a graph for inspection (and is itself a graph
 as well..!)
@@ -78,17 +78,17 @@ Initialize it by passing it to the graph initializer
 ```go
 package main
 
-import "github.com/RoelofRuis/termites/termites-core"
-import "github.com/RoelofRuis/termites/termites-debug"
+import "github.com/RoelofRuis/termites/termites"
+import "github.com/RoelofRuis/termites/termites_dbg"
 
 func main() {
-	graph := termites.NewGraph(debug.WithDebugger(4242))
+	graph := termites.NewGraph(termites_dbg.WithDebugger(4242))
 
 	// ... graph setup code
 }
 ```
 
-### `termites-ws`
+### `termites_ws`
 
 The WS module contains a websocket implementation for easy interaction with browser based applications.
 

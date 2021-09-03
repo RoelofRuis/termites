@@ -1,4 +1,4 @@
-package debug
+package termites_dbg
 
 import (
 	_ "embed"
@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"sync"
 
-	"github.com/RoelofRuis/termites/termites-core"
+	"github.com/RoelofRuis/termites/termites"
 )
 
 //go:embed templates/layout.gohtml

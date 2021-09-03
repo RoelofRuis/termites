@@ -1,4 +1,4 @@
-package cliserv
+package termites_ws
 
 type ClientRegistry interface {
 	RegisterClient(id string) *Client

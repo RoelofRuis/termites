@@ -1,4 +1,4 @@
-package debug
+package termites_dbg
 
 import (
 	"bytes"
@@ -7,7 +7,7 @@ import (
 	"log"
 	"path/filepath"
 
-	"github.com/RoelofRuis/termites/termites-core"
+	"github.com/RoelofRuis/termites/termites"
 
 	"github.com/goccy/go-graphviz"
 )

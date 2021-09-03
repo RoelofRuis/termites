@@ -1,4 +1,4 @@
-package debug
+package termites_dbg
 
 import (
 	"fmt"

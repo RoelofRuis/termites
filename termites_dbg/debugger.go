@@ -1,9 +1,9 @@
-package debug
+package termites_dbg
 
 import (
 	"time"
 
-	"github.com/RoelofRuis/termites/termites-core"
+	"github.com/RoelofRuis/termites/termites"
 )
 
 func WithDebugger(httpPort int) termites.GraphOptions {

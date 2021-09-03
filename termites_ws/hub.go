@@ -1,7 +1,7 @@
-package cliserv
+package termites_ws
 
 import (
-	"github.com/RoelofRuis/termites/termites-core"
+	"github.com/RoelofRuis/termites/termites"
 	"sync"
 )
 

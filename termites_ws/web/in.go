@@ -1,22 +1,23 @@
 package web
 
 import (
-	"github.com/RoelofRuis/termites/termites-core"
-	cliserv "github.com/RoelofRuis/termites/termites-ws"
 	"log"
+
+	"github.com/RoelofRuis/termites/termites"
+	"github.com/RoelofRuis/termites/termites_ws"
 )
 
 type In struct {
 	ConnectionOut *termites.OutPort
 
-	hub cliserv.Hub
+	hub termites_ws.Hub
 }
 
-func NewIn(hub cliserv.Hub) *In {
+func NewIn(hub termites_ws.Hub) *In {
 	builder := termites.NewBuilder("Web In")
 
 	in := &In{
-		ConnectionOut: builder.OutPort("Connection", cliserv.ClientConnection{}),
+		ConnectionOut: builder.OutPort("Connection", termites_ws.ClientConnection{}),
 		hub:           hub,
 	}
 

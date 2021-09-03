@@ -1,24 +1,25 @@
 package web
 
 import (
-	"github.com/RoelofRuis/termites/termites-core"
-	cliserv "github.com/RoelofRuis/termites/termites-ws"
 	"log"
 	"time"
+
+	"github.com/RoelofRuis/termites/termites"
+	"github.com/RoelofRuis/termites/termites_ws"
 )
 
 type Out struct {
 	ConnectionIn *termites.InPort
 	StateIn      *termites.InPort
 
-	hub cliserv.Hub
+	hub termites_ws.Hub
 }
 
-func NewOut(hub cliserv.Hub) *Out {
+func NewOut(hub termites_ws.Hub) *Out {
 	builder := termites.NewBuilder("Web Out")
 
 	out := &Out{
-		ConnectionIn: builder.InPort("Connection", cliserv.ClientConnection{}),
+		ConnectionIn: builder.InPort("Connection", termites_ws.ClientConnection{}),
 		StateIn:      builder.InPort("State", []byte{}),
 		hub:          hub,
 	}
@@ -36,7 +37,7 @@ func (w *Out) Run(_ termites.NodeControl) error {
 		select {
 		case msg := <-w.StateIn.Receive():
 			var err error
-			lastState, err = cliserv.MakeUpdateMessage(msg.Data.([]byte))
+			lastState, err = termites_ws.MakeUpdateMessage(msg.Data.([]byte))
 			if err != nil {
 				log.Printf("Web Out: cannot send update message: %s", err.Error())
 				continue
@@ -50,7 +51,7 @@ func (w *Out) Run(_ termites.NodeControl) error {
 }
 
 func (w *Out) Shutdown(_ time.Duration) error {
-	msg, err := cliserv.MakeCloseMessage()
+	msg, err := termites_ws.MakeCloseMessage()
 	if err != nil {
 		return err
 	}

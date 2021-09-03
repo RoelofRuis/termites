@@ -3,8 +3,9 @@ package web
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/RoelofRuis/termites/termites-core"
 	"log"
+
+	"github.com/RoelofRuis/termites/termites"
 )
 
 type JsonCombiner struct {
