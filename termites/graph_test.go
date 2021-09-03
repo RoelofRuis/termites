@@ -18,7 +18,7 @@ type TestSubscriber struct {
 	teardownCalls uint8
 }
 
-func (t *TestSubscriber) SetEventBus(e *EventBus) {
+func (t *TestSubscriber) SetEventBus(e EventBus) {
 	e.Subscribe(GraphTeardown, t.OnGraphTeardown)
 	e.Subscribe(NodeRegistered, t.OnNodeRegistered)
 }

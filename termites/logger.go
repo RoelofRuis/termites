@@ -11,7 +11,7 @@ func NewConsoleLogger() *ConsoleLogger {
 	return &ConsoleLogger{}
 }
 
-func (l *ConsoleLogger) SetEventBus(m *EventBus) {
+func (l *ConsoleLogger) SetEventBus(m EventBus) {
 	m.Subscribe(Log, l.OnLog)
 	m.Subscribe(MessageSent, l.OnMessageSent)
 }

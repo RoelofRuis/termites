@@ -9,7 +9,7 @@ type closeOnShutdown struct {
 	closer io.Closer
 }
 
-func (c closeOnShutdown) SetEventBus(m *EventBus) {
+func (c closeOnShutdown) SetEventBus(m EventBus) {
 	m.Subscribe(GraphTeardown, c.OnGraphTeardown)
 }
 

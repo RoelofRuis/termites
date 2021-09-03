@@ -11,7 +11,7 @@ type Graph struct {
 	isRunning bool
 
 	registeredNodes map[NodeId]*node
-	eventBus        *EventBus
+	eventBus        *eventBus
 
 	Close chan struct{}
 }

@@ -5,27 +5,28 @@ import (
 )
 
 type EventSubscriber interface {
-	SetEventBus(m *EventBus)
+	SetEventBus(m EventBus)
 }
 
-type Sender interface {
+type EventSender interface {
 	Send(e Event)
-}
-
-type LoggerSender interface {
-	Sender
 	LogInfo(msg string)
 	LogError(msg string, err error)
 }
 
-type EventBus struct {
+type EventBus interface {
+	EventSender
+	Subscribe(t EventType, f func(Event) error)
+}
+
+type eventBus struct {
 	subscriptionLock *sync.RWMutex
 	subscriptions    map[EventType][]func(event Event) error
 	eventChan        chan Event
 }
 
-func NewEventBus() *EventBus {
-	bus := &EventBus{
+func NewEventBus() *eventBus {
+	bus := &eventBus{
 		subscriptionLock: &sync.RWMutex{},
 		subscriptions:    make(map[EventType][]func(event Event) error),
 		eventChan:        make(chan Event, 1000),
@@ -47,7 +48,7 @@ func NewEventBus() *EventBus {
 	return bus
 }
 
-func (m *EventBus) Subscribe(t EventType, f func(Event) error) {
+func (m *eventBus) Subscribe(t EventType, f func(Event) error) {
 	m.subscriptionLock.Lock()
 	_, has := m.subscriptions[t]
 	if !has {
@@ -57,12 +58,12 @@ func (m *EventBus) Subscribe(t EventType, f func(Event) error) {
 	m.subscriptionLock.Unlock()
 }
 
-func (m *EventBus) Send(e Event) {
+func (m *eventBus) Send(e Event) {
 	// TODO: add timeout? If we can't send here, we are in serious trouble
 	m.eventChan <- e
 }
 
-func (m *EventBus) LogInfo(msg string) {
+func (m *eventBus) LogInfo(msg string) {
 	m.Send(Event{
 		Type: Log,
 		Data: LogEvent{
@@ -73,7 +74,7 @@ func (m *EventBus) LogInfo(msg string) {
 	})
 }
 
-func (m *EventBus) LogError(msg string, err error) {
+func (m *eventBus) LogError(msg string, err error) {
 	m.Send(Event{
 		Type: Log,
 		Data: LogEvent{

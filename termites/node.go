@@ -30,7 +30,7 @@ type node struct {
 	shutdown func(timeout time.Duration) error
 
 	nodeLock sync.Locker
-	bus      LoggerSender
+	bus      EventBus
 }
 
 func (n *node) getNode() *node {
@@ -49,7 +49,7 @@ func (n *node) SetError() {
 	n.setStatus(NodeError)
 }
 
-func (n *node) setBus(bus *EventBus) {
+func (n *node) setBus(bus EventBus) {
 	n.nodeLock.Lock()
 	n.bus = bus
 	n.nodeLock.Unlock()

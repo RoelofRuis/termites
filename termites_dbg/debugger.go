@@ -43,7 +43,7 @@ func (d *debugger) GetGraph() *termites.Graph {
 	return d.graph
 }
 
-func (d *debugger) SetEventBus(b *termites.EventBus) {
+func (d *debugger) SetEventBus(b termites.EventBus) {
 	b.Subscribe(termites.NodeRefUpdated, d.OnNodeRefUpdated)
 	b.Subscribe(termites.GraphTeardown, d.OnGraphTeardown)
 }

@@ -12,7 +12,7 @@ func NewSigtermHandler() *SigtermHandler {
 	return &SigtermHandler{}
 }
 
-func (h *SigtermHandler) SetEventBus(b *EventBus) {
+func (h *SigtermHandler) SetEventBus(b EventBus) {
 	c := make(chan os.Signal)
 
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
