@@ -112,6 +112,8 @@ func (g *Graph) Shutdown() {
 
 	g.eventBus.Send(Event{Type: GraphTeardown})
 
+	// TODO: some mechanism where components with shutdown logic can register
+
 	close(g.Close)
 	fmt.Printf("Graph [%s] stopped\n", g.name)
 }
