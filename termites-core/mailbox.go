@@ -31,9 +31,7 @@ type DebouncedMailbox struct {
 
 func (m *DebouncedMailbox) IsMailboxConfig() {}
 
-type MailboxFactory struct{}
-
-func (f *MailboxFactory) FromConfig(to *InPort, c MailboxConfig) *mailbox {
+func mailboxFromConfig(to *InPort, c MailboxConfig) *mailbox {
 	var deliverFunc func(msg Message) bool
 	switch conf := c.(type) {
 	case *NormalMailbox:

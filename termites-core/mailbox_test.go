@@ -5,11 +5,9 @@ import (
 	"time"
 )
 
-var factory = MailboxFactory{}
-
 func TestDebouncingMailboxWithoutDelay(t *testing.T) {
 	port := newInPort("test", "", nil)
-	mailbox := factory.FromConfig(port, &DebouncedMailbox{Delay: 100 * time.Millisecond})
+	mailbox := mailboxFromConfig(port, &DebouncedMailbox{Delay: 100 * time.Millisecond})
 
 	go func() {
 		mailbox.deliver(Message{Data: 0})
@@ -25,7 +23,7 @@ func TestDebouncingMailboxWithoutDelay(t *testing.T) {
 
 func TestDebouncingMailboxWithDelay(t *testing.T) {
 	port := newInPort("test", "", nil)
-	mailbox := factory.FromConfig(port, &DebouncedMailbox{Delay: 100 * time.Millisecond})
+	mailbox := mailboxFromConfig(port, &DebouncedMailbox{Delay: 100 * time.Millisecond})
 
 	go func() {
 		mailbox.deliver(Message{Data: 0})

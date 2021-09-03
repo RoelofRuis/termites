@@ -5,9 +5,7 @@ import (
 	"time"
 )
 
-type connectionFactory struct {
-	mailboxFactory *MailboxFactory
-}
+type connectionFactory struct {}
 
 type connectionConfig struct {
 	from    *OutPort
@@ -17,9 +15,7 @@ type connectionConfig struct {
 }
 
 func newConnectionFactory() *connectionFactory {
-	return &connectionFactory{
-		mailboxFactory: &MailboxFactory{},
-	}
+	return &connectionFactory{}
 }
 
 func (f *connectionFactory) newConnection(out *OutPort, opts ...ConnectionOption) (*connection, error) {
@@ -84,7 +80,7 @@ func (f *connectionFactory) newConnection(out *OutPort, opts ...ConnectionOption
 		if config.mailbox == nil {
 			config.mailbox = &NormalMailbox{ReceiveTimeout: 1 * time.Second}
 		}
-		mailbox = f.mailboxFactory.FromConfig(config.to, config.mailbox)
+		mailbox = mailboxFromConfig(config.to, config.mailbox)
 	}
 
 	return &connection{
