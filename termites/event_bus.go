@@ -1,7 +1,9 @@
 package termites
 
 import (
+	"log"
 	"sync"
+	"time"
 )
 
 type EventSubscriber interface {
@@ -57,6 +59,11 @@ func (m *eventBus) Subscribe(t EventType, f func(Event) error) {
 }
 
 func (m *eventBus) Send(e Event) {
-	// TODO: add timeout? If we can't send here, we are in serious trouble
-	m.eventChan <- e
+	timer := time.NewTimer(100 * time.Millisecond)
+	select {
+	case <- timer.C:
+		log.Printf("ERROR: event bus queue full. Graph Meta state might be inconsistent from here on.")
+		log.Printf(" -- SPILLED EVENT --\n%+v\n", e)
+	case m.eventChan <- e:
+	}
 }
