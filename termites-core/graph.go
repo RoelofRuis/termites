@@ -40,19 +40,6 @@ func NewGraph(opts ...GraphOptions) *Graph {
 		opt(config)
 	}
 
-	if config.addLogger {
-		config.subscribers = append(config.subscribers, NewConsoleLogger())
-	}
-
-	if config.addRunner {
-		config.subscribers = append(config.subscribers, newRunner())
-	}
-
-	eventBus := NewEventBus()
-	for _, subscriber := range config.subscribers {
-		subscriber.SetEventBus(eventBus)
-	}
-
 	name := config.name
 	if name == "" {
 		name = "graph-" + RandomID()
@@ -64,9 +51,21 @@ func NewGraph(opts ...GraphOptions) *Graph {
 
 		runLock:   sync.Mutex{},
 		isRunning: true,
-		eventBus:  eventBus,
+		eventBus:  NewEventBus(),
 
 		Close: make(chan struct{}),
+	}
+
+	if config.addLogger {
+		config.subscribers = append(config.subscribers, NewConsoleLogger())
+	}
+
+	if config.addRunner {
+		config.subscribers = append(config.subscribers, newRunner())
+	}
+
+	for _, subscriber := range config.subscribers {
+		g.Subscribe(subscriber)
 	}
 
 	if config.withSigtermHandler {
@@ -74,6 +73,10 @@ func NewGraph(opts ...GraphOptions) *Graph {
 	}
 
 	return g
+}
+
+func (g *Graph) Subscribe(sub EventSubscriber) {
+	sub.SetEventBus(g.eventBus)
 }
 
 func (g *Graph) ConnectTo(out *OutPort, in *InPort, opts ...ConnectionOption) {

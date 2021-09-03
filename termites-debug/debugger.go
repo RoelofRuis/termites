@@ -6,19 +6,17 @@ import (
 	"github.com/RoelofRuis/termites/termites-core"
 )
 
-func WithDebugger(httpPort int) termites.GraphOptions {
-	d := ConfigureDebugGraph(
-		termites.NewGraph(
-			termites.Named("Termites Debugger"),
-			termites.WithoutSigtermHandler(),
-		),
-		httpPort,
-	)
-
-	return termites.AddEventSubscriber(d)
+func Debug(graph *termites.Graph, httpPort int) {
+	debugger := NewDebugger(httpPort)
+	graph.Subscribe(debugger)
 }
 
-func ConfigureDebugGraph(graph *termites.Graph, httpPort int) *debugger {
+func NewDebugger(httpPort int) *debugger {
+	graph := termites.NewGraph(
+		termites.Named("Termites Debugger"),
+		termites.WithoutSigtermHandler(),
+	)
+
 	// Input for Refs
 	nodeRefReceiver := newRefReceiver()
 
@@ -40,6 +38,10 @@ func ConfigureDebugGraph(graph *termites.Graph, httpPort int) *debugger {
 type debugger struct {
 	refReceiver *refReceiver
 	graph       *termites.Graph
+}
+
+func (d *debugger) GetGraph() *termites.Graph {
+	return d.graph
 }
 
 func (d *debugger) SetEventBus(b *termites.EventBus) {
