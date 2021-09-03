@@ -37,6 +37,6 @@ func (h *SigtermHandler) OnRegisterTeardown(e Event) error {
 	if !ok {
 		return InvalidEventError
 	}
-	h.teardownFunctions = append(h.teardownFunctions, event.f)
+	h.teardownFunctions = append(h.teardownFunctions, event.F)
 	return nil
 }

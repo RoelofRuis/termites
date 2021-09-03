@@ -12,7 +12,7 @@ type closeOnTeardown struct {
 func (c closeOnTeardown) SetEventBus(m EventBus) {
 	m.Send(Event{
 		Type: RegisterTeardown,
-		Data: RegisterTeardownEvent{f: c.Teardown},
+		Data: RegisterTeardownEvent{F: c.Teardown},
 	})
 }
 

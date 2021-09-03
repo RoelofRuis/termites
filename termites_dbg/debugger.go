@@ -41,7 +41,6 @@ type debugger struct {
 
 func (d *debugger) SetEventBus(b termites.EventBus) {
 	b.Subscribe(termites.NodeRefUpdated, d.OnNodeRefUpdated)
-	b.Subscribe(termites.SysExit, d.OnSysExit)
 }
 
 func (d *debugger) OnNodeRefUpdated(e termites.Event) error {
@@ -50,10 +49,5 @@ func (d *debugger) OnNodeRefUpdated(e termites.Event) error {
 		return termites.InvalidEventError
 	}
 	d.refReceiver.refChan <- n.Ref
-	return nil
-}
-
-func (d *debugger) OnSysExit(_ termites.Event) error {
-	d.graph.Shutdown()
 	return nil
 }

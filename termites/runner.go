@@ -24,7 +24,7 @@ func (r *runner) SetEventBus(b EventBus) {
 	b.Subscribe(NodeRegistered, r.OnNodeRegistered)
 	b.Send(Event{
 		Type: RegisterTeardown,
-		Data: RegisterTeardownEvent{f: r.Teardown},
+		Data: RegisterTeardownEvent{F: r.Teardown},
 	})
 	r.bus = b
 }
