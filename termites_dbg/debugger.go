@@ -12,10 +12,10 @@ func WithDebugger(httpPort int) termites.GraphOptions {
 		termites.WithoutSigtermHandler(),
 	)
 
-	return termites.AddEventSubscriber(InitDebugGraph(graph, httpPort))
+	return termites.AddEventSubscriber(InitGraph(graph, httpPort))
 }
 
-func InitDebugGraph(graph *termites.Graph, httpPort int) *debugger {
+func InitGraph(graph *termites.Graph, httpPort int) *debugger {
 	// Input for Refs
 	nodeRefReceiver := newRefReceiver()
 

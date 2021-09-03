@@ -13,6 +13,7 @@ type NodeControl interface {
 	LogError(msg string, err error)
 }
 
+// create via the termites.Builder
 type node struct {
 	name string
 	id   NodeId

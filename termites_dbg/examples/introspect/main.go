@@ -8,7 +8,7 @@ import (
 // Testing the debugger by letting it introspect its own graph 🤯
 func main() {
 	graph := termites.NewGraph(termites.Named("Termites Debugger"), termites.WithConsoleLogger())
-	debugger := termites_dbg.InitDebugGraph(graph, 4242)
+	debugger := termites_dbg.InitGraph(graph, 4242)
 	graph.Subscribe(debugger)
 
 	<-graph.Close
