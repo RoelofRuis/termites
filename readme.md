@@ -82,7 +82,7 @@ termites.NewGraph(termites.WithConsoleLogger())
 #### Close a resource on graph shutdown
 ```golang
 closeable io.Closer := YourClosable()
-termites.NewGraph(termites.CloseOnShutdown(closeable))
+termites.NewGraph(termites.CloseOnShutdown("resource name", closeable))
 ```
 
 #### Add a custom event subscriber

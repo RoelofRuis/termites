@@ -102,13 +102,13 @@ func (g *Graph) onSysExit(_ Event) error {
 }
 
 func (g *Graph) Shutdown() {
-	// TODO: logging
 	g.runLock.Lock()
 	if !g.isRunning {
 		return
 	}
 	g.isRunning = false
 	close(g.Close)
+	g.eventBus.Send(LogInfoEvent(fmt.Sprintf("Graph [%s] stopped", g.name)))
 }
 
 func (g *Graph) registerNode(n *node) {

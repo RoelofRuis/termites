@@ -36,7 +36,8 @@ func LogErrorEvent(msg string, err error) Event {
 }
 
 type RegisterTeardownEvent struct {
-	F func() error
+	Name string
+	F    func()
 }
 
 type NodeRegisteredEvent struct {

@@ -24,7 +24,7 @@ func (r *runner) SetEventBus(b EventBus) {
 	b.Subscribe(NodeRegistered, r.OnNodeRegistered)
 	b.Send(Event{
 		Type: RegisterTeardown,
-		Data: RegisterTeardownEvent{F: r.Teardown},
+		Data: RegisterTeardownEvent{Name: "runner", F: r.Teardown},
 	})
 	r.bus = b
 }
@@ -64,10 +64,7 @@ func (r *runner) OnNodeRegistered(e Event) error {
 	return nil
 }
 
-func (r *runner) Teardown() error {
-	// TODO: logging etc
-	fmt.Printf("Stopping Runner...\n")
-
+func (r *runner) Teardown() {
 	wg := sync.WaitGroup{}
 	wg.Add(len(r.shutdownFuncs))
 
@@ -75,7 +72,7 @@ func (r *runner) Teardown() error {
 		go func(f func(timeout time.Duration) error) {
 			err := f(r.shutdownTimeout)
 			if err != nil {
-				fmt.Printf("Error when shutting down node: %v", err.Error())
+				r.bus.Send(LogErrorEvent("Error when shutting down node", err))
 			}
 			wg.Done()
 		}(shutdown)
@@ -89,11 +86,9 @@ func (r *runner) Teardown() error {
 
 	select {
 	case <-await:
-		fmt.Printf("All shutdown routines completed\n")
+		r.bus.Send(LogInfoEvent("All registered node shutdown routines completed"))
 
 	case <-time.NewTimer(r.shutdownTimeout).C:
-		fmt.Printf("Shutdown timeout reached, force exit\n")
+		r.bus.Send(LogInfoEvent("Shutdown timeout reached for node shutdown routines. Forced exit."))
 	}
-
-	return nil
 }

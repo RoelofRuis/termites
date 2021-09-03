@@ -1,17 +1,20 @@
 package termites
 
 import (
+	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
 )
 
 type SigtermHandler struct {
-	teardownFunctions []func() error
+	teardownFunctions map[string]func()
 }
 
 func NewSigtermHandler() *SigtermHandler {
-	return &SigtermHandler{}
+	return &SigtermHandler{
+		teardownFunctions: make(map[string]func()),
+	}
 }
 
 func (h *SigtermHandler) SetEventBus(b EventBus) {
@@ -24,8 +27,10 @@ func (h *SigtermHandler) SetEventBus(b EventBus) {
 	go func() {
 		<-c
 
-		for _, f := range h.teardownFunctions {
-			_ = f() // TODO: not ignore error
+		for name, f := range h.teardownFunctions {
+			b.Send(LogInfoEvent(fmt.Sprintf("Running teardown for [%s]...", name)))
+			f()
+			b.Send(LogInfoEvent(fmt.Sprintf("Teardown for [%s] done", name)))
 		}
 
 		b.Send(Event{Type: SysExit})
@@ -37,6 +42,6 @@ func (h *SigtermHandler) OnRegisterTeardown(e Event) error {
 	if !ok {
 		return InvalidEventError
 	}
-	h.teardownFunctions = append(h.teardownFunctions, event.F)
+	h.teardownFunctions[event.Name] = event.F
 	return nil
 }

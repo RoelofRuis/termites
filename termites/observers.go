@@ -6,19 +6,21 @@ import (
 )
 
 type closeOnTeardown struct {
+	name   string
 	closer io.Closer
+	bus    EventBus
 }
 
-func (c closeOnTeardown) SetEventBus(m EventBus) {
-	m.Send(Event{
+func (c closeOnTeardown) SetEventBus(b EventBus) {
+	b.Send(Event{
 		Type: RegisterTeardown,
-		Data: RegisterTeardownEvent{F: c.Teardown},
+		Data: RegisterTeardownEvent{Name: c.name, F: c.Teardown},
 	})
+	c.bus = b
 }
 
-func (c closeOnTeardown) Teardown() error {
+func (c closeOnTeardown) Teardown() {
 	if err := c.closer.Close(); err != nil {
-		return fmt.Errorf("error closing resource: %w", err)
+		c.bus.Send(LogErrorEvent(fmt.Sprintf("error closing resource [%s]", c.name), err))
 	}
-	return nil
 }
