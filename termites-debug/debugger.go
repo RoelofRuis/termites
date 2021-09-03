@@ -6,9 +6,8 @@ import (
 	"github.com/RoelofRuis/termites/termites-core"
 )
 
-func Debug(graph *termites.Graph, httpPort int) {
-	debugger := NewDebugger(httpPort)
-	graph.Subscribe(debugger)
+func WithDebugger(httpPort int) termites.GraphOptions {
+	return termites.AddEventSubscriber(NewDebugger(httpPort))
 }
 
 func NewDebugger(httpPort int) *debugger {

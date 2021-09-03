@@ -2,10 +2,7 @@ package termites
 
 import (
 	"fmt"
-	"os"
-	"os/signal"
 	"sync"
-	"syscall"
 )
 
 type Graph struct {
@@ -45,16 +42,20 @@ func NewGraph(opts ...GraphOptions) *Graph {
 		name = "graph-" + RandomID()
 	}
 
+	bus := NewEventBus()
+
 	g := &Graph{
 		name:            name,
 		registeredNodes: make(map[NodeId]*node),
 
 		runLock:   sync.Mutex{},
 		isRunning: true,
-		eventBus:  NewEventBus(),
+		eventBus:  bus,
 
 		Close: make(chan struct{}),
 	}
+
+	bus.Subscribe(SystemExit, g.onSystemExit)
 
 	if config.addLogger {
 		config.subscribers = append(config.subscribers, NewConsoleLogger())
@@ -64,12 +65,12 @@ func NewGraph(opts ...GraphOptions) *Graph {
 		config.subscribers = append(config.subscribers, newRunner())
 	}
 
-	for _, subscriber := range config.subscribers {
-		g.Subscribe(subscriber)
+	if config.withSigtermHandler {
+		config.subscribers = append(config.subscribers, NewSigtermHandler())
 	}
 
-	if config.withSigtermHandler {
-		g.setupSigtermHandler()
+	for _, subscriber := range config.subscribers {
+		g.Subscribe(subscriber)
 	}
 
 	return g
@@ -95,6 +96,11 @@ func (g *Graph) Connect(out *OutPort, opts ...ConnectionOption) {
 	}
 }
 
+func (g *Graph) onSystemExit(_ Event) error {
+	g.Shutdown()
+	return nil
+}
+
 func (g *Graph) Shutdown() {
 	g.runLock.Lock()
 	if !g.isRunning {
@@ -108,17 +114,6 @@ func (g *Graph) Shutdown() {
 
 	close(g.Close)
 	fmt.Printf("Graph [%s] stopped\n", g.name)
-}
-
-func (g *Graph) setupSigtermHandler() {
-	c := make(chan os.Signal)
-
-	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
-
-	go func() {
-		<-c
-		g.Shutdown()
-	}()
 }
 
 func (g *Graph) registerNode(n *node) {

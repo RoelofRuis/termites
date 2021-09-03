@@ -11,11 +11,12 @@ type Event struct {
 }
 
 const (
-	Log            EventType = "log"
+	Log            EventType = "log/log"
 	GraphTeardown  EventType = "graph/teardown"
 	NodeRegistered EventType = "node/registered"
 	NodeRefUpdated EventType = "node/ref-updated"
 	MessageSent    EventType = "message/sent"
+	SystemExit     EventType = "sys/exit"
 )
 
 var InvalidEventError = fmt.Errorf("invalid event")
