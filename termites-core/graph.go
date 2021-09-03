@@ -14,7 +14,6 @@ type Graph struct {
 	isRunning bool
 
 	registeredNodes   map[NodeId]*node
-	connectionFactory *connectionFactory
 	eventBus          *EventBus
 
 	Close chan struct{}
@@ -62,7 +61,6 @@ func NewGraph(opts ...GraphOptions) *Graph {
 	g := &Graph{
 		name:              name,
 		registeredNodes:   make(map[NodeId]*node),
-		connectionFactory: newConnectionFactory(),
 
 		runLock:   sync.Mutex{},
 		isRunning: true,
@@ -83,7 +81,7 @@ func (g *Graph) ConnectTo(out *OutPort, in *InPort, opts ...ConnectionOption) {
 }
 
 func (g *Graph) Connect(out *OutPort, opts ...ConnectionOption) {
-	connection, err := g.connectionFactory.newConnection(out, opts...)
+	connection, err := newConnection(out, opts...)
 	if err != nil {
 		panic(fmt.Errorf("node connection error: %w", err))
 	}
