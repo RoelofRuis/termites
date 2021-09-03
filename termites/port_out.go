@@ -11,7 +11,7 @@ type OutPort struct {
 	owner    *node
 
 	connectionLock *sync.RWMutex
-	connections    []*connection
+	connections    map[ConnectionId]*connection
 }
 
 // Create via the termites.Builder
@@ -22,7 +22,7 @@ func newOutPort(name string, dataType string, owner *node) *OutPort {
 		dataType:       dataType,
 		owner:          owner,
 		connectionLock: &sync.RWMutex{},
-		connections:    nil,
+		connections:    make(map[ConnectionId]*connection),
 	}
 }
 
@@ -32,7 +32,7 @@ func (p *OutPort) connect(opts ...ConnectionOption) (*connection, error) {
 		return nil, err
 	}
 	p.connectionLock.Lock()
-	p.connections = append(p.connections, connection)
+	p.connections[connection.id] = connection
 	p.connectionLock.Unlock()
 	p.owner.sendRef()
 
