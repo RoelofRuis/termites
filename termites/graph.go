@@ -87,7 +87,7 @@ func (g *Graph) ConnectTo(out *OutPort, in *InPort, opts ...ConnectionOption) {
 func (g *Graph) Connect(out *OutPort, opts ...ConnectionOption) {
 	connection, err := out.connect(opts...)
 	if err != nil {
-		panic(fmt.Errorf("node connection error: %w", err)) // TODO: refactor to pass panic up
+		panic(fmt.Errorf("node connection error: %w", err))
 	}
 
 	g.registerNode(out.owner)

@@ -5,8 +5,6 @@ import (
 	"math/rand"
 )
 
-// TODO: usage of UUID can be removed when using this everywhere
-
 type ObjectName string
 
 type Identifier struct {
