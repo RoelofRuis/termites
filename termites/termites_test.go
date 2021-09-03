@@ -133,6 +133,37 @@ func TestConnections(t *testing.T) {
 	}
 }
 
+func TestAddConnection(t *testing.T) {
+	graph := NewGraph()
+
+	nodeA := NewInspectableIntNode("Component A")
+	nodeB1 := NewInspectableIntNode("Component B1")
+	nodeB2 := NewInspectableIntNode("Component B2")
+
+	graph.ConnectTo(nodeA.Out, nodeB1.In)
+
+	nodeA.Send <- 42
+
+	vB1 := <-nodeB1.Receive
+	if vB1 == 42 {
+		t.Log("Node B1 received correct message")
+	} else {
+		t.Error("Incorrect message")
+	}
+
+	graph.ConnectTo(nodeA.Out, nodeB2.In)
+
+	nodeA.Send <- 42
+
+	vB1 = <-nodeB1.Receive
+	vB2 := <-nodeB2.Receive
+	if vB1 == 42 && vB2 == 42 {
+		t.Log("Nodes received correct message")
+	} else {
+		t.Error("Incorrect message")
+	}
+}
+
 func TestAdapter(t *testing.T) {
 	graph := NewGraph()
 
