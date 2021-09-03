@@ -10,8 +10,6 @@ type EventSubscriber interface {
 
 type EventSender interface {
 	Send(e Event)
-	LogInfo(msg string)
-	LogError(msg string, err error)
 }
 
 type EventBus interface {
@@ -38,7 +36,7 @@ func NewEventBus() *eventBus {
 			for _, s := range bus.subscriptions[e.Type] {
 				err := s(e)
 				if err != nil {
-					bus.LogError("unable to notify subscriber", err)
+					bus.Send(LogErrorEvent("unable to notify subscriber", err))
 				}
 			}
 			bus.subscriptionLock.RUnlock()
@@ -61,26 +59,4 @@ func (m *eventBus) Subscribe(t EventType, f func(Event) error) {
 func (m *eventBus) Send(e Event) {
 	// TODO: add timeout? If we can't send here, we are in serious trouble
 	m.eventChan <- e
-}
-
-func (m *eventBus) LogInfo(msg string) {
-	m.Send(Event{
-		Type: Log,
-		Data: LogEvent{
-			Level:   1,
-			Message: msg,
-			Error:   nil,
-		},
-	})
-}
-
-func (m *eventBus) LogError(msg string, err error) {
-	m.Send(Event{
-		Type: Log,
-		Data: LogEvent{
-			Level:   3,
-			Message: msg,
-			Error:   err,
-		},
-	})
 }

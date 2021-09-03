@@ -27,8 +27,16 @@ type LogEvent struct {
 	Error   error
 }
 
+func LogInfoEvent(msg string) Event {
+	return Event{Type: Log, Data: LogEvent{Level: 1, Message: msg, Error: nil}}
+}
+
+func LogErrorEvent(msg string, err error) Event {
+	return Event{Type: Log, Data: LogEvent{Level: 3, Message: msg, Error: err}}
+}
+
 type NodeRegisteredEvent struct {
-	Node Node
+	node *node
 }
 
 type NodeUpdatedEvent struct {

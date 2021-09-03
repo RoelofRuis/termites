@@ -32,10 +32,8 @@ func (r *runner) OnNodeRegistered(e Event) error {
 		return InvalidEventError
 	}
 
-	privateNode := n.Node.getNode()
-
-	if privateNode.shutdown != nil {
-		r.shutdownFuncs = append(r.shutdownFuncs, privateNode.shutdown)
+	if n.node.shutdown != nil {
+		r.shutdownFuncs = append(r.shutdownFuncs, n.node.shutdown)
 	}
 
 	go func(node *node) {
@@ -58,7 +56,7 @@ func (r *runner) OnNodeRegistered(e Event) error {
 			return
 		}
 		node.setRunningStatus(NodeTerminated)
-	}(privateNode)
+	}(n.node)
 
 	return nil
 }

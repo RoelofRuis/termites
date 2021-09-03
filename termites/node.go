@@ -5,15 +5,12 @@ import (
 	"time"
 )
 
-type Node interface {
-	// TODO: see if we can remove this entirely
-	getNode() *node
-}
-
-type NodeControl interface { // TODO: add error logging via mediator, combine in some way
+type NodeControl interface {
 	SetSuspended()
 	SetActive()
 	SetError()
+	LogInfo(msg string)
+	LogError(msg string, err error)
 }
 
 type node struct {
@@ -33,10 +30,6 @@ type node struct {
 	bus      EventBus
 }
 
-func (n *node) getNode() *node {
-	return n
-}
-
 func (n *node) SetSuspended() {
 	n.setStatus(NodeSuspended)
 }
@@ -47,6 +40,14 @@ func (n *node) SetActive() {
 
 func (n *node) SetError() {
 	n.setStatus(NodeError)
+}
+
+func (n *node) LogInfo(msg string) {
+	n.sendEvent(LogInfoEvent(msg))
+}
+
+func (n *node) LogError(msg string, err error) {
+	n.sendEvent(LogErrorEvent(msg, err))
 }
 
 func (n *node) setBus(bus EventBus) {

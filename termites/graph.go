@@ -124,7 +124,7 @@ func (g *Graph) registerNode(n *node) {
 		g.eventBus.Send(Event{
 			Type: NodeRegistered,
 			Data: NodeRegisteredEvent{
-				Node: n,
+				node: n,
 			},
 		})
 	}
