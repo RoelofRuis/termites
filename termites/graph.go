@@ -21,7 +21,7 @@ type graphConfig struct {
 	subscribers        []EventSubscriber
 	withSigtermHandler bool
 	addRunner          bool
-	addLogger          bool
+	addConsoleLogger   bool
 }
 
 func NewGraph(opts ...GraphOptions) *Graph {
@@ -30,7 +30,7 @@ func NewGraph(opts ...GraphOptions) *Graph {
 		subscribers:        nil,
 		withSigtermHandler: true,
 		addRunner:          true,
-		addLogger:          false,
+		addConsoleLogger:   false,
 	}
 
 	for _, opt := range opts {
@@ -57,7 +57,7 @@ func NewGraph(opts ...GraphOptions) *Graph {
 
 	bus.Subscribe(SystemExit, g.onSystemExit)
 
-	if config.addLogger {
+	if config.addConsoleLogger {
 		config.subscribers = append(config.subscribers, NewConsoleLogger())
 	}
 

@@ -6,10 +6,14 @@ import (
 
 type GraphOptions func(conf *graphConfig)
 
-func WithoutSigtermHandler() GraphOptions {
+func WithConsoleLogger() GraphOptions {
 	return func(conf *graphConfig) {
-		conf.withSigtermHandler = false
+		conf.addConsoleLogger = true
 	}
+}
+
+func CloseOnShutdown(c io.Closer) GraphOptions {
+	return AddEventSubscriber(closeOnShutdown{closer: c})
 }
 
 func Named(name string) GraphOptions {
@@ -18,9 +22,9 @@ func Named(name string) GraphOptions {
 	}
 }
 
-func WithLogger() GraphOptions {
+func WithoutSigtermHandler() GraphOptions {
 	return func(conf *graphConfig) {
-		conf.addLogger = true
+		conf.withSigtermHandler = false
 	}
 }
 
@@ -28,10 +32,6 @@ func WithoutRunner() GraphOptions {
 	return func(conf *graphConfig) {
 		conf.addRunner = false
 	}
-}
-
-func CloseOnShutdown(c io.Closer) GraphOptions {
-	return AddEventSubscriber(closeOnShutdown{closer: c})
 }
 
 func AddEventSubscriber(sub EventSubscriber) GraphOptions {
