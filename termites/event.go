@@ -11,12 +11,12 @@ type Event struct {
 }
 
 const (
-	Log            EventType = "log/log"
-	GraphTeardown  EventType = "graph/teardown"
-	NodeRegistered EventType = "node/registered"
-	NodeRefUpdated EventType = "node/ref-updated"
-	MessageSent    EventType = "message/sent"
-	SystemExit     EventType = "sys/exit"
+	Log              EventType = "log/log"
+	NodeRegistered   EventType = "node/registered"
+	NodeRefUpdated   EventType = "node/ref-updated"
+	MessageSent      EventType = "message/sent"
+	SysExit          EventType = "sys/exit"
+	RegisterTeardown EventType = "sigterm/register-teardown"
 )
 
 var InvalidEventError = fmt.Errorf("invalid event")
@@ -33,6 +33,10 @@ func LogInfoEvent(msg string) Event {
 
 func LogErrorEvent(msg string, err error) Event {
 	return Event{Type: Log, Data: LogEvent{Level: 3, Message: msg, Error: err}}
+}
+
+type RegisterTeardownEvent struct {
+	f func() error
 }
 
 type NodeRegisteredEvent struct {

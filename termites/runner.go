@@ -22,7 +22,10 @@ func newRunner() *runner {
 
 func (r *runner) SetEventBus(b EventBus) {
 	b.Subscribe(NodeRegistered, r.OnNodeRegistered)
-	b.Subscribe(GraphTeardown, r.OnGraphTeardown)
+	b.Send(Event{
+		Type: RegisterTeardown,
+		Data: RegisterTeardownEvent{f: r.Teardown},
+	})
 	r.bus = b
 }
 
@@ -61,7 +64,7 @@ func (r *runner) OnNodeRegistered(e Event) error {
 	return nil
 }
 
-func (r *runner) OnGraphTeardown(_ Event) error {
+func (r *runner) Teardown() error {
 	// TODO: logging etc
 	fmt.Printf("Stopping Runner...\n")
 

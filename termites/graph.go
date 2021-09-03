@@ -55,18 +55,18 @@ func NewGraph(opts ...GraphOptions) *Graph {
 		Close: make(chan struct{}),
 	}
 
-	bus.Subscribe(SystemExit, g.onSystemExit)
+	bus.Subscribe(SysExit, g.onSysExit)
+
+	if config.withSigtermHandler {
+		g.Subscribe(NewSigtermHandler())
+	}
 
 	if config.addConsoleLogger {
-		config.subscribers = append(config.subscribers, NewConsoleLogger())
+		g.Subscribe(NewConsoleLogger())
 	}
 
 	if config.addRunner {
-		config.subscribers = append(config.subscribers, newRunner())
-	}
-
-	if config.withSigtermHandler {
-		config.subscribers = append(config.subscribers, NewSigtermHandler())
+		g.Subscribe(newRunner())
 	}
 
 	for _, subscriber := range config.subscribers {
@@ -96,26 +96,19 @@ func (g *Graph) Connect(out *OutPort, opts ...ConnectionOption) {
 	}
 }
 
-func (g *Graph) onSystemExit(_ Event) error {
+func (g *Graph) onSysExit(_ Event) error {
 	g.Shutdown()
 	return nil
 }
 
 func (g *Graph) Shutdown() {
+	// TODO: logging
 	g.runLock.Lock()
 	if !g.isRunning {
 		return
 	}
 	g.isRunning = false
-	fmt.Printf("Shutting down graph [%s]\n", g.name)
-	g.runLock.Unlock()
-
-	g.eventBus.Send(Event{Type: GraphTeardown})
-
-	// TODO: some mechanism where components with shutdown logic can register
-
 	close(g.Close)
-	fmt.Printf("Graph [%s] stopped\n", g.name)
 }
 
 func (g *Graph) registerNode(n *node) {

@@ -19,17 +19,11 @@ type TestSubscriber struct {
 }
 
 func (t *TestSubscriber) SetEventBus(e EventBus) {
-	e.Subscribe(GraphTeardown, t.OnGraphTeardown)
 	e.Subscribe(NodeRegistered, t.OnNodeRegistered)
 }
 
 func (h *TestSubscriber) OnNodeRegistered(_ Event) error {
 	h.registerCalls += 1
-	return nil
-}
-
-func (h *TestSubscriber) OnGraphTeardown(_ Event) error {
-	h.teardownCalls += 1
 	return nil
 }
 

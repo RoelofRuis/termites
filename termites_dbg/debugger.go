@@ -7,15 +7,15 @@ import (
 )
 
 func WithDebugger(httpPort int) termites.GraphOptions {
-	return termites.AddEventSubscriber(NewDebugger(httpPort))
-}
-
-func NewDebugger(httpPort int) *debugger {
 	graph := termites.NewGraph(
 		termites.Named("Termites Debugger"),
 		termites.WithoutSigtermHandler(),
 	)
 
+	return termites.AddEventSubscriber(InitDebugGraph(graph, httpPort))
+}
+
+func InitDebugGraph(graph *termites.Graph, httpPort int) *debugger {
 	// Input for Refs
 	nodeRefReceiver := newRefReceiver()
 
@@ -39,13 +39,9 @@ type debugger struct {
 	graph       *termites.Graph
 }
 
-func (d *debugger) GetGraph() *termites.Graph {
-	return d.graph
-}
-
 func (d *debugger) SetEventBus(b termites.EventBus) {
 	b.Subscribe(termites.NodeRefUpdated, d.OnNodeRefUpdated)
-	b.Subscribe(termites.GraphTeardown, d.OnGraphTeardown)
+	b.Subscribe(termites.SysExit, d.OnSysExit)
 }
 
 func (d *debugger) OnNodeRefUpdated(e termites.Event) error {
@@ -57,7 +53,7 @@ func (d *debugger) OnNodeRefUpdated(e termites.Event) error {
 	return nil
 }
 
-func (d *debugger) OnGraphTeardown(_ termites.Event) error {
+func (d *debugger) OnSysExit(_ termites.Event) error {
 	d.graph.Shutdown()
 	return nil
 }

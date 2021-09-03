@@ -13,7 +13,7 @@ func WithConsoleLogger() GraphOptions {
 }
 
 func CloseOnShutdown(c io.Closer) GraphOptions {
-	return AddEventSubscriber(closeOnShutdown{closer: c})
+	return AddEventSubscriber(closeOnTeardown{closer: c})
 }
 
 func Named(name string) GraphOptions {
