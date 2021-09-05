@@ -40,7 +40,6 @@ func (r *runner) OnNodeRegistered(e Event) error {
 	}
 
 	go func(node *node) {
-		node.setBus(r.bus)
 		node.setRunningStatus(NodeRunning)
 		defer func() {
 			if err := recover(); err != nil {

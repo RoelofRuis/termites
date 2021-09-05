@@ -99,22 +99,8 @@ func (g *Graph) Connect(out *OutPort, opts ...ConnectionOption) {
 
 	out.connect(connection)
 
-	g.registerNode(out.owner)
+	out.owner.setBus(g.eventBus)
 	if connection.mailbox != nil && connection.mailbox.to != nil {
-		g.registerNode(connection.mailbox.to.owner)
-	}
-}
-
-func (g *Graph) registerNode(n *node) {
-	_, has := g.registeredNodes[n.id]
-	if !has {
-		g.registeredNodes[n.id] = n
-
-		g.eventBus.Send(Event{
-			Type: NodeRegistered,
-			Data: NodeRegisteredEvent{
-				node: n,
-			},
-		})
+		connection.mailbox.to.owner.setBus(g.eventBus)
 	}
 }

@@ -53,7 +53,15 @@ func (n *node) LogError(msg string, err error) {
 
 func (n *node) setBus(bus EventBus) {
 	n.nodeLock.Lock()
-	n.bus = bus
+	if n.bus == nil {
+		n.bus = bus
+		n.bus.Send(Event{
+			Type: NodeRegistered,
+			Data: NodeRegisteredEvent{
+				node: n,
+			},
+		})
+	}
 	n.nodeLock.Unlock()
 }
 
