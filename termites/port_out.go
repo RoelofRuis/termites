@@ -11,7 +11,7 @@ type OutPort struct {
 	owner    *node
 
 	connectionLock *sync.RWMutex
-	connections    map[ConnectionId]*connection
+	connections    map[ConnectionId]*Connection
 }
 
 // Create via the termites.Builder
@@ -22,7 +22,7 @@ func newOutPort(name string, dataType string, owner *node) *OutPort {
 		dataType:       dataType,
 		owner:          owner,
 		connectionLock: &sync.RWMutex{},
-		connections:    make(map[ConnectionId]*connection),
+		connections:    make(map[ConnectionId]*Connection),
 	}
 }
 
@@ -35,7 +35,7 @@ func (p *OutPort) Send(data interface{}) {
 	p.connectionLock.RLock()
 	for _, conn := range p.connections {
 		wg.Add(1)
-		go func(conn *connection) {
+		go func(conn *Connection) {
 			err, _ := conn.send(data)
 			p.sendMessageEvent(conn, err)
 			wg.Done()
@@ -45,14 +45,14 @@ func (p *OutPort) Send(data interface{}) {
 	p.connectionLock.RUnlock()
 }
 
-func (p *OutPort) connect(conn *connection) {
+func (p *OutPort) connect(conn *Connection) {
 	p.connectionLock.Lock()
 	p.connections[conn.id] = conn
 	p.connectionLock.Unlock()
 	p.owner.sendRef()
 }
 
-func (p *OutPort) disconnect(conn *connection) {
+func (p *OutPort) disconnect(conn *Connection) {
 	p.connectionLock.Lock()
 	delete(p.connections, conn.id)
 	p.connectionLock.Unlock()
@@ -72,7 +72,7 @@ func (p *OutPort) ref() OutPortRef {
 	}
 }
 
-func (p *OutPort) sendMessageEvent(conn *connection, err error) {
+func (p *OutPort) sendMessageEvent(conn *Connection, err error) {
 	toName := ""
 	toPortName := ""
 	if conn.mailbox != nil {

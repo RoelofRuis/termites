@@ -6,13 +6,13 @@ import (
 	"time"
 )
 
-type connection struct {
+type Connection struct {
 	id      ConnectionId
 	mailbox *mailbox
 	adapter *Adapter
 }
 
-func (p *connection) send(data interface{}) (error, interface{}) {
+func (p *Connection) send(data interface{}) (error, interface{}) {
 	connData := data
 	if p.adapter != nil {
 		var err error
@@ -35,7 +35,7 @@ func (p *connection) send(data interface{}) (error, interface{}) {
 	return nil, connData
 }
 
-func (p *connection) ref() ConnectionRef {
+func (p *Connection) ref() ConnectionRef {
 	var adapterRef *AdapterRef = nil
 	if p.adapter != nil {
 		ref := p.adapter.ref()
@@ -61,7 +61,7 @@ type connectionConfig struct {
 	mailbox MailboxConfig
 }
 
-func newConnection(out *OutPort, opts ...ConnectionOption) (*connection, error) {
+func newConnection(out *OutPort, opts ...ConnectionOption) (*Connection, error) {
 	if out == nil {
 		return nil, fmt.Errorf("cannot connect nil out port")
 	}
@@ -126,7 +126,7 @@ func newConnection(out *OutPort, opts ...ConnectionOption) (*connection, error) 
 		mailbox = mailboxFromConfig(config.to, config.mailbox)
 	}
 
-	return &connection{
+	return &Connection{
 		id:      ConnectionId(NewIdentifier("connection")),
 		mailbox: mailbox,
 		adapter: config.adapter,
