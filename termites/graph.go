@@ -83,7 +83,7 @@ func (g *Graph) Kill() {
 	g.eventBus.Send(Event{Type: Kill})
 }
 
-func (g *Graph) Subscribe(sub EventSubscriber) {
+func (g *Graph) Subscribe(sub EventSubscriber) { // TODO: this function should not be publicly available (but should in some way to debugger)
 	sub.SetEventBus(g.eventBus)
 }
 
