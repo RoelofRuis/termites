@@ -17,7 +17,7 @@ func TestKill(t *testing.T) {
 	closer := &testCloser{done: make(chan interface{})}
 	graph := NewGraph(CloseOnTeardown("test", closer))
 
-	graph.Kill()
+	graph.Close()
 
 	<-closer.done
 	t.Log("Closer was closed correctly")

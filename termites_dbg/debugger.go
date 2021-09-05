@@ -15,7 +15,7 @@ func WithDebugger(httpPort int) termites.GraphOptions {
 	return termites.AddEventSubscriber(InitGraph(graph, httpPort))
 }
 
-func InitGraph(graph *termites.Graph, httpPort int) *debugger {
+func InitGraph(graph termites.Graph, httpPort int) *debugger {
 	// Input for Refs
 	nodeRefReceiver := newRefReceiver()
 
@@ -36,7 +36,7 @@ func InitGraph(graph *termites.Graph, httpPort int) *debugger {
 
 type debugger struct {
 	refReceiver *refReceiver
-	graph       *termites.Graph
+	graph       termites.Graph
 }
 
 func (d *debugger) SetEventBus(b termites.EventBus) {

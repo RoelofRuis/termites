@@ -5,7 +5,14 @@ import (
 	"sync"
 )
 
-type Graph struct {
+type Graph interface {
+	Connect(out *OutPort, opts ...ConnectionOption)
+	ConnectTo(out *OutPort, in *InPort, opts ...ConnectionOption)
+	Wait()
+	Close()
+}
+
+type graphImpl struct {
 	name            string
 	registeredNodes map[NodeId]*node
 	eventBus        *eventBus
@@ -20,7 +27,11 @@ type graphConfig struct {
 	addConsoleLogger   bool
 }
 
-func NewGraph(opts ...GraphOptions) *Graph {
+func NewGraph(opts ...GraphOptions) Graph {
+	return newGraphImpl(opts...)
+}
+
+func newGraphImpl(opts ...GraphOptions) *graphImpl {
 	config := &graphConfig{
 		name:               "",
 		subscribers:        nil,
@@ -42,7 +53,7 @@ func NewGraph(opts ...GraphOptions) *Graph {
 	closer := &sync.WaitGroup{}
 	closer.Add(1)
 
-	g := &Graph{
+	g := &graphImpl{
 		name:            name,
 		registeredNodes: make(map[NodeId]*node),
 
@@ -69,29 +80,25 @@ func NewGraph(opts ...GraphOptions) *Graph {
 	return g
 }
 
-func (g *Graph) onExit(_ Event) error {
+func (g *graphImpl) onExit(_ Event) error {
 	g.close.Done()
 	g.eventBus.Send(LogInfoEvent(fmt.Sprintf("Graph [%s] closed", g.name)))
 	return nil
 }
 
-func (g *Graph) Wait() {
+func (g *graphImpl) Wait() {
 	g.close.Wait()
 }
 
-func (g *Graph) Kill() {
+func (g *graphImpl) Close() {
 	g.eventBus.Send(Event{Type: Kill})
 }
 
-func (g *Graph) Subscribe(sub EventSubscriber) { // TODO: this function should not be publicly available (but should in some way to debugger)
-	sub.SetEventBus(g.eventBus)
-}
-
-func (g *Graph) ConnectTo(out *OutPort, in *InPort, opts ...ConnectionOption) {
+func (g *graphImpl) ConnectTo(out *OutPort, in *InPort, opts ...ConnectionOption) {
 	g.Connect(out, append(opts, To(in))...)
 }
 
-func (g *Graph) Connect(out *OutPort, opts ...ConnectionOption) {
+func (g *graphImpl) Connect(out *OutPort, opts ...ConnectionOption) {
 	connection, err := newConnection(out, opts...)
 	if err != nil {
 		panic(fmt.Errorf("node connection error: %w", err))
@@ -103,4 +110,18 @@ func (g *Graph) Connect(out *OutPort, opts ...ConnectionOption) {
 	if connection.mailbox != nil && connection.mailbox.to != nil {
 		connection.mailbox.to.owner.setBus(g.eventBus)
 	}
+}
+
+
+func NewSubscribeableGraph(opts ...GraphOptions) SubscribeableGraph {
+	return newGraphImpl(opts...)
+}
+
+type SubscribeableGraph interface {
+	Graph
+	Subscribe(e EventSubscriber)
+}
+
+func (g *graphImpl) Subscribe(sub EventSubscriber) {
+	sub.SetEventBus(g.eventBus)
 }
