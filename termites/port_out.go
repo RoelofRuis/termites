@@ -26,19 +26,6 @@ func newOutPort(name string, dataType string, owner *node) *OutPort {
 	}
 }
 
-func (p *OutPort) connect(opts ...ConnectionOption) (*connection, error) {
-	connection, err := newConnection(p, opts...)
-	if err != nil {
-		return nil, err
-	}
-	p.connectionLock.Lock()
-	p.connections[connection.id] = connection
-	p.connectionLock.Unlock()
-	p.owner.sendRef()
-
-	return connection, nil
-}
-
 func (p *OutPort) Send(data interface{}) {
 	if len(p.connections) == 0 {
 		return
@@ -49,35 +36,26 @@ func (p *OutPort) Send(data interface{}) {
 	for _, conn := range p.connections {
 		wg.Add(1)
 		go func(conn *connection) {
-			err, sentData := conn.send(data)
-			// TODO: clean up and push as much as possible down into event
-			toName := ""
-			toPortName := ""
-			if conn.mailbox != nil {
-				toName = conn.mailbox.to.owner.name
-				toPortName = conn.mailbox.to.name
-			}
-			adapterName := ""
-			if conn.adapter != nil {
-				adapterName = conn.adapter.name
-			}
-			p.owner.sendEvent(Event{
-				Type: MessageSent,
-				Data: MessageSentEvent{
-					FromName:     p.owner.name,
-					FromPortName: p.name,
-					ToName:       toName,
-					ToPortName:   toPortName,
-					AdapterName:  adapterName,
-					Data:         sentData,
-					Error:        err,
-				},
-			})
+			err, _ := conn.send(data)
+			p.sendMessageEvent(conn, err)
 			wg.Done()
 		}(conn)
 	}
 	wg.Wait()
 	p.connectionLock.RUnlock()
+}
+
+func (p *OutPort) connect(conn *connection) {
+	p.connectionLock.Lock()
+	p.connections[conn.id] = conn
+	p.connectionLock.Unlock()
+	p.owner.sendRef()
+}
+
+func (p *OutPort) disconnect(conn *connection) {
+	p.connectionLock.Lock()
+	delete(p.connections, conn.id)
+	p.connectionLock.Unlock()
 }
 
 func (p *OutPort) ref() OutPortRef {
@@ -92,4 +70,28 @@ func (p *OutPort) ref() OutPortRef {
 		Name:        p.name,
 		Connections: connections,
 	}
+}
+
+func (p *OutPort) sendMessageEvent(conn *connection, err error) {
+	toName := ""
+	toPortName := ""
+	if conn.mailbox != nil {
+		toName = conn.mailbox.to.owner.name
+		toPortName = conn.mailbox.to.name
+	}
+	adapterName := ""
+	if conn.adapter != nil {
+		adapterName = conn.adapter.name
+	}
+	p.owner.sendEvent(Event{
+		Type: MessageSent,
+		Data: MessageSentEvent{
+			FromName:     p.owner.name,
+			FromPortName: p.name,
+			ToName:       toName,
+			ToPortName:   toPortName,
+			AdapterName:  adapterName,
+			Error:        err,
+		},
+	})
 }

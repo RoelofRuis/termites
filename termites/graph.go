@@ -92,10 +92,12 @@ func (g *Graph) ConnectTo(out *OutPort, in *InPort, opts ...ConnectionOption) {
 }
 
 func (g *Graph) Connect(out *OutPort, opts ...ConnectionOption) {
-	connection, err := out.connect(opts...)
+	connection, err := newConnection(out, opts...)
 	if err != nil {
 		panic(fmt.Errorf("node connection error: %w", err))
 	}
+
+	out.connect(connection)
 
 	g.registerNode(out.owner)
 	if connection.mailbox != nil && connection.mailbox.to != nil {

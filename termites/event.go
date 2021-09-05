@@ -58,6 +58,5 @@ type MessageSentEvent struct { // TODO: use ID's
 	ToName       string
 	ToPortName   string
 	AdapterName  string
-	Data         interface{}
 	Error        error
 }
