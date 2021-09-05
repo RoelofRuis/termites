@@ -13,10 +13,9 @@ type Graph interface {
 }
 
 type graphImpl struct {
-	name            string
-	registeredNodes map[NodeId]*node
-	eventBus        *eventBus
-	close           *sync.WaitGroup
+	name     string
+	eventBus *eventBus
+	close    *sync.WaitGroup
 }
 
 type graphConfig struct {
@@ -54,12 +53,9 @@ func newGraphImpl(opts ...GraphOptions) *graphImpl {
 	closer.Add(1)
 
 	g := &graphImpl{
-		name:            name,
-		registeredNodes: make(map[NodeId]*node),
-
+		name:     name,
 		eventBus: bus,
-
-		close: closer,
+		close:    closer,
 	}
 
 	bus.Subscribe(Exit, g.onExit)
@@ -70,7 +66,7 @@ func newGraphImpl(opts ...GraphOptions) *graphImpl {
 	}
 
 	if config.addRunner {
-		g.Subscribe(newRunner())
+		g.Subscribe(newRunner(true))
 	}
 
 	for _, subscriber := range config.subscribers {
@@ -111,7 +107,6 @@ func (g *graphImpl) Connect(out *OutPort, opts ...ConnectionOption) {
 		connection.mailbox.to.owner.setBus(g.eventBus)
 	}
 }
-
 
 func NewSubscribeableGraph(opts ...GraphOptions) SubscribeableGraph {
 	return newGraphImpl(opts...)

@@ -17,16 +17,17 @@ func newRunner() *runner {
 	return &runner{
 		shutdownFuncs:   nil,
 		shutdownTimeout: time.Second * 10,
+		bus:             nil,
 	}
 }
 
 func (r *runner) SetEventBus(b EventBus) {
-	b.Subscribe(NodeRegistered, r.OnNodeRegistered)
-	b.Send(Event{
+	r.bus = b
+	r.bus.Subscribe(NodeRegistered, r.OnNodeRegistered)
+	r.bus.Send(Event{
 		Type: RegisterTeardown,
 		Data: RegisterTeardownEvent{Name: "runner", F: r.Teardown},
 	})
-	r.bus = b
 }
 
 func (r *runner) OnNodeRegistered(e Event) error {
@@ -39,28 +40,30 @@ func (r *runner) OnNodeRegistered(e Event) error {
 		r.shutdownFuncs = append(r.shutdownFuncs, n.node.shutdown)
 	}
 
-	go func(node *node) {
-		node.setRunningStatus(NodeRunning)
-		defer func() {
-			if err := recover(); err != nil {
-				r.bus.Send(LogErrorEvent(fmt.Sprintf("Node [%s] crashed: %v", node.name, err), nil))
-				debug.PrintStack()
-				node.SetError()
-				node.setRunningStatus(NodeTerminated)
-			}
-		}()
-
-		err := node.run(node)
-		if err != nil {
-			r.bus.Send(LogErrorEvent(fmt.Sprintf("Node [%s] exited with error", node.name), err))
-			node.SetError()
-			node.setRunningStatus(NodeTerminated)
-			return
-		}
-		node.setRunningStatus(NodeTerminated)
-	}(n.node)
+	go run(r.bus, n.node)
 
 	return nil
+}
+
+func run(bus EventBus, node *node) {
+	node.setRunningStatus(NodeRunning)
+	defer func() {
+		if err := recover(); err != nil {
+			bus.Send(LogErrorEvent(fmt.Sprintf("Node [%s] crashed: %v", node.name, err), nil))
+			debug.PrintStack()
+			node.SetError()
+			node.setRunningStatus(NodeTerminated)
+		}
+	}()
+
+	err := node.run(node)
+	if err != nil {
+		bus.Send(LogErrorEvent(fmt.Sprintf("Node [%s] exited with error", node.name), err))
+		node.SetError()
+		node.setRunningStatus(NodeTerminated)
+		return
+	}
+	node.setRunningStatus(NodeTerminated)
 }
 
 func (r *runner) Teardown() {
