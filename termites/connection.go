@@ -126,9 +126,13 @@ func newConnection(out *OutPort, opts ...ConnectionOption) (*Connection, error) 
 		mailbox = mailboxFromConfig(config.to, config.mailbox)
 	}
 
-	return &Connection{
+	conn := &Connection{
 		id:      ConnectionId(NewIdentifier("connection")),
 		mailbox: mailbox,
 		adapter: config.adapter,
-	}, nil
+	}
+
+	out.connect(conn)
+
+	return conn, nil
 }
