@@ -100,9 +100,9 @@ func (g *graphImpl) Connect(out *OutPort, opts ...ConnectionOption) *Connection 
 		panic(fmt.Errorf("node connection error: %w", err))
 	}
 
-	out.owner.setEventSender(g.eventBus)
+	out.owner.setEventBus(g.eventBus)
 	if connection.mailbox != nil && connection.mailbox.to != nil {
-		connection.mailbox.to.owner.setEventSender(g.eventBus)
+		connection.mailbox.to.owner.setEventBus(g.eventBus)
 	}
 
 	return connection

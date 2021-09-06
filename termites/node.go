@@ -1,6 +1,8 @@
 package termites
 
 import (
+	"fmt"
+	"runtime/debug"
 	"sync"
 	"time"
 )
@@ -51,7 +53,7 @@ func (n *node) LogError(msg string, err error) {
 	n.sendEvent(LogErrorEvent(msg, err))
 }
 
-func (n *node) setEventSender(bus EventSender) {
+func (n *node) setEventBus(bus EventBus) {
 	n.nodeLock.Lock()
 	if n.bus == nil {
 		n.bus = bus
@@ -61,6 +63,15 @@ func (n *node) setEventSender(bus EventSender) {
 				node: n,
 			},
 		})
+		if n.shutdown != nil {
+			n.bus.Send(Event{
+				Type: RegisterTeardown,
+				Data: RegisterTeardownEvent{
+					Name: fmt.Sprintf("node-%s", Identifier(n.id).String()),
+					F: n.shutdown,
+				},
+			})
+		}
 	}
 	n.nodeLock.Unlock()
 }
@@ -133,4 +144,25 @@ func (n *node) ref() NodeRef {
 		RunInfo:       determineFunctionInfo(n.run),
 		ShutdownInfo:  determineFunctionInfo(n.shutdown),
 	}
+}
+
+func (n *node) start() {
+	n.setRunningStatus(NodeRunning)
+	defer func() {
+		if err := recover(); err != nil {
+			n.bus.Send(LogErrorEvent(fmt.Sprintf("Node [%s] crashed: %v", n.name, err), nil))
+			debug.PrintStack()
+			n.SetError()
+			n.setRunningStatus(NodeTerminated)
+		}
+	}()
+
+	err := n.run(n)
+	if err != nil {
+		n.bus.Send(LogErrorEvent(fmt.Sprintf("Node [%s] exited with error", n.name), err))
+		n.SetError()
+		n.setRunningStatus(NodeTerminated)
+		return
+	}
+	n.setRunningStatus(NodeTerminated)
 }

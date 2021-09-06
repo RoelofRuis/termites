@@ -3,6 +3,7 @@ package termites
 import (
 	"fmt"
 	"io"
+	"time"
 )
 
 type closeOnTeardown struct {
@@ -19,8 +20,9 @@ func (c closeOnTeardown) SetEventBus(b EventBus) {
 	c.bus = b
 }
 
-func (c closeOnTeardown) Teardown() {
+func (c closeOnTeardown) Teardown(_ time.Duration) error {
 	if err := c.closer.Close(); err != nil {
-		c.bus.Send(LogErrorEvent(fmt.Sprintf("error closing resource [%s]", c.name), err))
+		return fmt.Errorf("error closing resource [%s] [%w]", c.name, err)
 	}
+	return nil
 }

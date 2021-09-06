@@ -1,6 +1,9 @@
 package termites
 
-import "fmt"
+import (
+	"fmt"
+	"time"
+)
 
 type EventType string
 
@@ -42,7 +45,7 @@ func LogErrorEvent(msg string, err error) Event {
 
 type RegisterTeardownEvent struct {
 	Name string
-	F    func()
+	F    func(timeout time.Duration) error
 }
 
 type NodeRegisteredEvent struct {
