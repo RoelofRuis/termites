@@ -87,9 +87,7 @@ func (n *node) sendEvent(e Event) {
 }
 
 func (n *node) sendRef() {
-	n.nodeLock.Lock()
 	ref := n.ref()
-	n.nodeLock.Unlock()
 
 	n.sendEvent(Event{
 		Type: NodeRefUpdated,
@@ -98,6 +96,9 @@ func (n *node) sendRef() {
 }
 
 func (n *node) ref() NodeRef {
+	n.nodeLock.Lock()
+	defer n.nodeLock.Unlock()
+
 	inPortRefs := make(map[InPortId]InPortRef)
 	for _, in := range n.inPorts {
 		inPortRefs[in.id] = InPortRef{
