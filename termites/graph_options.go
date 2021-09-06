@@ -28,12 +28,6 @@ func WithoutSigtermHandler() GraphOptions {
 	}
 }
 
-func WithoutRunner() GraphOptions {
-	return func(conf *graphConfig) {
-		conf.addRunner = false
-	}
-}
-
 func WithEventSubscriber(sub EventSubscriber) GraphOptions {
 	return func(conf *graphConfig) {
 		conf.subscribers = append(conf.subscribers, sub)

@@ -29,7 +29,7 @@ type TestSubscriber struct {
 }
 
 func (t *TestSubscriber) SetEventBus(e EventBus) {
-	e.Subscribe(NodeRegistered, t.OnNodeRegistered)
+
 }
 
 func (h *TestSubscriber) OnNodeRegistered(_ Event) error {

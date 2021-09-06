@@ -22,7 +22,6 @@ type graphConfig struct {
 	name               string
 	subscribers        []EventSubscriber
 	withSigtermHandler bool
-	addRunner          bool
 	addConsoleLogger   bool
 }
 
@@ -35,7 +34,6 @@ func newGraphImpl(opts ...GraphOptions) *graphImpl {
 		name:               "",
 		subscribers:        nil,
 		withSigtermHandler: true,
-		addRunner:          true,
 		addConsoleLogger:   false,
 	}
 
@@ -63,10 +61,6 @@ func newGraphImpl(opts ...GraphOptions) *graphImpl {
 
 	if config.addConsoleLogger {
 		NewConsoleLogger().SetEventBus(bus)
-	}
-
-	if config.addRunner {
-		newRunner().SetEventBus(bus)
 	}
 
 	for _, subscriber := range config.subscribers {
@@ -100,9 +94,9 @@ func (g *graphImpl) Connect(out *OutPort, opts ...ConnectionOption) *Connection 
 		panic(fmt.Errorf("node connection error: %w", err))
 	}
 
-	out.owner.setEventBus(g.eventBus)
+	out.owner.start(g.eventBus)
 	if connection.mailbox != nil && connection.mailbox.to != nil {
-		connection.mailbox.to.owner.setEventBus(g.eventBus)
+		connection.mailbox.to.owner.start(g.eventBus)
 	}
 
 	return connection

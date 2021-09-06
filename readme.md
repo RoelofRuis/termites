@@ -104,12 +104,6 @@ By default, a sigterm handler is attached to the graph that fires an event on si
 termites.NewGraph(termites.WithoutSigtermHandler())
 ```
 
-#### Prevent running from being attached
-The runner component takes care of starting all the nodes that get connected in the graph. Passing this option prevents the runner from being attached and the nodes from being started.
-```golang
-termites.NewGraph(termites.WithoutRunner())
-```
-
 ## Module `termites_dbg`
 
 The debug module contains a powerful web debugger that can be hooked into a graph for inspection (and is itself a graph

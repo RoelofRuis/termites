@@ -16,12 +16,10 @@ type Event struct {
 const (
 	Log EventType = "log/log"
 
-	NodeRegistered EventType = "node/registered"
 	NodeRefUpdated EventType = "node/ref-updated"
 
 	MessageSent EventType = "message/sent"
 
-	Run              EventType = "runner/run"
 	Kill             EventType = "teardown/kill"
 	RegisterTeardown EventType = "teardown/register"
 	Exit             EventType = "teardown/exit"

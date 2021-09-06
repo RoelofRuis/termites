@@ -53,29 +53,6 @@ func (n *node) LogError(msg string, err error) {
 	n.sendEvent(LogErrorEvent(msg, err))
 }
 
-func (n *node) setEventBus(bus EventBus) {
-	n.nodeLock.Lock()
-	if n.bus == nil {
-		n.bus = bus
-		n.bus.Send(Event{
-			Type: NodeRegistered,
-			Data: NodeRegisteredEvent{
-				node: n,
-			},
-		})
-		if n.shutdown != nil {
-			n.bus.Send(Event{
-				Type: RegisterTeardown,
-				Data: RegisterTeardownEvent{
-					Name: fmt.Sprintf("node-%s", Identifier(n.id).String()),
-					F: n.shutdown,
-				},
-			})
-		}
-	}
-	n.nodeLock.Unlock()
-}
-
 func (n *node) setStatus(s NodeStatus) {
 	if n.status == s {
 		return
@@ -146,23 +123,43 @@ func (n *node) ref() NodeRef {
 	}
 }
 
-func (n *node) start() {
-	n.setRunningStatus(NodeRunning)
-	defer func() {
-		if err := recover(); err != nil {
-			n.bus.Send(LogErrorEvent(fmt.Sprintf("Node [%s] crashed: %v", n.name, err), nil))
-			debug.PrintStack()
-			n.SetError()
-			n.setRunningStatus(NodeTerminated)
-		}
-	}()
-
-	err := n.run(n)
-	if err != nil {
-		n.bus.Send(LogErrorEvent(fmt.Sprintf("Node [%s] exited with error", n.name), err))
-		n.SetError()
-		n.setRunningStatus(NodeTerminated)
+func (n *node) start(bus EventBus) {
+	n.nodeLock.Lock()
+	if n.bus != nil {
+		n.nodeLock.Unlock()
 		return
 	}
-	n.setRunningStatus(NodeTerminated)
+	n.bus = bus
+	n.nodeLock.Unlock()
+
+	if n.shutdown != nil {
+		n.bus.Send(Event{
+			Type: RegisterTeardown,
+			Data: RegisterTeardownEvent{
+				Name: Identifier(n.id).String(),
+				F:    n.shutdown,
+			},
+		})
+	}
+
+	go func() {
+		n.setRunningStatus(NodeRunning)
+		defer func() {
+			if err := recover(); err != nil {
+				n.bus.Send(LogErrorEvent(fmt.Sprintf("Node [%s] crashed: %v", n.name, err), nil))
+				debug.PrintStack()
+				n.SetError()
+				n.setRunningStatus(NodeTerminated)
+			}
+		}()
+
+		err := n.run(n)
+		if err != nil {
+			n.bus.Send(LogErrorEvent(fmt.Sprintf("Node [%s] exited with error", n.name), err))
+			n.SetError()
+			n.setRunningStatus(NodeTerminated)
+			return
+		}
+		n.setRunningStatus(NodeTerminated)
+	}()
 }
