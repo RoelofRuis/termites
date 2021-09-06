@@ -6,8 +6,8 @@ import (
 )
 
 type Graph interface {
-	Connect(out *OutPort, opts ...ConnectionOption)
-	ConnectTo(out *OutPort, in *InPort, opts ...ConnectionOption)
+	Connect(out *OutPort, opts ...ConnectionOption) *Connection
+	ConnectTo(out *OutPort, in *InPort, opts ...ConnectionOption) *Connection
 	Wait()
 	Close()
 }
@@ -90,18 +90,20 @@ func (g *graphImpl) Close() {
 	g.eventBus.Send(Event{Type: Kill})
 }
 
-func (g *graphImpl) ConnectTo(out *OutPort, in *InPort, opts ...ConnectionOption) {
-	g.Connect(out, append(opts, To(in))...)
+func (g *graphImpl) ConnectTo(out *OutPort, in *InPort, opts ...ConnectionOption) *Connection {
+	return g.Connect(out, append(opts, To(in))...)
 }
 
-func (g *graphImpl) Connect(out *OutPort, opts ...ConnectionOption) {
+func (g *graphImpl) Connect(out *OutPort, opts ...ConnectionOption) *Connection {
 	connection, err := newConnection(out, opts...)
 	if err != nil {
 		panic(fmt.Errorf("node connection error: %w", err))
 	}
 
-	out.owner.setBus(g.eventBus)
+	out.owner.setEventSender(g.eventBus)
 	if connection.mailbox != nil && connection.mailbox.to != nil {
-		connection.mailbox.to.owner.setBus(g.eventBus)
+		connection.mailbox.to.owner.setEventSender(g.eventBus)
 	}
+
+	return connection
 }

@@ -133,14 +133,14 @@ func TestConnections(t *testing.T) {
 	}
 }
 
-func TestAddConnection(t *testing.T) {
+func TestDynamicConnections(t *testing.T) {
 	graph := NewGraph()
 
 	nodeA := NewInspectableIntNode("Component A")
 	nodeB1 := NewInspectableIntNode("Component B1")
 	nodeB2 := NewInspectableIntNode("Component B2")
 
-	graph.ConnectTo(nodeA.Out, nodeB1.In)
+	connB1 := graph.ConnectTo(nodeA.Out, nodeB1.In)
 
 	nodeA.Send <- 42
 
@@ -153,12 +153,23 @@ func TestAddConnection(t *testing.T) {
 
 	graph.ConnectTo(nodeA.Out, nodeB2.In)
 
-	nodeA.Send <- 42
+	nodeA.Send <- 43
 
 	vB1 = <-nodeB1.Receive
 	vB2 := <-nodeB2.Receive
-	if vB1 == 42 && vB2 == 42 {
+	if vB1 == 43 && vB2 == 43 {
 		t.Log("Nodes received correct message")
+	} else {
+		t.Error("Incorrect message")
+	}
+
+	connB1.Disconnect()
+
+	nodeA.Send <- 44
+
+	vB2 = <-nodeB2.Receive
+	if vB2 == 44 {
+		t.Log("Node B2 received correct message")
 	} else {
 		t.Error("Incorrect message")
 	}

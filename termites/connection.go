@@ -8,25 +8,30 @@ import (
 
 type Connection struct {
 	id      ConnectionId
+	from    *OutPort
 	mailbox *mailbox
 	adapter *Adapter
 }
 
-func (p *Connection) send(data interface{}) (error, interface{}) {
+func (c *Connection) Disconnect() {
+	c.from.disconnect(c)
+}
+
+func (c *Connection) send(data interface{}) (error, interface{}) {
 	connData := data
-	if p.adapter != nil {
+	if c.adapter != nil {
 		var err error
-		connData, err = p.adapter.transform(connData)
+		connData, err = c.adapter.transform(connData)
 		if err != nil {
 			return err, nil
 		}
 	}
 
-	if p.mailbox == nil || connData == nil {
+	if c.mailbox == nil || connData == nil {
 		return nil, connData
 	}
 
-	isDelivered := p.mailbox.deliver(Message{Data: connData})
+	isDelivered := c.mailbox.deliver(Message{Data: connData})
 
 	if !isDelivered {
 		return errors.New("delivery failed"), connData
@@ -35,20 +40,20 @@ func (p *Connection) send(data interface{}) (error, interface{}) {
 	return nil, connData
 }
 
-func (p *Connection) ref() ConnectionRef {
+func (c *Connection) ref() ConnectionRef {
 	var adapterRef *AdapterRef = nil
-	if p.adapter != nil {
-		ref := p.adapter.ref()
+	if c.adapter != nil {
+		ref := c.adapter.ref()
 		adapterRef = &ref
 	}
 	var inRef *InPortRef = nil
-	if p.mailbox != nil {
-		r := p.mailbox.to.ref()
+	if c.mailbox != nil {
+		r := c.mailbox.to.ref()
 		inRef = &r
 	}
 
 	return ConnectionRef{
-		Id:      p.id,
+		Id:      c.id,
 		Adapter: adapterRef,
 		In:      inRef,
 	}
@@ -128,6 +133,7 @@ func newConnection(out *OutPort, opts ...ConnectionOption) (*Connection, error) 
 
 	conn := &Connection{
 		id:      ConnectionId(NewIdentifier("connection")),
+		from:    out,
 		mailbox: mailbox,
 		adapter: config.adapter,
 	}

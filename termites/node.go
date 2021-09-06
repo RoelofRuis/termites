@@ -28,7 +28,7 @@ type node struct {
 	shutdown func(timeout time.Duration) error
 
 	nodeLock sync.Locker
-	bus      EventBus
+	bus      EventSender
 }
 
 func (n *node) SetSuspended() {
@@ -51,7 +51,7 @@ func (n *node) LogError(msg string, err error) {
 	n.sendEvent(LogErrorEvent(msg, err))
 }
 
-func (n *node) setBus(bus EventBus) {
+func (n *node) setEventSender(bus EventSender) {
 	n.nodeLock.Lock()
 	if n.bus == nil {
 		n.bus = bus
