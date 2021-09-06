@@ -3,16 +3,13 @@ package main
 import (
 	"fmt"
 	"github.com/RoelofRuis/termites/termites"
-	"github.com/RoelofRuis/termites/termites_dbg"
 	"time"
 )
 
 // TODO: measure resource usage/memory leaks from this example
 
 func main() {
-	graph := termites.NewGraph(
-		termites_dbg.WithDebugger(4242),
-	)
+	graph := termites.NewGraph()
 
 	generator := NewGenerator()
 	printer := NewPrinter()

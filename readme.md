@@ -3,13 +3,15 @@
 Termites is a reactive/dataflow framework. It aims for easy separable and inspectable components by sending messages
 between them.
 
+The examples folder contains small example implementations.
+
 ## Module `termites`
 
 The core module contains code for creating processing graphs.
 
 This is done by defining `Nodes`, that contain the behaviour of your program. Then a `Graph` is used to tie everything together and start the processing.
 
-### Example
+### Usage
 
 Create a node using the `builder`
 
@@ -112,6 +114,8 @@ termites.NewGraph(termites.WithoutRunner())
 
 The debug module contains a powerful web debugger that can be hooked into a graph for inspection (and is itself a graph
 as well..!)
+
+### Usage
 
 Initialize it by passing it as an option on graph creation.
 
