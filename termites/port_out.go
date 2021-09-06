@@ -38,8 +38,7 @@ func (p *OutPort) Send(data interface{}) {
 	for _, conn := range p.connections {
 		wg.Add(1)
 		go func(conn *Connection) {
-			err, _ := conn.send(data)
-			p.sendMessageEvent(conn, err)
+			conn.send(data)
 			wg.Done()
 		}(conn)
 	}
@@ -71,28 +70,4 @@ func (p *OutPort) ref() OutPortRef {
 		Name:        p.name,
 		Connections: connections,
 	}
-}
-
-func (p *OutPort) sendMessageEvent(conn *Connection, err error) {
-	toName := ""
-	toPortName := ""
-	if conn.mailbox != nil {
-		toName = conn.mailbox.to.owner.name
-		toPortName = conn.mailbox.to.name
-	}
-	adapterName := ""
-	if conn.adapter != nil {
-		adapterName = conn.adapter.name
-	}
-	p.owner.sendEvent(Event{
-		Type: MessageSent,
-		Data: MessageSentEvent{
-			FromName:     p.owner.name,
-			FromPortName: p.name,
-			ToName:       toName,
-			ToPortName:   toPortName,
-			AdapterName:  adapterName,
-			Error:        err,
-		},
-	})
 }

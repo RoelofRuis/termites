@@ -17,27 +17,51 @@ func (c *Connection) Disconnect() {
 	c.from.disconnect(c)
 }
 
-func (c *Connection) send(data interface{}) (error, interface{}) {
+func (c *Connection) send(data interface{}) {
 	connData := data
 	if c.adapter != nil {
 		var err error
 		connData, err = c.adapter.transform(connData)
 		if err != nil {
-			return err, nil
+			c.notifySent(err)
 		}
 	}
 
 	if c.mailbox == nil || connData == nil {
-		return nil, connData
+		return
 	}
 
 	isDelivered := c.mailbox.deliver(Message{Data: connData})
 
 	if !isDelivered {
-		return errors.New("delivery failed"), connData
+		c.notifySent(errors.New("delivery failed"))
 	}
 
-	return nil, connData
+	c.notifySent(nil)
+}
+
+func (c *Connection) notifySent(err error) {
+	toName := ""
+	toPortName := ""
+	if c.mailbox != nil {
+		toName = c.mailbox.to.owner.name
+		toPortName = c.mailbox.to.name
+	}
+	adapterName := ""
+	if c.adapter != nil {
+		adapterName = c.adapter.name
+	}
+	c.from.owner.sendEvent(Event{
+		Type: MessageSent,
+		Data: MessageSentEvent{
+			FromName:     c.from.owner.name,
+			FromPortName: c.from.name,
+			ToName:       toName,
+			ToPortName:   toPortName,
+			AdapterName:  adapterName,
+			Error:        err,
+		},
+	})
 }
 
 func (c *Connection) ref() ConnectionRef {

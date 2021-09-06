@@ -34,11 +34,17 @@ func (l *ConsoleLogger) OnMessageSent(e Event) error {
 		return InvalidEventError
 	}
 
-	log.Printf("MESSAGE: %s", formatMessage(ev))
+	connection := formatConnection(ev)
+
+	if ev.Error != nil {
+		log.Printf("MESSAGE (ERROR) %s: %s", connection, ev.Error)
+	}
+
+	log.Printf("MESSAGE %s", connection)
 	return nil
 }
 
-func formatMessage(ref MessageSentEvent) string {
+func formatConnection(ref MessageSentEvent) string {
 	adapterString := ""
 	if ref.AdapterName != "" {
 		adapterString = fmt.Sprintf("(%s) -> ", ref.AdapterName)
