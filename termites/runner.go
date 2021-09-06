@@ -8,25 +8,24 @@ import (
 )
 
 type runner struct {
-	shutdownFuncs   []func(timeout time.Duration) error
-	shutdownTimeout time.Duration
-	bus             EventBus
+	shutdownRegistry *shutdownRegistry
+	bus              EventBus
 }
 
 func newRunner() *runner {
 	return &runner{
-		shutdownFuncs:   nil,
-		shutdownTimeout: time.Second * 10,
-		bus:             nil,
+		shutdownRegistry: newShutdownRegistry(10 * time.Second),
+		bus:              nil,
 	}
 }
 
 func (r *runner) SetEventBus(b EventBus) {
+	r.shutdownRegistry.bus = b
 	r.bus = b
 	r.bus.Subscribe(NodeRegistered, r.OnNodeRegistered)
 	r.bus.Send(Event{
 		Type: RegisterTeardown,
-		Data: RegisterTeardownEvent{Name: "runner", F: r.Teardown},
+		Data: RegisterTeardownEvent{Name: "runner", F: r.shutdownRegistry.shutdownAll},
 	})
 }
 
@@ -36,9 +35,7 @@ func (r *runner) OnNodeRegistered(e Event) error {
 		return InvalidEventError
 	}
 
-	if n.node.shutdown != nil {
-		r.shutdownFuncs = append(r.shutdownFuncs, n.node.shutdown)
-	}
+	r.shutdownRegistry.register(n.node)
 
 	go run(r.bus, n.node)
 
@@ -66,8 +63,33 @@ func run(bus EventBus, node *node) {
 	node.setRunningStatus(NodeTerminated)
 }
 
-func (r *runner) Teardown() {
+type shutdownRegistry struct {
+	lock            sync.Locker
+	shutdownFuncs   []func(timeout time.Duration) error
+	shutdownTimeout time.Duration
+	bus             EventBus
+}
+
+func newShutdownRegistry(shutdownTimeout time.Duration) *shutdownRegistry {
+	return &shutdownRegistry{
+		lock:            &sync.Mutex{},
+		shutdownFuncs:   nil,
+		shutdownTimeout: shutdownTimeout,
+		bus:             nil,
+	}
+}
+
+func (r *shutdownRegistry) register(n *node) {
+	if n.shutdown != nil {
+		r.lock.Lock()
+		r.shutdownFuncs = append(r.shutdownFuncs, n.shutdown)
+		r.lock.Unlock()
+	}
+}
+
+func (r *shutdownRegistry) shutdownAll() {
 	wg := sync.WaitGroup{}
+	r.lock.Lock()
 	wg.Add(len(r.shutdownFuncs))
 
 	for _, shutdown := range r.shutdownFuncs {
@@ -79,6 +101,7 @@ func (r *runner) Teardown() {
 			wg.Done()
 		}(shutdown)
 	}
+	r.lock.Unlock()
 
 	await := make(chan bool)
 	go func() {

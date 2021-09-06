@@ -70,7 +70,9 @@ func (n *node) setStatus(s NodeStatus) {
 		return
 	}
 
+	n.nodeLock.Lock()
 	n.status = s
+	n.nodeLock.Unlock()
 	n.sendRef()
 }
 
@@ -79,7 +81,9 @@ func (n *node) setRunningStatus(s NodeRunningStatus) {
 		return
 	}
 
+	n.nodeLock.Lock()
 	n.runningStatus = s
+	n.nodeLock.Unlock()
 	n.sendRef()
 }
 

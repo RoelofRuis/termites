@@ -27,12 +27,14 @@ func newOutPort(name string, dataType string, owner *node) *OutPort {
 }
 
 func (p *OutPort) Send(data interface{}) {
+	p.connectionLock.RLock()
+	defer p.connectionLock.RUnlock()
+
 	if len(p.connections) == 0 {
 		return
 	}
 
 	wg := sync.WaitGroup{}
-	p.connectionLock.RLock()
 	for _, conn := range p.connections {
 		wg.Add(1)
 		go func(conn *Connection) {
@@ -42,7 +44,6 @@ func (p *OutPort) Send(data interface{}) {
 		}(conn)
 	}
 	wg.Wait()
-	p.connectionLock.RUnlock()
 }
 
 func (p *OutPort) connect(conn *Connection) {
