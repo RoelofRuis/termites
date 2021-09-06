@@ -59,18 +59,18 @@ func newGraphImpl(opts ...GraphOptions) *graphImpl {
 	}
 
 	bus.Subscribe(Exit, g.onExit)
-	g.Subscribe(NewTeardownHandler(config.withSigtermHandler))
+	NewTeardownHandler(config.withSigtermHandler).SetEventBus(bus)
 
 	if config.addConsoleLogger {
-		g.Subscribe(NewConsoleLogger())
+		NewConsoleLogger().SetEventBus(bus)
 	}
 
 	if config.addRunner {
-		g.Subscribe(newRunner(true))
+		newRunner().SetEventBus(bus)
 	}
 
 	for _, subscriber := range config.subscribers {
-		g.Subscribe(subscriber)
+		subscriber.SetEventBus(bus)
 	}
 
 	return g
@@ -106,17 +106,4 @@ func (g *graphImpl) Connect(out *OutPort, opts ...ConnectionOption) {
 	if connection.mailbox != nil && connection.mailbox.to != nil {
 		connection.mailbox.to.owner.setBus(g.eventBus)
 	}
-}
-
-func NewSubscribeableGraph(opts ...GraphOptions) SubscribeableGraph {
-	return newGraphImpl(opts...)
-}
-
-type SubscribeableGraph interface {
-	Graph
-	Subscribe(e EventSubscriber)
-}
-
-func (g *graphImpl) Subscribe(sub EventSubscriber) {
-	sub.SetEventBus(g.eventBus)
 }

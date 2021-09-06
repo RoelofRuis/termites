@@ -12,31 +12,32 @@ func WithDebugger(httpPort int) termites.GraphOptions {
 		termites.WithoutSigtermHandler(),
 	)
 
-	return termites.AddEventSubscriber(InitGraph(graph, httpPort))
+	dbg := NewDebugger()
+
+	Init(graph, dbg, httpPort)
+
+	return termites.WithEventSubscriber(dbg)
 }
 
-func InitGraph(graph termites.Graph, httpPort int) *debugger {
-	// Input for Refs
-	nodeRefReceiver := newRefReceiver()
-
+func Init(graph termites.Graph, debugger *debugger, httpPort int) {
 	// Visualizer
 	visualizer := NewVisualizer()
-	graph.ConnectTo(nodeRefReceiver.RefsOut, visualizer.RefsIn, termites.WithMailbox(&termites.DebouncedMailbox{Delay: 100 * time.Millisecond}))
+	graph.ConnectTo(debugger.refReceiver.RefsOut, visualizer.RefsIn, termites.WithMailbox(&termites.DebouncedMailbox{Delay: 100 * time.Millisecond}))
 
 	// Web UI
 	webUI := NewWebController(httpPort)
 	graph.ConnectTo(visualizer.PathOut, webUI.PathIn)
-	graph.ConnectTo(nodeRefReceiver.RefsOut, webUI.RefsIn, termites.WithMailbox(&termites.DebouncedMailbox{Delay: 100 * time.Millisecond}))
-
-	return &debugger{
-		refReceiver: nodeRefReceiver,
-		graph:       graph,
-	}
+	graph.ConnectTo(debugger.refReceiver.RefsOut, webUI.RefsIn, termites.WithMailbox(&termites.DebouncedMailbox{Delay: 100 * time.Millisecond}))
 }
 
 type debugger struct {
 	refReceiver *refReceiver
-	graph       termites.Graph
+}
+
+func NewDebugger() *debugger {
+	return &debugger{
+		refReceiver: newRefReceiver(),
+	}
 }
 
 func (d *debugger) SetEventBus(b termites.EventBus) {

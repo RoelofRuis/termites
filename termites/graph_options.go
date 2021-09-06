@@ -13,7 +13,7 @@ func WithConsoleLogger() GraphOptions {
 }
 
 func CloseOnTeardown(resourceName string, c io.Closer) GraphOptions {
-	return AddEventSubscriber(closeOnTeardown{name: resourceName, closer: c})
+	return WithEventSubscriber(closeOnTeardown{name: resourceName, closer: c})
 }
 
 func Named(name string) GraphOptions {
@@ -34,7 +34,7 @@ func WithoutRunner() GraphOptions {
 	}
 }
 
-func AddEventSubscriber(sub EventSubscriber) GraphOptions {
+func WithEventSubscriber(sub EventSubscriber) GraphOptions {
 	return func(conf *graphConfig) {
 		conf.subscribers = append(conf.subscribers, sub)
 	}

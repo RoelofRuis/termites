@@ -88,7 +88,7 @@ termites.NewGraph(termites.CloseOnShutdown("resource name", closeable))
 #### Add a custom event subscriber
 ```golang
 sub termites.EventSubscriber := YourSubscriber()
-termites.NewGraph(termites.AddEventSubscriber(sub))
+termites.NewGraph(termites.WithEventSubscriber(sub))
 ```
 
 #### Name the graph
