@@ -1,11 +1,16 @@
 package termites
 
+import "sync"
+
 type InPort struct {
 	id       InPortId
 	name     string
 	dataType string
 	owner    *node
 	receive  chan Message
+
+	connectionLock *sync.RWMutex
+	connections    map[ConnectionId]*Connection
 }
 
 // Create via the termites.Builder
@@ -16,7 +21,22 @@ func newInPort(name string, dataType string, owner *node) *InPort {
 		dataType: dataType,
 		owner:    owner,
 		receive:  make(chan Message),
+
+		connectionLock: &sync.RWMutex{},
+		connections:    make(map[ConnectionId]*Connection),
 	}
+}
+
+func (p *InPort) connect(conn *Connection) {
+	p.connectionLock.Lock()
+	p.connections[conn.id] = conn
+	p.connectionLock.Unlock()
+}
+
+func (p *InPort) disconnect(conn *Connection) {
+	p.connectionLock.Lock()
+	delete(p.connections, conn.id)
+	p.connectionLock.Unlock()
 }
 
 func (p *InPort) Receive() <-chan Message {

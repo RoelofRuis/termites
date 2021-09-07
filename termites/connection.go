@@ -162,6 +162,10 @@ func newConnection(out *OutPort, opts ...ConnectionOption) (*Connection, error) 
 		adapter: config.adapter,
 	}
 
+	if mailbox != nil {
+		mailbox.to.connect(conn)
+	}
+
 	out.connect(conn)
 
 	return conn, nil
