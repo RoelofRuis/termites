@@ -99,7 +99,7 @@ termites.NewGraph(termites.Named("graph-name"))
 ```
 
 #### Prevent sigterm handler from being attached
-By default, a sigterm handler is attached to the graph that fires an event on sigterm. Passing this option prevents this detection.
+By default, a sigterm handler is attached to the graph that fires an event on sigterm. Passing this option prevents this event from being fired.
 ```golang
 termites.NewGraph(termites.WithoutSigtermHandler())
 ```
