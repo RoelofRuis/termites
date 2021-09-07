@@ -12,8 +12,9 @@ type Builder struct {
 func NewBuilder(name string) Builder {
 	return Builder{
 		node: &node{
-			id:   NodeId(NewIdentifier("node")),
-			name: name,
+			id:         NewIdentifier("node"),
+			name:       name,
+			refVersion: 0,
 
 			status:        NodeActive,
 			runningStatus: NodePreStarted,

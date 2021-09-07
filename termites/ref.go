@@ -1,9 +1,9 @@
 package termites
 
-type NodeId Identifier
-type InPortId Identifier
-type OutPortId Identifier
-type ConnectionId Identifier
+type NodeId = Identifier
+type InPortId = Identifier
+type OutPortId = Identifier
+type ConnectionId = Identifier
 
 type NodeStatus uint8
 
@@ -23,6 +23,7 @@ const (
 
 type NodeRef struct {
 	Id            NodeId
+	Version       uint
 	Name          string
 	Status        NodeStatus
 	RunningStatus NodeRunningStatus

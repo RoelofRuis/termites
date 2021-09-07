@@ -17,7 +17,7 @@ type OutPort struct {
 // Create via the termites.Builder
 func newOutPort(name string, dataType string, owner *node) *OutPort {
 	return &OutPort{
-		id:             OutPortId(NewIdentifier("out-port")),
+		id:             NewIdentifier("out-port"),
 		name:           name,
 		dataType:       dataType,
 		owner:          owner,

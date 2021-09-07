@@ -17,8 +17,9 @@ type NodeControl interface {
 
 // create via the termites.Builder
 type node struct {
-	name string
-	id   NodeId
+	name       string
+	id         NodeId
+	refVersion uint
 
 	status        NodeStatus
 	runningStatus NodeRunningStatus
@@ -112,8 +113,11 @@ func (n *node) ref() NodeRef {
 		outPortRefs[out.id] = out.ref()
 	}
 
+	n.refVersion += 1
+
 	return NodeRef{
 		Id:            n.id,
+		Version:       n.refVersion,
 		Name:          n.name,
 		Status:        n.status,
 		RunningStatus: n.runningStatus,
@@ -137,7 +141,7 @@ func (n *node) start(bus EventBus) {
 		n.bus.Send(Event{
 			Type: RegisterTeardown,
 			Data: RegisterTeardownEvent{
-				Name: Identifier(n.id).String(),
+				Name: n.id.String(),
 				F:    n.shutdown,
 			},
 		})

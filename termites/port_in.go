@@ -11,7 +11,7 @@ type InPort struct {
 // Create via the termites.Builder
 func newInPort(name string, dataType string, owner *node) *InPort {
 	return &InPort{
-		id:       InPortId(NewIdentifier("in-port")),
+		id:       NewIdentifier("in-port"),
 		name:     name,
 		dataType: dataType,
 		owner:    owner,

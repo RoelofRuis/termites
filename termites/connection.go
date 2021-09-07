@@ -156,7 +156,7 @@ func newConnection(out *OutPort, opts ...ConnectionOption) (*Connection, error) 
 	}
 
 	conn := &Connection{
-		id:      ConnectionId(NewIdentifier("connection")),
+		id:      NewIdentifier("connection"),
 		from:    out,
 		mailbox: mailbox,
 		adapter: config.adapter,

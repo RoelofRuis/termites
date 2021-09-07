@@ -1,6 +1,8 @@
 package termites_dbg
 
-import "github.com/RoelofRuis/termites/termites"
+import (
+	"github.com/RoelofRuis/termites/termites"
+)
 
 type refReceiver struct {
 	refChan        chan termites.NodeRef
@@ -24,6 +26,10 @@ func newRefReceiver() *refReceiver {
 
 func (r *refReceiver) run(_ termites.NodeControl) error {
 	for ref := range r.refChan {
+		current, has := r.registeredRefs[ref.Id]
+		if has && ref.Version < current.Version {
+			continue
+		}
 		r.registeredRefs[ref.Id] = ref
 
 		refsToSend := make(map[termites.NodeId]termites.NodeRef, len(r.registeredRefs))
