@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"runtime/debug"
 	"sync"
-	"time"
 )
 
 type NodeControl interface {
@@ -27,8 +26,8 @@ type node struct {
 	inPorts  []*InPort
 	outPorts []*OutPort
 
-	run      func(nodeController NodeControl) error
-	shutdown func(timeout time.Duration) error
+	run      func(nodeControl NodeControl) error
+	shutdown func(teardownControl TeardownControl) error
 
 	nodeLock sync.Locker
 	bus      EventSender

@@ -2,12 +2,9 @@ package termites_dbg
 
 import (
 	"fmt"
-	"io/ioutil"
-	"log"
-	"os"
-	"time"
-
 	"github.com/RoelofRuis/termites/termites"
+	"io/ioutil"
+	"os"
 )
 
 type Visualizer struct {
@@ -62,9 +59,9 @@ func (v *Visualizer) Run(_ termites.NodeControl) error {
 	return nil
 }
 
-func (v *Visualizer) Shutdown(_ time.Duration) error {
+func (v *Visualizer) Shutdown(control termites.TeardownControl) error {
 	if v.writer != nil {
-		log.Printf("Cleaning up [%s]\n", v.writer.rootDir)
+		control.LogInfo(fmt.Sprintf("Cleaning up [%s]\n", v.writer.rootDir))
 		return os.RemoveAll(v.writer.rootDir)
 	}
 	return nil

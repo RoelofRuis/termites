@@ -9,9 +9,32 @@ import (
 	"time"
 )
 
+type TeardownControl interface {
+	GetTimeout() time.Duration
+	LogInfo(msg string)
+	LogError(msg string, err error)
+}
+
+type teardownControl struct {
+	timeout time.Duration
+	bus     EventBus
+}
+
+func (c *teardownControl) GetTimeout() time.Duration {
+	return c.timeout
+}
+
+func (c *teardownControl) LogInfo(msg string) {
+	c.bus.Send(LogInfoEvent(msg))
+}
+
+func (c *teardownControl) LogError(msg string, err error) {
+	c.bus.Send(LogErrorEvent(msg, err))
+}
+
 type TeardownHandler struct {
 	lock                 sync.Locker
-	teardownFunctions    map[string]func(timeout time.Duration) error
+	teardownFunctions    map[string]func(control TeardownControl) error
 	teardownTimeout      time.Duration
 	terminateOnOsSignals bool
 	osChan               chan os.Signal
@@ -22,7 +45,7 @@ type TeardownHandler struct {
 func NewTeardownHandler(terminateOnOsSignals bool) *TeardownHandler {
 	return &TeardownHandler{
 		lock:                 &sync.Mutex{},
-		teardownFunctions:    make(map[string]func(timeout time.Duration) error),
+		teardownFunctions:    make(map[string]func(control TeardownControl) error),
 		teardownTimeout:      10 * time.Second,
 		terminateOnOsSignals: terminateOnOsSignals,
 		osChan:               make(chan os.Signal),
@@ -68,10 +91,14 @@ func (h *TeardownHandler) awaitTeardown() {
 	wg := sync.WaitGroup{}
 	h.lock.Lock()
 	wg.Add(len(h.teardownFunctions))
+	control := &teardownControl{
+		timeout: 10 * time.Second,
+		bus:     h.bus,
+	}
 	for name, f := range h.teardownFunctions {
-		go func(name string, f func(time.Duration) error) {
+		go func(name string, f func(TeardownControl) error) {
 			h.bus.Send(LogInfoEvent(fmt.Sprintf("Running teardown for [%s]...", name)))
-			if err := f(10 * time.Second); err != nil {
+			if err := f(control); err != nil {
 				h.bus.Send(LogErrorEvent(fmt.Sprintf("Teardown returned error"), err))
 			}
 			h.bus.Send(LogInfoEvent(fmt.Sprintf("Teardown for [%s] done", name)))

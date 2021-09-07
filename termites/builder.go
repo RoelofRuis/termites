@@ -2,7 +2,6 @@ package termites
 
 import (
 	"sync"
-	"time"
 )
 
 type Builder struct {
@@ -49,10 +48,10 @@ func (b *Builder) OutPort(name string, exampleMsg interface{}) *OutPort {
 	return out
 }
 
-func (b *Builder) OnRun(f func(nodeController NodeControl) error) {
+func (b *Builder) OnRun(f func(control NodeControl) error) {
 	b.node.run = f
 }
 
-func (b *Builder) OnShutdown(f func(timeout time.Duration) error) {
+func (b *Builder) OnShutdown(f func(control TeardownControl) error) {
 	b.node.shutdown = f
 }

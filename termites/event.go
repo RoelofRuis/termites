@@ -2,7 +2,6 @@ package termites
 
 import (
 	"fmt"
-	"time"
 )
 
 type EventType string
@@ -43,7 +42,7 @@ func LogErrorEvent(msg string, err error) Event {
 
 type RegisterTeardownEvent struct {
 	Name string
-	F    func(timeout time.Duration) error
+	F    func(control TeardownControl) error
 }
 
 type NodeRegisteredEvent struct {

@@ -2,17 +2,14 @@ package termites_dbg
 
 import (
 	"fmt"
+	"github.com/RoelofRuis/termites/termites"
 	"io"
 	"io/ioutil"
-	"log"
 	"os"
 	"path"
 	"path/filepath"
 	"sort"
 	"strings"
-	"time"
-
-	"github.com/RoelofRuis/termites/termites"
 )
 
 type WebController struct {
@@ -147,7 +144,7 @@ func (d *WebController) Run(_ termites.NodeControl) error {
 	}
 }
 
-func (d *WebController) Shutdown(_ time.Duration) error {
-	log.Printf("Cleaning up [%s]\n", d.ui.StaticDir)
+func (d *WebController) Shutdown(control termites.TeardownControl) error {
+	control.LogInfo(fmt.Sprintf("Cleaning up [%s]\n", d.ui.StaticDir))
 	return os.RemoveAll(d.ui.StaticDir)
 }
