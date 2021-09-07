@@ -50,7 +50,7 @@ func (w *Out) Run(_ termites.NodeControl) error {
 	}
 }
 
-func (w *Out) Shutdown(_ time.Duration) error {
+func (w *Out) Shutdown(_ termites.TeardownControl) error {
 	msg, err := termites_ws.MakeCloseMessage()
 	if err != nil {
 		return err
