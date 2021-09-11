@@ -8,7 +8,6 @@ import (
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
-	"runtime"
 	"time"
 )
 
@@ -31,7 +30,7 @@ func main() {
 		}
 	}()
 
-	_ = termites_web.RunBrowser(runtime.GOOS, "localhost:8000")
+	_ = termites_web.RunBrowser("localhost:8000")
 
 	graph.Wait()
 }

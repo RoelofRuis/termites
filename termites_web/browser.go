@@ -30,7 +30,7 @@ func NewBrowserManager(url string) *BrowserManager {
 
 func (b *BrowserManager) Run(c termites.NodeControl) error {
 	for range b.CommandIn.Receive() {
-		err := RunBrowser(runtime.GOOS, b.url)
+		err := RunBrowser(b.url)
 		if err != nil {
 			c.LogError("Error when opening browser", err)
 		}
@@ -38,19 +38,19 @@ func (b *BrowserManager) Run(c termites.NodeControl) error {
 	return nil
 }
 
-func RunBrowser(os string, url string) (err error) {
+func RunBrowser(url string) (err error) {
 	if !strings.HasPrefix(url, "http") {
 		url = "http://" + url
 	}
 
 	// TODO: error is not properly returned
-	switch os {
+	switch runtime.GOOS {
 	case "linux":
 		err = exec.Command("xdg-open", url).Start()
 	case "windows":
 		err = exec.Command("cmd", "/c", "start", "chrome", url).Start()
 	default:
-		err = fmt.Errorf("unsupported platform [%s]", os)
+		err = fmt.Errorf("unsupported platform [%s]", runtime.GOOS)
 	}
 	return
 }
