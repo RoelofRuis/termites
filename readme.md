@@ -1,19 +1,22 @@
 # Termites
 
-Termites is a reactive/dataflow framework. It aims for easy separable and inspectable components by sending messages
-between them.
+Termites is a reactive/dataflow framework. 
 
-The examples folder contains small example implementations.
+It aims for easy separable and inspectable components, treating each as a separate *node* in a directed *graph*. The nodes communicate by sending messages to each other over *connections* established between their *ports*.
+
+## Examples
+
+See the examples folder for small example implementations.
 
 ## Module `termites`
 
-The core module contains code for creating processing graphs.
+The termites core module contains an API for creating processing graphs.
 
 This is done by defining `Nodes`, that contain the behaviour of your program. Then a `Graph` is used to tie everything together and start the processing.
 
 ### Usage
 
-Create a node using the `builder`
+Create a node using a `builder`
 
 ```go
 package yourpackage
@@ -52,7 +55,7 @@ func (n *YourNode) Run(_ termites.NodeControl) error {
 }
 ```
 
-Tie your components together in a graph:
+Connect your nodes ports in a graph:
 
 ```go
 package main
@@ -74,9 +77,9 @@ func main() {
 
 ### Graph configuration
 
-To customise graph/library behaviour, options can be passed to the graph constructor:
+Several configuration options can be passed to the graph constructor:
 
-#### Add a console logger
+#### Attach a console logger
 ```golang
 termites.NewGraph(termites.WithConsoleLogger())
 ```
@@ -106,8 +109,7 @@ termites.NewGraph(termites.WithoutSigtermHandler())
 
 ## Module `termites_dbg`
 
-The debug module contains a powerful web debugger that can be hooked into a graph for inspection (and is itself a graph
-as well..!)
+The debug module contains a powerful web debugger that can be hooked into a graph to inspect it.
 
 ### Usage
 
