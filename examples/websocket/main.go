@@ -4,7 +4,7 @@ import (
 	"github.com/RoelofRuis/termites/examples"
 	"github.com/RoelofRuis/termites/termites"
 	"github.com/RoelofRuis/termites/termites_dbg"
-	"github.com/RoelofRuis/termites/termites_ws2"
+	"github.com/RoelofRuis/termites/termites_web"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
@@ -15,7 +15,7 @@ func main() {
 	graph := termites.NewGraph(termites.WithConsoleLogger(), termites_dbg.WithDebugger(4242))
 
 	router := mux.NewRouter()
-	connector := termites_ws2.NewConnector(graph)
+	connector := termites_web.NewConnector(graph)
 	connector.Bind(router)
 
 	generator := examples.NewGenerator(100 * time.Millisecond)

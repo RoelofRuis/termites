@@ -1,4 +1,4 @@
-package termites_ws2
+package termites_web
 
 import (
 	"github.com/RoelofRuis/termites/termites"

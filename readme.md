@@ -126,8 +126,8 @@ func main() {
 }
 ```
 
-## Module `termites_ws`
+## Module `termites_web`
 
-The WS module contains a websocket implementation for easy interaction with browser based applications.
+The web module contains components for easy interaction with the web, mainly through it's websocket graph component.
 
 > This module is currently still an unstable work in progress
