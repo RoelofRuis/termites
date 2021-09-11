@@ -26,13 +26,13 @@ var embeddedJS embed.FS
 func NewConnector(graph termites.Graph) *connector {
 	return &connector{
 		graph: graph,
-		Hub:   NewHub(),
+		Hub:   newHub(),
 
 		clientIds: make(map[string]bool),
 	}
 }
 
-func (g *connector) Bind(router mux.Router) {
+func (g *connector) Bind(router *mux.Router) {
 	router.Path("/ws").Methods("GET").HandlerFunc(g.ConnectWebsocket)
 
 	embeddedServer := http.FileServer(http.FS(embeddedJS))

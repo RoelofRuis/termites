@@ -1,6 +1,7 @@
 package termites_ws2
 
 import (
+	"fmt"
 	"github.com/RoelofRuis/termites/termites"
 	"time"
 )
@@ -13,7 +14,7 @@ type Hub struct {
 	ConnectionOut *termites.OutPort
 }
 
-func NewHub() *Hub {
+func newHub() *Hub {
 	builder := termites.NewBuilder("Websocket Hub")
 
 	h := &Hub{
@@ -31,6 +32,7 @@ func NewHub() *Hub {
 }
 
 func (h *Hub) registerClient(client Client) {
+	fmt.Printf(" > jahoor")
 	// register and send on ConnectionOut
 }
 

@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	"github.com/RoelofRuis/termites/examples"
 	"github.com/RoelofRuis/termites/termites"
 	"time"
 )
@@ -11,10 +11,10 @@ import (
 func main() {
 	graph := termites.NewGraph()
 
-	generator := NewGenerator()
-	printer := NewPrinter()
+	generator := examples.NewGenerator(1 * time.Millisecond)
+	printer := examples.NewPrinter()
 
-	go func(){
+	go func() {
 		for {
 			conn := graph.ConnectTo(generator.TextOut, printer.TextIn)
 			time.Sleep(1 * time.Second)
@@ -24,52 +24,4 @@ func main() {
 	}()
 
 	graph.Wait()
-}
-
-type Generator struct {
-	TextOut *termites.OutPort
-}
-
-func NewGenerator() *Generator {
-	builder := termites.NewBuilder("Generator")
-
-	g := &Generator{
-		TextOut: builder.OutPort("Generator", ""),
-	}
-
-	builder.OnRun(g.Run)
-
-	return g
-}
-
-func (g *Generator) Run(_ termites.NodeControl) error {
-	counter := 0
-	for {
-		g.TextOut.Send(fmt.Sprintf("%d", counter))
-		counter++
-		time.Sleep(1 * time.Millisecond)
-	}
-}
-
-type Printer struct {
-	TextIn *termites.InPort
-}
-
-func NewPrinter() *Printer {
-	builder := termites.NewBuilder("Printer")
-
-	p := &Printer{
-		TextIn: builder.InPort("Text", ""),
-	}
-
-	builder.OnRun(p.Run)
-
-	return p
-}
-
-func (p *Printer) Run(_ termites.NodeControl) error {
-	for msg := range p.TextIn.Receive() {
-		fmt.Printf("PRINT: %s\n", msg.Data)
-	}
-	return nil
 }

@@ -24,6 +24,11 @@ func (l *ConsoleLogger) OnLog(e Event) error {
 		return InvalidEventError
 	}
 
+	if ev.Error != nil {
+		log.Printf("ERROR: %s: %s", ev.Message, ev.Error)
+		return nil
+	}
+
 	log.Printf("LOG: %s", ev.Message)
 	return nil
 }
@@ -38,6 +43,7 @@ func (l *ConsoleLogger) OnMessageSent(e Event) error {
 
 	if ev.Error != nil {
 		log.Printf("MESSAGE (ERROR) %s: %s", connection, ev.Error)
+		return nil
 	}
 
 	log.Printf("MESSAGE %s", connection)
