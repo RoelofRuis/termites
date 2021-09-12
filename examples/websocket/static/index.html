@@ -10,8 +10,6 @@
 <script>
     connector.connect();
 
-    console.log("jop");
-
     let root = document.getElementById("root")
     connector.subscribe(function (tpe, data) {
         root.textContent = data;
