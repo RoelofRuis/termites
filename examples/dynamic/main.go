@@ -6,7 +6,6 @@ import (
 	"time"
 )
 
-
 func main() {
 	graph := termites.NewGraph()
 

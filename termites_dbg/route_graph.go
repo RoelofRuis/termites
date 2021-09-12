@@ -120,11 +120,11 @@ func (w *graphWriter) saveRoutingGraph(nodes []termites.NodeRef) string {
 		actorRef[actor.Id] = ref
 
 		g.addNode(visualizerNode{
-			name:          actor.Name,
-			fontcolor:     "black",
-			ref:           ref,
-			in:            nodeInPorts,
-			out:           nodeOutPorts,
+			name:      actor.Name,
+			fontcolor: "black",
+			ref:       ref,
+			in:        nodeInPorts,
+			out:       nodeOutPorts,
 		})
 	}
 

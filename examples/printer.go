@@ -27,4 +27,3 @@ func (p *Printer) Run(_ termites.NodeControl) error {
 	}
 	return nil
 }
-

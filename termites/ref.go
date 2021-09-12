@@ -6,13 +6,13 @@ type OutPortId = Identifier
 type ConnectionId = Identifier
 
 type NodeRef struct {
-	Id            NodeId
-	Version       uint
-	Name          string
-	InPorts       map[InPortId]InPortRef
-	OutPorts      map[OutPortId]OutPortRef
-	RunInfo       *FunctionInfo
-	ShutdownInfo  *FunctionInfo
+	Id           NodeId
+	Version      uint
+	Name         string
+	InPorts      map[InPortId]InPortRef
+	OutPorts     map[OutPortId]OutPortRef
+	RunInfo      *FunctionInfo
+	ShutdownInfo *FunctionInfo
 }
 
 type InPortRef struct {

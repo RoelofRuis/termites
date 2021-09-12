@@ -14,7 +14,7 @@ func TestCombiner(t *testing.T) {
 	}
 
 	combiner.update(JsonPartialData{
-		Key: "key 1",
+		Key:  "key 1",
 		Data: []byte("{\"data\": false}"),
 	})
 
@@ -25,7 +25,7 @@ func TestCombiner(t *testing.T) {
 	}
 
 	combiner.update(JsonPartialData{
-		Key: "key 2",
+		Key:  "key 2",
 		Data: []byte("{\"data\": \"check\"}"),
 	})
 
@@ -36,7 +36,7 @@ func TestCombiner(t *testing.T) {
 	}
 
 	combiner.update(JsonPartialData{
-		Key: "key 1",
+		Key:  "key 1",
 		Data: []byte("{\"data\": true}"),
 	})
 

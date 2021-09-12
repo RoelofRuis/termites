@@ -61,7 +61,7 @@ func (m *eventBus) Subscribe(t EventType, f func(Event) error) {
 func (m *eventBus) Send(e Event) {
 	timer := time.NewTimer(100 * time.Millisecond)
 	select {
-	case <- timer.C:
+	case <-timer.C:
 		log.Printf("ERROR: event bus queue full. Graph meta state might be inconsistent from here on...")
 		log.Printf(" -- SPILLED EVENT --\n%+v\n", e)
 	case m.eventChan <- e:
