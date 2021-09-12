@@ -119,16 +119,9 @@ func (w *graphWriter) saveRoutingGraph(nodes []termites.NodeRef) string {
 		ref := fmt.Sprintf("node_%d", i)
 		actorRef[actor.Id] = ref
 
-		color := "black"
-		if actor.Status == termites.NodeSuspended {
-			color = "blue"
-		} else if actor.Status == termites.NodeError {
-			color = "red"
-		}
-
 		g.addNode(visualizerNode{
 			name:          actor.Name,
-			fontcolor:     color,
+			fontcolor:     "black",
 			ref:           ref,
 			in:            nodeInPorts,
 			out:           nodeOutPorts,

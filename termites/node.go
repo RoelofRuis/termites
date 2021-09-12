@@ -80,7 +80,6 @@ func (n *node) ref() NodeRef {
 		Id:           n.id,
 		Version:      n.refVersion,
 		Name:         n.name,
-		Status:       n.status,
 		InPorts:      inPortRefs,
 		OutPorts:     outPortRefs,
 		RunInfo:      determineFunctionInfo(n.run),
