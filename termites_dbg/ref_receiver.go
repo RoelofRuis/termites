@@ -6,7 +6,9 @@ import (
 
 type refReceiver struct {
 	refChan        chan termites.NodeRef
+	removeChan     chan termites.NodeId
 	registeredRefs map[termites.NodeId]termites.NodeRef
+	removedRefs    map[termites.NodeId]bool
 	RefsOut        *termites.OutPort
 }
 
@@ -15,7 +17,9 @@ func newRefReceiver() *refReceiver {
 
 	n := &refReceiver{
 		refChan:        make(chan termites.NodeRef),
+		removeChan:     make(chan termites.NodeId),
 		registeredRefs: make(map[termites.NodeId]termites.NodeRef),
+		removedRefs:    make(map[termites.NodeId]bool),
 		RefsOut:        builder.OutPort("Refs", map[termites.NodeId]termites.NodeRef{}),
 	}
 
@@ -25,20 +29,34 @@ func newRefReceiver() *refReceiver {
 }
 
 func (r *refReceiver) run(_ termites.NodeControl) error {
-	for ref := range r.refChan {
-		current, has := r.registeredRefs[ref.Id]
-		if has && ref.Version < current.Version {
-			continue
-		}
-		r.registeredRefs[ref.Id] = ref
+	for {
+		select {
+		case ref := <-r.refChan:
+			current, has := r.registeredRefs[ref.Id]
+			if has && ref.Version < current.Version {
+				continue
+			}
+			if _, has = r.removedRefs[ref.Id]; has {
+				continue
+			}
 
-		refsToSend := make(map[termites.NodeId]termites.NodeRef, len(r.registeredRefs))
-		for id, r := range r.registeredRefs {
-			refsToSend[id] = r
-		}
+			r.registeredRefs[ref.Id] = ref
 
-		r.RefsOut.Send(refsToSend)
+			r.sendAll()
+
+		case id := <-r.removeChan:
+			r.removedRefs[id] = true
+			delete(r.registeredRefs, id)
+			r.sendAll()
+		}
+	}
+}
+
+func (r *refReceiver) sendAll() {
+	refsToSend := make(map[termites.NodeId]termites.NodeRef, len(r.registeredRefs))
+	for id, r := range r.registeredRefs {
+		refsToSend[id] = r
 	}
 
-	return nil
+	r.RefsOut.Send(refsToSend)
 }
