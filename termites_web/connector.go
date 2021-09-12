@@ -17,7 +17,9 @@ type connector struct {
 	graph termites.Graph
 	Hub   *Hub
 
-	clientIds map[string]bool
+	clientIds         map[string]bool
+	websocketEndpoint string
+	embeddedEndpoint  string
 }
 
 //go:embed connect.js
@@ -28,15 +30,15 @@ func NewConnector(graph termites.Graph) *connector {
 		graph: graph,
 		Hub:   newHub(),
 
-		clientIds: make(map[string]bool),
+		clientIds:         make(map[string]bool),
 	}
 }
 
 func (c *connector) Bind(router *mux.Router) {
-	router.Path("/ws").Methods("GET").HandlerFunc(c.ConnectWebsocket)
+	router.Path(c.websocketEndpoint).Methods("GET").HandlerFunc(c.ConnectWebsocket)
 
 	embeddedServer := http.FileServer(http.FS(embeddedJS))
-	router.PathPrefix("/embedded/").Methods("GET").Handler(http.StripPrefix("/embedded/", embeddedServer))
+	router.PathPrefix(c.embeddedEndpoint).Methods("GET").Handler(http.StripPrefix(c.embeddedEndpoint, embeddedServer))
 }
 
 type Client struct {
