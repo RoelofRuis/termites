@@ -17,8 +17,6 @@ type node struct {
 	id         NodeId
 	refVersion uint
 
-	status NodeStatus
-
 	inPorts  []*InPort
 	outPorts []*OutPort
 
