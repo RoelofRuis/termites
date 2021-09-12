@@ -15,7 +15,6 @@ func main() {
 
 	go func() {
 		for {
-			// TODO: keeps creating (connection) resources, do they leak?
 			conn := graph.ConnectTo(generator.TextOut, printer.TextIn)
 			time.Sleep(1 * time.Second)
 			conn.Disconnect()

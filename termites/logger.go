@@ -5,8 +5,6 @@ import (
 	"log"
 )
 
-// TODO: properly format messages
-
 type ConsoleLogger struct{}
 
 func NewConsoleLogger() *ConsoleLogger {

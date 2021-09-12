@@ -5,6 +5,7 @@ import (
 	"github.com/RoelofRuis/termites/termites"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
+	"log"
 	"net/http"
 )
 
@@ -17,7 +18,7 @@ type connector struct {
 	graph termites.Graph
 	Hub   *Hub
 
-	clientIds         map[string]bool
+	clientIds map[string]bool
 }
 
 //go:embed connect.js
@@ -28,7 +29,7 @@ func NewConnector(graph termites.Graph) *connector {
 		graph: graph,
 		Hub:   newHub(),
 
-		clientIds:         make(map[string]bool),
+		clientIds: make(map[string]bool),
 	}
 }
 
@@ -50,7 +51,8 @@ type Client struct {
 func (c *connector) ConnectWebsocket(w http.ResponseWriter, r *http.Request) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		// error upgrading connection TODO: handle error
+		log.Printf("unable to upgrade the connection: %s", err.Error())
+		http.Error(w, "Unable to upgrade connection", http.StatusInternalServerError)
 		return
 	}
 
