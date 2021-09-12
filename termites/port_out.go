@@ -56,6 +56,7 @@ func (p *OutPort) disconnect(conn *Connection) {
 	p.connectionLock.Lock()
 	delete(p.connections, conn.id)
 	p.connectionLock.Unlock()
+	p.owner.sendRef()
 }
 
 func (p *OutPort) ref() OutPortRef {
