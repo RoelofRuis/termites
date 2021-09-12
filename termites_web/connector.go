@@ -32,8 +32,8 @@ func NewConnector(graph termites.Graph) *connector {
 	}
 }
 
-func (g *connector) Bind(router *mux.Router) {
-	router.Path("/ws").Methods("GET").HandlerFunc(g.ConnectWebsocket)
+func (c *connector) Bind(router *mux.Router) {
+	router.Path("/ws").Methods("GET").HandlerFunc(c.ConnectWebsocket)
 
 	embeddedServer := http.FileServer(http.FS(embeddedJS))
 	router.PathPrefix("/embedded/").Methods("GET").Handler(http.StripPrefix("/embedded/", embeddedServer))
@@ -47,7 +47,7 @@ type Client struct {
 	outConn      *termites.Connection
 }
 
-func (g *connector) ConnectWebsocket(w http.ResponseWriter, r *http.Request) {
+func (c *connector) ConnectWebsocket(w http.ResponseWriter, r *http.Request) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		// error upgrading connection TODO: handle error
@@ -62,21 +62,10 @@ func (g *connector) ConnectWebsocket(w http.ResponseWriter, r *http.Request) {
 	proposedId := id
 
 	clientId := termites.RandomID()
-	if c, has := g.clientIds[proposedId]; has && !c {
+	if c, has := c.clientIds[proposedId]; has && !c {
 		clientId = proposedId
 	}
 
-	websocketIn := newWebSocketIn(clientId, conn)
-	websocketOut := newWebSocketOut(clientId, conn)
-
-	outConn := g.graph.ConnectTo(g.Hub.OutToWeb, websocketOut.DataIn)
-	inConn := g.graph.ConnectTo(websocketIn.DataOut, g.Hub.InFromWeb)
-
-	g.Hub.registerClient(Client{
-		id:           clientId,
-		websocketIn:  websocketIn,
-		websocketOut: websocketOut,
-		inConn:       inConn,
-		outConn:      outConn,
-	})
+	connectWebsocketIn(clientId, conn, c)
+	connectWebSocketOut(clientId, conn, c)
 }

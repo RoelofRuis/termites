@@ -1,6 +1,7 @@
 package termites_web
 
 import (
+	"fmt"
 	"github.com/RoelofRuis/termites/termites"
 	"github.com/gorilla/websocket"
 	"time"
@@ -9,13 +10,14 @@ import (
 type webSocketOut struct {
 	DataIn *termites.InPort
 
-	id            string
-	conn          *websocket.Conn
-	pingInterval  time.Duration
-	writeDeadline time.Duration
+	id              string
+	conn            *websocket.Conn
+	pingInterval    time.Duration
+	writeDeadline   time.Duration
+	graphConnection *termites.Connection
 }
 
-func newWebSocketOut(id string, conn *websocket.Conn) *webSocketOut {
+func connectWebSocketOut(id string, conn *websocket.Conn, connector *connector) {
 	builder := termites.NewBuilder("websocket OUT")
 
 	ws := &webSocketOut{
@@ -29,7 +31,8 @@ func newWebSocketOut(id string, conn *websocket.Conn) *webSocketOut {
 
 	builder.OnRun(ws.Run)
 
-	return ws
+	outConn := connector.graph.ConnectTo(connector.Hub.OutToWeb, ws.DataIn)
+	ws.graphConnection = outConn
 }
 
 func (w *webSocketOut) Run(c termites.NodeControl) error {
@@ -37,6 +40,7 @@ func (w *webSocketOut) Run(c termites.NodeControl) error {
 	defer func() {
 		ticker.Stop()
 		_ = w.conn.Close()
+		w.graphConnection.Disconnect()
 	}()
 
 	for {
@@ -53,19 +57,19 @@ func (w *webSocketOut) Run(c termites.NodeControl) error {
 
 			w, err := w.conn.NextWriter(websocket.TextMessage)
 			if err != nil {
-				return err
+				return nil
 			}
 			if _, err = w.Write(bytes); err != nil {
-				return err
+				return fmt.Errorf("write failed: %w", err)
 			}
-			if err := w.Close(); err != nil {
-				return err
+			if err = w.Close(); err != nil {
+				return fmt.Errorf("unable to close writer: %w", err)
 			}
 
 		case <-ticker.C:
 			_ = w.conn.SetWriteDeadline(time.Now().Add(w.writeDeadline))
 			if err := w.conn.WriteMessage(websocket.PingMessage, nil); err != nil {
-				return err
+				return fmt.Errorf("unable to send ping message: %w", err)
 			}
 		}
 	}

@@ -9,12 +9,13 @@ import (
 type webSocketIn struct {
 	DataOut *termites.OutPort
 
-	id           string
-	conn         *websocket.Conn
-	readDeadline time.Duration
+	id              string
+	conn            *websocket.Conn
+	readDeadline    time.Duration
+	graphConnection *termites.Connection
 }
 
-func newWebSocketIn(id string, conn *websocket.Conn) *webSocketIn {
+func connectWebsocketIn(id string, conn *websocket.Conn, connector *connector) {
 	builder := termites.NewBuilder("websocket IN")
 
 	ws := &webSocketIn{
@@ -27,12 +28,15 @@ func newWebSocketIn(id string, conn *websocket.Conn) *webSocketIn {
 
 	builder.OnRun(ws.Run)
 
-	return ws
+	inConn := connector.graph.ConnectTo(ws.DataOut, connector.Hub.InFromWeb)
+
+	ws.graphConnection = inConn
 }
 
 func (w *webSocketIn) Run(c termites.NodeControl) error {
 	defer func() {
 		_ = w.conn.Close()
+		w.graphConnection.Disconnect()
 	}()
 
 	w.conn.SetReadLimit(512)
