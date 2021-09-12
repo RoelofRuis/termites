@@ -50,15 +50,6 @@ func (d *WebController) Run(_ termites.NodeControl) error {
 			for _, ref := range refs {
 				_, file := path.Split(ref.RunInfo.File)
 
-				status := "?"
-				if ref.Status == termites.NodeActive {
-					status = "active"
-				} else if ref.Status == termites.NodeSuspended {
-					status = "suspended"
-				} else if ref.Status == termites.NodeError {
-					status = "error"
-				}
-
 				var inPortNames []string
 				for _, i := range ref.InPorts {
 					inPortNames = append(inPortNames, i.Name)
@@ -105,7 +96,7 @@ func (d *WebController) Run(_ termites.NodeControl) error {
 				nodes = append(nodes, NodeInfo{
 					Id:          fmt.Sprintf("%x", ref.Id),
 					Name:        ref.Name,
-					Status:      status,
+					Status:      "active",
 					Filename:    file,
 					InPortNames: inPortNames,
 					Connections: connections,

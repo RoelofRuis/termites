@@ -25,11 +25,11 @@ func (c *teardownControl) GetTimeout() time.Duration {
 }
 
 func (c *teardownControl) LogInfo(msg string) {
-	c.bus.Send(LogInfoEvent(msg))
+	c.bus.Send(LogInfo(msg))
 }
 
 func (c *teardownControl) LogError(msg string, err error) {
-	c.bus.Send(LogErrorEvent(msg, err))
+	c.bus.Send(LogError(msg, err))
 }
 
 type TeardownHandler struct {
@@ -97,11 +97,11 @@ func (h *TeardownHandler) awaitTeardown() {
 	}
 	for name, f := range h.teardownFunctions {
 		go func(name string, f func(TeardownControl) error) {
-			h.bus.Send(LogInfoEvent(fmt.Sprintf("Running teardown for [%s]...", name)))
+			h.bus.Send(LogInfo(fmt.Sprintf("Running teardown for [%s]...", name)))
 			if err := f(control); err != nil {
-				h.bus.Send(LogErrorEvent(fmt.Sprintf("Teardown returned error"), err))
+				h.bus.Send(LogError(fmt.Sprintf("Teardown returned error"), err))
 			}
-			h.bus.Send(LogInfoEvent(fmt.Sprintf("Teardown for [%s] done", name)))
+			h.bus.Send(LogInfo(fmt.Sprintf("Teardown for [%s] done", name)))
 			wg.Done()
 		}(name, f)
 	}
@@ -115,10 +115,10 @@ func (h *TeardownHandler) awaitTeardown() {
 
 	select {
 	case <-await:
-		h.bus.Send(LogInfoEvent("All registered teardown routines completed"))
+		h.bus.Send(LogInfo("All registered teardown routines completed"))
 
 	case <-time.NewTimer(h.teardownTimeout).C:
-		h.bus.Send(LogInfoEvent("Timeout reached for teardown routines. Forced exit"))
+		h.bus.Send(LogInfo("Timeout reached for teardown routines. Forced exit"))
 
 	}
 

@@ -6,7 +6,6 @@ import (
 	"time"
 )
 
-// TODO: measure resource usage/memory leaks from this example
 
 func main() {
 	graph := termites.NewGraph()
@@ -16,6 +15,7 @@ func main() {
 
 	go func() {
 		for {
+			// TODO: keeps creating (connection) resources, do they leak?
 			conn := graph.ConnectTo(generator.TextOut, printer.TextIn)
 			time.Sleep(1 * time.Second)
 			conn.Disconnect()

@@ -15,9 +15,6 @@ func NewBuilder(name string) Builder {
 			name:       name,
 			refVersion: 0,
 
-			status:        NodeActive,
-			runningStatus: NodePreStarted,
-
 			inPorts:  nil,
 			outPorts: nil,
 

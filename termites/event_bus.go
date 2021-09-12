@@ -38,7 +38,7 @@ func NewEventBus() *eventBus {
 			for _, s := range bus.subscriptions[e.Type] {
 				err := s(e)
 				if err != nil {
-					bus.Send(LogErrorEvent("unable to notify subscriber", err))
+					bus.Send(LogError("unable to notify subscriber", err))
 				}
 			}
 			bus.subscriptionLock.RUnlock()

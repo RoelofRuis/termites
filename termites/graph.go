@@ -72,7 +72,7 @@ func newGraphImpl(opts ...GraphOptions) *graphImpl {
 
 func (g *graphImpl) onExit(_ Event) error {
 	g.close.Done()
-	g.eventBus.Send(LogInfoEvent(fmt.Sprintf("Graph [%s] closed", g.name)))
+	g.eventBus.Send(LogInfo(fmt.Sprintf("Graph [%s] closed", g.name)))
 	return nil
 }
 

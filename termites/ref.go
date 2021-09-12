@@ -5,6 +5,7 @@ type InPortId = Identifier
 type OutPortId = Identifier
 type ConnectionId = Identifier
 
+// Deprecated (TODO: should this really go?)
 type NodeStatus uint8
 
 const (
@@ -13,20 +14,11 @@ const (
 	NodeError     NodeStatus = 2 // The node has encountered an error.
 )
 
-type NodeRunningStatus uint8
-
-const (
-	NodePreStarted NodeRunningStatus = 0 // The node is not yet started.
-	NodeRunning    NodeRunningStatus = 1 // The node is running.
-	NodeTerminated NodeRunningStatus = 2 // The node has completed running.
-)
-
 type NodeRef struct {
 	Id            NodeId
 	Version       uint
 	Name          string
 	Status        NodeStatus
-	RunningStatus NodeRunningStatus
 	InPorts       map[InPortId]InPortRef
 	OutPorts      map[OutPortId]OutPortRef
 	RunInfo       *FunctionInfo

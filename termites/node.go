@@ -7,9 +7,6 @@ import (
 )
 
 type NodeControl interface {
-	SetSuspended()
-	SetActive()
-	SetError()
 	LogInfo(msg string)
 	LogError(msg string, err error)
 }
@@ -20,8 +17,7 @@ type node struct {
 	id         NodeId
 	refVersion uint
 
-	status        NodeStatus
-	runningStatus NodeRunningStatus
+	status NodeStatus
 
 	inPorts  []*InPort
 	outPorts []*OutPort
@@ -33,46 +29,12 @@ type node struct {
 	bus      EventSender
 }
 
-func (n *node) SetSuspended() {
-	n.setStatus(NodeSuspended)
-}
-
-func (n *node) SetActive() {
-	n.setStatus(NodeActive)
-}
-
-func (n *node) SetError() {
-	n.setStatus(NodeError)
-}
-
 func (n *node) LogInfo(msg string) {
-	n.sendEvent(LogInfoEvent(msg))
+	n.sendEvent(LogInfo(msg))
 }
 
 func (n *node) LogError(msg string, err error) {
-	n.sendEvent(LogErrorEvent(msg, err))
-}
-
-func (n *node) setStatus(s NodeStatus) {
-	if n.status == s {
-		return
-	}
-
-	n.nodeLock.Lock()
-	n.status = s
-	n.nodeLock.Unlock()
-	n.sendRef()
-}
-
-func (n *node) setRunningStatus(s NodeRunningStatus) {
-	if n.runningStatus == s {
-		return
-	}
-
-	n.nodeLock.Lock()
-	n.runningStatus = s
-	n.nodeLock.Unlock()
-	n.sendRef()
+	n.sendEvent(LogError(msg, err))
 }
 
 func (n *node) sendEvent(e Event) {
@@ -115,15 +77,14 @@ func (n *node) ref() NodeRef {
 	n.refVersion += 1
 
 	return NodeRef{
-		Id:            n.id,
-		Version:       n.refVersion,
-		Name:          n.name,
-		Status:        n.status,
-		RunningStatus: n.runningStatus,
-		InPorts:       inPortRefs,
-		OutPorts:      outPortRefs,
-		RunInfo:       determineFunctionInfo(n.run),
-		ShutdownInfo:  determineFunctionInfo(n.shutdown),
+		Id:           n.id,
+		Version:      n.refVersion,
+		Name:         n.name,
+		Status:       n.status,
+		InPorts:      inPortRefs,
+		OutPorts:     outPortRefs,
+		RunInfo:      determineFunctionInfo(n.run),
+		ShutdownInfo: determineFunctionInfo(n.shutdown),
 	}
 }
 
@@ -147,23 +108,22 @@ func (n *node) start(bus EventBus) {
 	}
 
 	go func() {
-		n.setRunningStatus(NodeRunning)
+		n.sendRef()
 		defer func() {
 			if err := recover(); err != nil {
-				n.bus.Send(LogErrorEvent(fmt.Sprintf("Node [%s] crashed: %v", n.name, err), nil))
-				debug.PrintStack()
-				n.SetError()
-				n.setRunningStatus(NodeTerminated)
+				n.bus.Send(LogPanic(fmt.Sprintf("Node [%s] crashed", n.name), string(debug.Stack())))
 			}
+
+			n.bus.Send(Event{
+				Type: NodeStopped,
+				Data: NodeStoppedEvent{
+					Id: n.id,
+				},
+			})
 		}()
 
-		err := n.run(n)
-		if err != nil {
-			n.bus.Send(LogErrorEvent(fmt.Sprintf("Node [%s] exited with error", n.name), err))
-			n.SetError()
-			n.setRunningStatus(NodeTerminated)
-			return
+		if err := n.run(n); err != nil {
+			n.bus.Send(LogError(fmt.Sprintf("Node [%s] exited with error", n.name), err))
 		}
-		n.setRunningStatus(NodeTerminated)
 	}()
 }

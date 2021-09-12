@@ -14,22 +14,40 @@ func NewConsoleLogger() *ConsoleLogger {
 }
 
 func (l *ConsoleLogger) SetEventBus(m EventBus) {
-	m.Subscribe(Log, l.OnLog)
+	m.Subscribe(InfoLog, l.OnLogInfo)
+	m.Subscribe(ErrorLog, l.OnLogError)
+	m.Subscribe(PanicLog, l.OnLogPanic)
 	m.Subscribe(MessageSent, l.OnMessageSent)
 }
 
-func (l *ConsoleLogger) OnLog(e Event) error {
-	ev, ok := e.Data.(LogEvent)
+func (l *ConsoleLogger) OnLogInfo(e Event) error {
+	ev, ok := e.Data.(InfoLogEvent)
 	if !ok {
 		return InvalidEventError
 	}
 
-	if ev.Error != nil {
-		log.Printf("ERROR: %s: %s", ev.Message, ev.Error)
-		return nil
+	log.Printf("LOG: %s", ev.Message)
+	return nil
+}
+
+func (l *ConsoleLogger) OnLogError(e Event) error {
+	ev, ok := e.Data.(ErrorLogEvent)
+	if !ok {
+		return InvalidEventError
 	}
 
-	log.Printf("LOG: %s", ev.Message)
+	log.Printf("ERROR: %s: %s", ev.Message, ev.Error)
+	return nil
+}
+
+func (l *ConsoleLogger) OnLogPanic(e Event) error {
+	ev, ok := e.Data.(PanicLogEvent)
+	if !ok {
+		return InvalidEventError
+	}
+
+	log.Printf("PANIC: %s", ev.Message)
+	log.Printf("----- stack trace -----\n%s\n------ end trace -------", ev.Stack)
 	return nil
 }
 
