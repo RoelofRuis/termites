@@ -14,8 +14,9 @@ import (
 func main() {
 	graph := termites.NewGraph(termites.WithConsoleLogger(), termites_dbg.WithDebugger(4242))
 
-	router := mux.NewRouter()
 	connector := termites_web.NewConnector(graph)
+
+	router := mux.NewRouter()
 	connector.Bind(router)
 
 	generator := examples.NewGenerator(100 * time.Millisecond)
