@@ -31,12 +31,14 @@ func Init(graph termites.Graph, debugger *debugger, httpPort int) {
 }
 
 type debugger struct {
-	refReceiver *refReceiver
+	refReceiver     *refReceiver
+	messageReceiver *messageReceiver
 }
 
 func NewDebugger() *debugger {
 	return &debugger{
-		refReceiver: newRefReceiver(),
+		refReceiver:     newRefReceiver(),
+		messageReceiver: newMsgReceiver(),
 	}
 }
 

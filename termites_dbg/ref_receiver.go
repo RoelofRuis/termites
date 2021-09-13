@@ -5,22 +5,23 @@ import (
 )
 
 type refReceiver struct {
+	RefsOut        *termites.OutPort
+
 	refChan        chan termites.NodeRef
 	removeChan     chan termites.NodeId
 	registeredRefs map[termites.NodeId]termites.NodeRef
 	removedRefs    map[termites.NodeId]bool
-	RefsOut        *termites.OutPort
 }
 
 func newRefReceiver() *refReceiver {
 	builder := termites.NewBuilder("Ref Receiver")
 
 	n := &refReceiver{
+		RefsOut:        builder.OutPort("Refs", map[termites.NodeId]termites.NodeRef{}),
 		refChan:        make(chan termites.NodeRef),
 		removeChan:     make(chan termites.NodeId),
 		registeredRefs: make(map[termites.NodeId]termites.NodeRef),
 		removedRefs:    make(map[termites.NodeId]bool),
-		RefsOut:        builder.OutPort("Refs", map[termites.NodeId]termites.NodeRef{}),
 	}
 
 	builder.OnRun(n.run)
