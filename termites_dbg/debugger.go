@@ -1,6 +1,8 @@
 package termites_dbg
 
 import (
+	"github.com/RoelofRuis/termites/termites_web"
+	"github.com/gorilla/mux"
 	"time"
 
 	"github.com/RoelofRuis/termites/termites"
@@ -20,6 +22,11 @@ func WithDebugger(httpPort int) termites.GraphOptions {
 }
 
 func Init(graph termites.Graph, debugger *debugger, httpPort int) {
+	connector := termites_web.NewConnector(graph)
+
+	router := mux.NewRouter()
+	connector.Bind(router)
+
 	// Visualizer
 	visualizer := NewVisualizer()
 	graph.ConnectTo(debugger.refReceiver.RefsOut, visualizer.RefsIn, termites.WithMailbox(&termites.DebouncedMailbox{Delay: 100 * time.Millisecond}))
@@ -28,6 +35,11 @@ func Init(graph termites.Graph, debugger *debugger, httpPort int) {
 	webUI := NewWebController(httpPort)
 	graph.ConnectTo(visualizer.PathOut, webUI.PathIn)
 	graph.ConnectTo(debugger.refReceiver.RefsOut, webUI.RefsIn, termites.WithMailbox(&termites.DebouncedMailbox{Delay: 100 * time.Millisecond}))
+
+	// JSON combiner
+	jsonCombiner := termites_web.NewJsonCombiner()
+	graph.ConnectTo(visualizer.PathOut, jsonCombiner.JsonDataIn, termites.Via(VisualizerAdapter))
+	graph.ConnectTo(jsonCombiner.JsonDataOut, connector.Hub.InFromApp)
 }
 
 type debugger struct {

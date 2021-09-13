@@ -3,6 +3,7 @@ package termites_dbg
 import (
 	_ "embed"
 	"fmt"
+	"github.com/gorilla/mux"
 	"html/template"
 	"log"
 	"net/http"
@@ -24,6 +25,7 @@ type WebUI struct {
 	HttpPort  int
 	StaticDir string
 	DataLock  sync.Mutex
+	Router    *mux.Router
 	UIData    UIData
 }
 
