@@ -35,6 +35,8 @@ type debugger struct {
 	messageReceiver *messageReceiver
 }
 
+// NewDebugger instantiates a non-connected debugger, mainly available for advanced usage.
+// Prefer to use the termites.GraphOptions function WithDebugger to attach it directly to a graph if possible.
 func NewDebugger() *debugger {
 	return &debugger{
 		refReceiver:     newRefReceiver(),

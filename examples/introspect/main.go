@@ -5,9 +5,9 @@ import (
 	"github.com/RoelofRuis/termites/termites_dbg"
 )
 
-// Testing the debugger by letting it introspect its own graph 🤯
+// Letting the debugger introspect its own graph 🤯
 func main() {
-	// Explicitly create separate debugger so we can bind it on graph creation with WithEventSubscriber.
+	// Explicitly create separate debugger, so we can bind it on graph creation with WithEventSubscriber.
 	debugger := termites_dbg.NewDebugger()
 	graph := termites.NewGraph(
 		termites.Named("Termites Debugger"),
