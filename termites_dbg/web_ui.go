@@ -39,7 +39,7 @@ type NodeInfo struct {
 	Filename    string
 	InPortNames []string
 	Connections []ConnectionInfo
-	RunInfo     *termites.FunctionInfo
+	RunInfo     termites.FunctionInfo
 }
 
 type ConnectionInfo struct {
@@ -47,7 +47,7 @@ type ConnectionInfo struct {
 	OutPortName     string
 	AdapterName     string
 	AdapterFilename string
-	TransformInfo   *termites.FunctionInfo
+	TransformInfo   termites.FunctionInfo
 	InNodeName      string
 	InPortName      string
 }
@@ -143,7 +143,7 @@ func (d *WebUI) openResource(resource string, id string) error {
 
 	if resource == "run" {
 		for _, n := range d.UIData.Nodes {
-			if n.Id == id {
+			if n.Id == id && n.RunInfo.File != "" {
 				if err := Open(n.RunInfo.File, n.RunInfo.Line); err != nil {
 					return err
 				}
@@ -154,7 +154,7 @@ func (d *WebUI) openResource(resource string, id string) error {
 	} else if resource == "transform" {
 		for _, n := range d.UIData.Nodes {
 			for _, c := range n.Connections {
-				if c.Id == id {
+				if c.Id == id && c.TransformInfo.File != "" {
 					if err := Open(c.TransformInfo.File, c.TransformInfo.Line); err != nil {
 						return err
 					}

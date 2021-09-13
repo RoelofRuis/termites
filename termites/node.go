@@ -74,14 +74,23 @@ func (n *node) ref() NodeRef {
 
 	n.refVersion += 1
 
+	runInfo, err := determineFunctionInfo(n.run)
+	if err != nil {
+		runInfo = FunctionInfo{}
+	}
+	shutdownInfo, err := determineFunctionInfo(n.shutdown)
+	if err != nil {
+		shutdownInfo = FunctionInfo{}
+	}
+
 	return NodeRef{
 		Id:           n.id,
 		Version:      n.refVersion,
 		Name:         n.name,
 		InPorts:      inPortRefs,
 		OutPorts:     outPortRefs,
-		RunInfo:      determineFunctionInfo(n.run),
-		ShutdownInfo: determineFunctionInfo(n.shutdown),
+		RunInfo:      runInfo,
+		ShutdownInfo: shutdownInfo,
 	}
 }
 

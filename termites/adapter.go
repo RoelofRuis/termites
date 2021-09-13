@@ -25,8 +25,13 @@ func NewAdapter(
 }
 
 func (a *Adapter) ref() AdapterRef {
+	info, err := determineFunctionInfo(a.transform)
+	if err != nil {
+		info = FunctionInfo{}
+	}
+
 	return AdapterRef{
 		Name:          a.name,
-		TransformInfo: determineFunctionInfo(a.transform),
+		TransformInfo: info,
 	}
 }

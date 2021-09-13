@@ -11,8 +11,8 @@ type NodeRef struct {
 	Name         string
 	InPorts      map[InPortId]InPortRef
 	OutPorts     map[OutPortId]OutPortRef
-	RunInfo      *FunctionInfo
-	ShutdownInfo *FunctionInfo
+	RunInfo      FunctionInfo
+	ShutdownInfo FunctionInfo
 }
 
 type InPortRef struct {
@@ -34,7 +34,7 @@ type ConnectionRef struct {
 
 type AdapterRef struct {
 	Name          string
-	TransformInfo *FunctionInfo
+	TransformInfo FunctionInfo
 }
 
 type FunctionInfo struct {

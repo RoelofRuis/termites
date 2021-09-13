@@ -61,11 +61,11 @@ func (d *WebController) Run(_ termites.NodeControl) error {
 					outPortNames = append(outPortNames, i.Name)
 					for _, c := range i.Connections {
 						var adapterName string
-						var adapterTranform *termites.FunctionInfo
+						var adapterTransform termites.FunctionInfo
 						var adapterFileName string
 						if c.Adapter != nil {
 							adapterName = c.Adapter.Name
-							adapterTranform = c.Adapter.TransformInfo
+							adapterTransform = c.Adapter.TransformInfo
 							_, adapterFileName = path.Split(c.Adapter.TransformInfo.File)
 						}
 						var inPortName, inNodeName string
@@ -86,7 +86,7 @@ func (d *WebController) Run(_ termites.NodeControl) error {
 							OutPortName:     i.Name,
 							AdapterName:     adapterName,
 							AdapterFilename: adapterFileName,
-							TransformInfo:   adapterTranform,
+							TransformInfo:   adapterTransform,
 							InNodeName:      inNodeName,
 							InPortName:      inPortName,
 						})
