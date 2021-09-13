@@ -163,7 +163,7 @@ func main() {
 	router := mux.NewRouter()
 	connector.Bind(router)
 
-	// ... your custom (router) setup logic ....
+	// ... your custom (router) setup logic ...
 
 	graph.Wait()
 }
