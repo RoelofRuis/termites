@@ -1,8 +1,11 @@
 package termites_dbg
 
 import (
+	"fmt"
 	"github.com/RoelofRuis/termites/termites_web"
 	"github.com/gorilla/mux"
+	"io/ioutil"
+	"net/http"
 	"time"
 
 	"github.com/RoelofRuis/termites/termites"
@@ -14,14 +17,14 @@ func WithDebugger(httpPort int) termites.GraphOptions {
 		termites.WithoutSigtermHandler(),
 	)
 
-	dbg := NewDebugger()
+	dbg := NewDebugger(httpPort)
 
-	Init(graph, dbg, httpPort)
+	Init(graph, dbg)
 
 	return termites.WithEventSubscriber(dbg)
 }
 
-func Init(graph termites.Graph, debugger *debugger, httpPort int) {
+func Init(graph termites.Graph, debugger *debugger) {
 	connector := termites_web.NewConnector(graph)
 
 	router := mux.NewRouter()
@@ -32,7 +35,7 @@ func Init(graph termites.Graph, debugger *debugger, httpPort int) {
 	graph.ConnectTo(debugger.refReceiver.RefsOut, visualizer.RefsIn, termites.WithMailbox(&termites.DebouncedMailbox{Delay: 100 * time.Millisecond}))
 
 	// Web UI
-	webUI := NewWebController(httpPort)
+	webUI := NewWebController(NewWebUI(router, debugger.staticDir))
 	graph.ConnectTo(visualizer.PathOut, webUI.PathIn)
 	graph.ConnectTo(debugger.refReceiver.RefsOut, webUI.RefsIn, termites.WithMailbox(&termites.DebouncedMailbox{Delay: 100 * time.Millisecond}))
 
@@ -40,17 +43,37 @@ func Init(graph termites.Graph, debugger *debugger, httpPort int) {
 	jsonCombiner := termites_web.NewJsonCombiner()
 	graph.ConnectTo(visualizer.PathOut, jsonCombiner.JsonDataIn, termites.Via(VisualizerAdapter))
 	graph.ConnectTo(jsonCombiner.JsonDataOut, connector.Hub.InFromApp)
+
+	// Serve static files
+	fs := http.FileServer(http.Dir(debugger.staticDir))
+	router.Handle("/static/", http.StripPrefix("/static", fs))
+
+	// Run web server
+	go func() {
+		if err := http.ListenAndServe(fmt.Sprintf(":%d", debugger.httpPort), router); err != nil {
+			panic(err)
+		}
+	}()
 }
 
 type debugger struct {
+	httpPort        int
+	staticDir       string
 	refReceiver     *refReceiver
 	messageReceiver *messageReceiver
 }
 
 // NewDebugger instantiates a non-connected debugger, mainly available for advanced usage.
 // Prefer to use the termites.GraphOptions function WithDebugger to attach it directly to a graph if possible.
-func NewDebugger() *debugger {
+func NewDebugger(httpPort int) *debugger {
+	staticDir, err := ioutil.TempDir("", "debug-")
+	if err != nil {
+		panic(err)
+	}
+
 	return &debugger{
+		httpPort:        httpPort,
+		staticDir:       staticDir,
 		refReceiver:     newRefReceiver(),
 		messageReceiver: newMsgReceiver(),
 	}

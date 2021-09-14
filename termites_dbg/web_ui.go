@@ -22,10 +22,9 @@ var indexPage string
 var nodesPage string
 
 type WebUI struct {
-	HttpPort  int
-	StaticDir string
 	DataLock  sync.Mutex
 	Router    *mux.Router
+	StaticDir string
 	UIData    UIData
 }
 
@@ -54,25 +53,20 @@ type ConnectionInfo struct {
 	InPortName      string
 }
 
-func NewWebUI(httpPort int, staticDir string) *WebUI {
+func NewWebUI(router *mux.Router, staticDir string) *WebUI {
 	return &WebUI{
-		HttpPort:  httpPort,
-		StaticDir: staticDir,
-		DataLock:  sync.Mutex{},
+		Router:   router,
+		DataLock: sync.Mutex{},
 		UIData: UIData{
 			RoutingPath: "",
 			Nodes:       nil,
 		},
+		StaticDir: staticDir,
 	}
 }
 
 func (d *WebUI) run() {
-	if d.HttpPort == 0 {
-		return
-	}
-
-	m := http.NewServeMux()
-	m.HandleFunc("/", func(w http.ResponseWriter, req *http.Request) {
+	d.Router.HandleFunc("/", func(w http.ResponseWriter, req *http.Request) {
 		var err error
 		t := template.New("template")
 		t, err = t.Parse(layoutPage)
@@ -91,7 +85,7 @@ func (d *WebUI) run() {
 		}
 	})
 
-	m.HandleFunc("/nodes", func(w http.ResponseWriter, req *http.Request) {
+	d.Router.HandleFunc("/nodes", func(w http.ResponseWriter, req *http.Request) {
 		t := template.New("template")
 		t, err := t.Parse(layoutPage)
 		if err != nil {
@@ -109,7 +103,7 @@ func (d *WebUI) run() {
 		}
 	})
 
-	m.HandleFunc("/open", func(w http.ResponseWriter, req *http.Request) {
+	d.Router.HandleFunc("/open", func(w http.ResponseWriter, req *http.Request) {
 		ids, ok := req.URL.Query()["id"]
 		if !ok || len(ids[0]) < 1 {
 			w.WriteHeader(http.StatusBadRequest)
@@ -130,13 +124,6 @@ func (d *WebUI) run() {
 
 		http.Redirect(w, req, "/nodes", http.StatusFound)
 	})
-
-	fs := http.FileServer(http.Dir(d.StaticDir))
-	m.Handle("/static/", http.StripPrefix("/static", fs))
-
-	if err := http.ListenAndServe(fmt.Sprintf(":%d", d.HttpPort), m); err != nil {
-		panic(err)
-	}
 }
 
 func (d *WebUI) openResource(resource string, id string) error {

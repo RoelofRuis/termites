@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/RoelofRuis/termites/termites"
 	"io"
-	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
@@ -19,18 +18,13 @@ type WebController struct {
 	ui *WebUI
 }
 
-func NewWebController(httpPort int) *WebController {
-	staticDir, err := ioutil.TempDir("", "web-ui-")
-	if err != nil {
-		panic(err)
-	}
-
+func NewWebController(ui *WebUI) *WebController {
 	builder := termites.NewBuilder("Web Controller")
 
 	n := &WebController{
 		PathIn: builder.InPort("Visualizer Path", ""),
 		RefsIn: builder.InPort("Refs", map[termites.NodeId]termites.NodeRef{}),
-		ui:     NewWebUI(httpPort, staticDir),
+		ui:     ui, // TODO: decouple further and bind functions on setup
 	}
 
 	builder.OnRun(n.Run)
@@ -40,7 +34,7 @@ func NewWebController(httpPort int) *WebController {
 }
 
 func (d *WebController) Run(_ termites.NodeControl) error {
-	go d.ui.run()
+	go d.ui.run() // TODO: remove this and bind directly
 
 	for {
 		select {

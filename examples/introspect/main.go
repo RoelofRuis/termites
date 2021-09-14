@@ -8,14 +8,14 @@ import (
 // Letting the debugger introspect its own graph 🤯
 func main() {
 	// Explicitly create separate debugger, so we can bind it on graph creation with WithEventSubscriber.
-	debugger := termites_dbg.NewDebugger()
+	debugger := termites_dbg.NewDebugger(4242)
 	graph := termites.NewGraph(
 		termites.Named("Termites Debugger"),
 		termites.WithConsoleLogger(),
 		termites.WithEventSubscriber(debugger),
 	)
 	// Manually initialize the debugger.
-	termites_dbg.Init(graph, debugger, 4242)
+	termites_dbg.Init(graph, debugger)
 
 	// Await termination.
 	graph.Wait()
