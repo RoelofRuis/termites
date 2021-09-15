@@ -83,10 +83,14 @@ func main() {
 
 Several configuration options can be passed to the graph constructor:
 
-#### Attach a console logger
+#### Printing logs
 
 ```golang
-termites.NewGraph(termites.WithConsoleLogger())
+// To show the logs
+termites.NewGraph(termites.PrintLogsToConsole())
+
+// To show the messages
+termites.NewGraph(termites.PrintMessagesToConsole())
 ```
 
 #### Close a resource on graph teardown

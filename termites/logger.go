@@ -5,17 +5,28 @@ import (
 	"log"
 )
 
-type ConsoleLogger struct{}
+type ConsoleLogger struct {
+	printLogs     bool
+	printMessages bool
+}
 
-func NewConsoleLogger() *ConsoleLogger {
-	return &ConsoleLogger{}
+func NewConsoleLogger(printLogs bool, printMessages bool) *ConsoleLogger {
+	return &ConsoleLogger{
+		printLogs:     printLogs,
+		printMessages: printMessages,
+	}
 }
 
 func (l *ConsoleLogger) SetEventBus(m EventBus) {
-	m.Subscribe(InfoLog, l.OnLogInfo)
-	m.Subscribe(ErrorLog, l.OnLogError)
-	m.Subscribe(PanicLog, l.OnLogPanic)
-	m.Subscribe(MessageSent, l.OnMessageSent)
+	if l.printLogs {
+		m.Subscribe(InfoLog, l.OnLogInfo)
+		m.Subscribe(ErrorLog, l.OnLogError)
+		m.Subscribe(PanicLog, l.OnLogPanic)
+	}
+
+	if l.printMessages {
+		m.Subscribe(MessageSent, l.OnMessageSent)
+	}
 }
 
 func (l *ConsoleLogger) OnLogInfo(e Event) error {

@@ -6,9 +6,15 @@ import (
 
 type GraphOptions func(conf *graphConfig)
 
-func WithConsoleLogger() GraphOptions {
+func PrintLogsToConsole() GraphOptions {
 	return func(conf *graphConfig) {
-		conf.addConsoleLogger = true
+		conf.printLogs = true
+	}
+}
+
+func PrintMessagesToConsole() GraphOptions {
+	return func(conf *graphConfig) {
+		conf.printMessages = true
 	}
 }
 

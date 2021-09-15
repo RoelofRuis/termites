@@ -11,7 +11,7 @@ func main() {
 	debugger := termites_dbg.NewDebugger(4242)
 	graph := termites.NewGraph(
 		termites.Named("Termites Debugger"),
-		termites.WithConsoleLogger(),
+		termites.PrintLogsToConsole(),
 		termites.WithEventSubscriber(debugger),
 	)
 	// Manually initialize the debugger.

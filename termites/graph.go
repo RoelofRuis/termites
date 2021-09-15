@@ -22,7 +22,8 @@ type graphConfig struct {
 	name               string
 	subscribers        []EventSubscriber
 	withSigtermHandler bool
-	addConsoleLogger   bool
+	printLogs          bool
+	printMessages      bool
 }
 
 func NewGraph(opts ...GraphOptions) Graph {
@@ -34,7 +35,8 @@ func newGraphImpl(opts ...GraphOptions) *graphImpl {
 		name:               "",
 		subscribers:        nil,
 		withSigtermHandler: true,
-		addConsoleLogger:   false,
+		printLogs:          false,
+		printMessages:      false,
 	}
 
 	for _, opt := range opts {
@@ -59,8 +61,8 @@ func newGraphImpl(opts ...GraphOptions) *graphImpl {
 	bus.Subscribe(Exit, g.onExit)
 	NewTeardownHandler(config.withSigtermHandler).SetEventBus(bus)
 
-	if config.addConsoleLogger {
-		NewConsoleLogger().SetEventBus(bus)
+	if config.printLogs || config.printMessages {
+		NewConsoleLogger(config.printLogs, config.printMessages).SetEventBus(bus)
 	}
 
 	for _, subscriber := range config.subscribers {

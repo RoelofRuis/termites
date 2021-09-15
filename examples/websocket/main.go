@@ -12,7 +12,11 @@ import (
 )
 
 func main() {
-	graph := termites.NewGraph(termites.WithConsoleLogger(), termites_dbg.WithDebugger(4242))
+	graph := termites.NewGraph(
+		termites.PrintLogsToConsole(),
+		termites.PrintMessagesToConsole(),
+		termites_dbg.WithDebugger(4242),
+	)
 
 	connector := termites_web.NewConnector(graph)
 
