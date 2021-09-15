@@ -1,139 +1,158 @@
 package termites_dbg
 
 import (
+	_ "embed"
+	"errors"
 	"fmt"
-	"io"
-	"os"
-	"path"
-	"path/filepath"
-	"sort"
-	"strings"
+	"html/template"
+	"log"
+	"net/http"
+	"sync"
 
 	"github.com/RoelofRuis/termites/termites"
 )
 
-type WebController struct {
-	PathIn *termites.InPort
-	RefsIn *termites.InPort
+//go:embed templates/layout.gohtml
+var layoutPage string
 
-	staticDir string
-	ui        *WebUI
+//go:embed templates/index.gohtml
+var indexPage string
+
+//go:embed templates/nodes.gohtml
+var nodesPage string
+
+type WebController struct {
+	index *template.Template
+	nodes *template.Template
+
+	uiDataLock sync.RWMutex
+	uiData     UIData
 }
 
-func NewWebController(ui *WebUI, staticDir string) *WebController {
-	builder := termites.NewBuilder("Web Controller")
+type UIData struct {
+	RoutingPath string
+	Nodes       []NodeInfo
+}
 
-	n := &WebController{
-		PathIn:    builder.InPort("Visualizer Path", ""),
-		RefsIn:    builder.InPort("Refs", map[termites.NodeId]termites.NodeRef{}),
-		staticDir: staticDir,
-		ui:        ui, // TODO: decouple further and bind functions on setup
+type NodeInfo struct {
+	Id          string
+	Name        string
+	Status      string
+	Filename    string
+	InPortNames []string
+	Connections []ConnectionInfo
+	RunInfo     termites.FunctionInfo
+}
+
+type ConnectionInfo struct {
+	Id              string
+	OutPortName     string
+	AdapterName     string
+	AdapterFilename string
+	TransformInfo   termites.FunctionInfo
+	InNodeName      string
+	InPortName      string
+}
+
+func NewWebController() *WebController {
+	return &WebController{
+		index:      mustParse(layoutPage, indexPage),
+		nodes:      mustParse(layoutPage, nodesPage),
+		uiDataLock: sync.RWMutex{},
+		uiData:     UIData{RoutingPath: "", Nodes: nil},
+	}
+}
+
+func (d *WebController) SetNodes(nodes []NodeInfo) {
+	d.uiDataLock.Lock()
+	d.uiData.Nodes = nodes
+	d.uiDataLock.Unlock()
+}
+
+func (d *WebController) SetRoutingPath(path string) {
+	d.uiDataLock.Lock()
+	d.uiData.RoutingPath = path
+	d.uiDataLock.Unlock()
+}
+
+func (d *WebController) HandleIndex(w http.ResponseWriter, req *http.Request) {
+	d.uiDataLock.RLock()
+	err := d.index.ExecuteTemplate(w, "layout", d.uiData)
+	d.uiDataLock.RUnlock()
+	if err != nil {
+		panic(err)
+	}
+}
+
+func (d *WebController) HandleNodes(w http.ResponseWriter, req *http.Request) {
+	d.uiDataLock.RLock()
+	err := d.nodes.ExecuteTemplate(w, "layout", d.uiData)
+	d.uiDataLock.RUnlock()
+	if err != nil {
+		panic(err)
+	}
+}
+
+func (d *WebController) HandleOpen(w http.ResponseWriter, req *http.Request) {
+	ids, ok := req.URL.Query()["id"]
+	if !ok || len(ids[0]) < 1 {
+		http.Error(w, "no id given", http.StatusBadRequest)
+		return
 	}
 
-	builder.OnRun(n.Run)
-	builder.OnShutdown(n.Shutdown)
+	reses, ok := req.URL.Query()["res"]
+	if !ok || len(reses[0]) < 1 {
+		http.Error(w, "no res given", http.StatusBadRequest)
+		return
+	}
 
-	return n
+	if err := d.openResource(reses[0], ids[0]); err != nil {
+		log.Printf("error: %s", err.Error())
+	}
+
+	http.Redirect(w, req, "/nodes", http.StatusFound)
 }
 
-func (d *WebController) Run(_ termites.NodeControl) error {
-	go d.ui.run() // TODO: remove this and bind directly
+func (d *WebController) openResource(resource string, id string) error {
+	d.uiDataLock.RLock()
+	defer d.uiDataLock.RUnlock()
 
-	for {
-		select {
-		case msg := <-d.RefsIn.Receive():
-			refs := msg.Data.(map[termites.NodeId]termites.NodeRef)
-			var nodes []NodeInfo
-			for _, ref := range refs {
-				_, file := path.Split(ref.RunInfo.File)
-
-				var inPortNames []string
-				for _, i := range ref.InPorts {
-					inPortNames = append(inPortNames, i.Name)
+	if resource == "run" {
+		for _, n := range d.uiData.Nodes {
+			if n.Id == id && n.RunInfo.File != "" {
+				if err := Open(n.RunInfo.File, n.RunInfo.Line); err != nil {
+					return err
 				}
-
-				var outPortNames []string
-				var connections []ConnectionInfo
-				for _, i := range ref.OutPorts {
-					outPortNames = append(outPortNames, i.Name)
-					for _, c := range i.Connections {
-						var adapterName string
-						var adapterTransform termites.FunctionInfo
-						var adapterFileName string
-						if c.Adapter != nil {
-							adapterName = c.Adapter.Name
-							adapterTransform = c.Adapter.TransformInfo
-							_, adapterFileName = path.Split(c.Adapter.TransformInfo.File)
-						}
-						var inPortName, inNodeName string
-						if c.In != nil {
-							inPortName = c.In.Name
-							for _, r := range refs {
-								for _, inPort := range r.InPorts {
-									if inPort.Id == c.In.Id {
-										inNodeName = r.Name
-										break
-									}
-								}
-							}
-						}
-
-						connections = append(connections, ConnectionInfo{
-							Id:              fmt.Sprintf("%x", c.Id),
-							OutPortName:     i.Name,
-							AdapterName:     adapterName,
-							AdapterFilename: adapterFileName,
-							TransformInfo:   adapterTransform,
-							InNodeName:      inNodeName,
-							InPortName:      inPortName,
-						})
+				return nil
+			}
+		}
+	} else if resource == "transform" {
+		for _, n := range d.uiData.Nodes {
+			for _, c := range n.Connections {
+				if c.Id == id && c.TransformInfo.File != "" {
+					if err := Open(c.TransformInfo.File, c.TransformInfo.Line); err != nil {
+						return err
 					}
+					return nil
 				}
-
-				nodes = append(nodes, NodeInfo{
-					Id:          fmt.Sprintf("%x", ref.Id),
-					Name:        ref.Name,
-					Status:      "active",
-					Filename:    file,
-					InPortNames: inPortNames,
-					Connections: connections,
-					RunInfo:     ref.RunInfo,
-				})
 			}
-			d.ui.DataLock.Lock()
-			sort.SliceStable(nodes, func(i, j int) bool {
-				return strings.Compare(nodes[i].Name, nodes[j].Name) < 0
-			})
-			d.ui.UIData.Nodes = nodes
-			d.ui.DataLock.Unlock()
-
-		case msg := <-d.PathIn.Receive():
-			visualizerPath := msg.Data.(string)
-			src, err := os.Open(visualizerPath)
-			if err != nil {
-				fmt.Printf("Error opening source: %s", err.Error())
-				continue
-			}
-			_, filename := filepath.Split(visualizerPath)
-			staticPath := filepath.Join(d.staticDir, filename)
-			dst, err := os.OpenFile(staticPath, os.O_CREATE|os.O_WRONLY, os.ModePerm)
-			if err != nil {
-				fmt.Printf("Error opening dst: %s", err.Error())
-				continue
-			}
-			_, err = io.Copy(dst, src)
-			if err != nil {
-				fmt.Printf("Error copying routing: %s", err.Error())
-			}
-			d.ui.DataLock.Lock()
-			d.ui.UIData.RoutingPath = filepath.Join("/dbg-static/", filename)
-			fmt.Printf("File is at %s\n", d.ui.UIData.RoutingPath)
-			d.ui.DataLock.Unlock()
 		}
 	}
+
+	return fmt.Errorf("resource [%s] with id [%s] not found", resource, id)
 }
 
-func (d *WebController) Shutdown(control termites.TeardownControl) error {
-	control.LogInfo(fmt.Sprintf("Cleaning up [%s]\n", d.staticDir))
-	return os.RemoveAll(d.staticDir)
+func mustParse(templates ...string) *template.Template {
+	if len(templates) == 0 {
+		panic(errors.New("at least one template must be given"))
+	}
+	var t = template.New("")
+	var err error
+	for _, data := range templates {
+		t, err = t.Parse(data)
+		if err != nil {
+			panic(err)
+		}
+	}
+	return t
 }
