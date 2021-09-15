@@ -69,6 +69,7 @@ func newGraphImpl(opts ...GraphOptions) *graphImpl {
 		subscriber.SetEventBus(bus)
 	}
 
+	bus.Send(LogInfo(fmt.Sprintf("Graph [%s] initialized", g.name)))
 	return g
 }
 
