@@ -12,8 +12,8 @@ import (
 	"github.com/RoelofRuis/termites/termites"
 )
 
-//go:embed templates/layout.gohtml
-var layoutPage string
+//go:embed templates/base.gohtml
+var basePage string
 
 //go:embed templates/index.gohtml
 var indexPage string
@@ -56,8 +56,8 @@ type ConnectionInfo struct {
 
 func NewWebController() *WebController {
 	return &WebController{
-		index:      mustParse(layoutPage, indexPage),
-		nodes:      mustParse(layoutPage, nodesPage),
+		index:      mustParse(basePage, indexPage),
+		nodes:      mustParse(basePage, nodesPage),
 		uiDataLock: sync.RWMutex{},
 		uiData:     UIData{RoutingPath: "", Nodes: nil},
 	}
@@ -77,7 +77,7 @@ func (d *WebController) SetRoutingPath(path string) {
 
 func (d *WebController) HandleIndex(w http.ResponseWriter, req *http.Request) {
 	d.uiDataLock.RLock()
-	err := d.index.ExecuteTemplate(w, "layout", d.uiData)
+	err := d.index.ExecuteTemplate(w, "base", d.uiData)
 	d.uiDataLock.RUnlock()
 	if err != nil {
 		panic(err)
@@ -86,7 +86,7 @@ func (d *WebController) HandleIndex(w http.ResponseWriter, req *http.Request) {
 
 func (d *WebController) HandleNodes(w http.ResponseWriter, req *http.Request) {
 	d.uiDataLock.RLock()
-	err := d.nodes.ExecuteTemplate(w, "layout", d.uiData)
+	err := d.nodes.ExecuteTemplate(w, "base", d.uiData)
 	d.uiDataLock.RUnlock()
 	if err != nil {
 		panic(err)
