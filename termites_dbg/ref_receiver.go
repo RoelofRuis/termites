@@ -5,7 +5,7 @@ import (
 )
 
 type refReceiver struct {
-	RefsOut        *termites.OutPort
+	RefsOut *termites.OutPort
 
 	refChan        chan termites.NodeRef
 	removeChan     chan termites.NodeId

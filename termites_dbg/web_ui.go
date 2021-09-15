@@ -23,9 +23,9 @@ var indexPage string
 var nodesPage string
 
 type WebUI struct {
-	DataLock  sync.Mutex
-	Router    *mux.Router
-	UIData    UIData
+	DataLock sync.Mutex
+	Router   *mux.Router
+	UIData   UIData
 }
 
 type UIData struct {
