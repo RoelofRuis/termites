@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/RoelofRuis/termites/examples"
+	examples2 "github.com/RoelofRuis/termites/examples"
 	"github.com/RoelofRuis/termites/termites"
 	"time"
 )
@@ -9,8 +9,8 @@ import (
 func main() {
 	graph := termites.NewGraph()
 
-	generator := examples.NewGenerator(1 * time.Millisecond)
-	printer := examples.NewPrinter()
+	generator := examples2.NewGenerator(1 * time.Millisecond)
+	printer := examples2.NewPrinter()
 
 	go func() {
 		for {

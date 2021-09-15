@@ -121,7 +121,7 @@ func (d *WebUpdater) Run(_ termites.NodeControl) error {
 			if err != nil {
 				fmt.Printf("Error copying routing: %s", err.Error())
 			}
-			d.controller.SetRoutingPath(filepath.Join("/dbg-static/", filename))
+			d.controller.SetRoutingPath(filepath.Join("/termites_dbg-static/", filename))
 		}
 	}
 }

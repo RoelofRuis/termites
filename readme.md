@@ -9,7 +9,7 @@ The `termites` core module provides these basic building blocks. Optionally, you
 
 ## Examples
 
-See the [examples](examples) folder for small example implementations.
+See the [examples](termites/examples) folder for small example implementations.
 
 ## Module `termites`
 

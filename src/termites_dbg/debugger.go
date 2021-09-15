@@ -2,11 +2,11 @@ package termites_dbg
 
 import (
 	"fmt"
+	"github.com/RoelofRuis/termites/termites_web"
 	"io/ioutil"
 	"net/http"
 	"time"
 
-	"github.com/RoelofRuis/termites/termites_web"
 	"github.com/gorilla/mux"
 
 	"github.com/RoelofRuis/termites/termites"
@@ -56,9 +56,9 @@ func Init(graph termites.Graph, debugger *debugger) {
 	graph.ConnectTo(jsonCombiner.JsonDataOut, connector.Hub.InFromApp)
 
 	// Serve static files
-	router.PathPrefix("/dbg-static/").Methods("GET").Handler(http.StripPrefix("/dbg-static/", http.FileServer(http.Dir(staticDir))))
+	router.PathPrefix("/termites_dbg-static/").Methods("GET").Handler(http.StripPrefix("/termites_dbg-static/", http.FileServer(http.Dir(staticDir))))
 
-	// Run web server
+	// Run termites_web server
 	go func() {
 		if err := http.ListenAndServe(fmt.Sprintf(":%d", debugger.httpPort), router); err != nil {
 			panic(err)
