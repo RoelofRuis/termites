@@ -2,29 +2,32 @@ package termites_dbg
 
 import (
 	"fmt"
-	"github.com/RoelofRuis/termites/termites"
 	"io"
 	"os"
 	"path"
 	"path/filepath"
 	"sort"
 	"strings"
+
+	"github.com/RoelofRuis/termites/termites"
 )
 
 type WebController struct {
 	PathIn *termites.InPort
 	RefsIn *termites.InPort
 
-	ui *WebUI
+	staticDir string
+	ui        *WebUI
 }
 
-func NewWebController(ui *WebUI) *WebController {
+func NewWebController(ui *WebUI, staticDir string) *WebController {
 	builder := termites.NewBuilder("Web Controller")
 
 	n := &WebController{
-		PathIn: builder.InPort("Visualizer Path", ""),
-		RefsIn: builder.InPort("Refs", map[termites.NodeId]termites.NodeRef{}),
-		ui:     ui, // TODO: decouple further and bind functions on setup
+		PathIn:    builder.InPort("Visualizer Path", ""),
+		RefsIn:    builder.InPort("Refs", map[termites.NodeId]termites.NodeRef{}),
+		staticDir: staticDir,
+		ui:        ui, // TODO: decouple further and bind functions on setup
 	}
 
 	builder.OnRun(n.Run)
@@ -112,7 +115,7 @@ func (d *WebController) Run(_ termites.NodeControl) error {
 				continue
 			}
 			_, filename := filepath.Split(visualizerPath)
-			staticPath := filepath.Join(d.ui.StaticDir, filename)
+			staticPath := filepath.Join(d.staticDir, filename)
 			dst, err := os.OpenFile(staticPath, os.O_CREATE|os.O_WRONLY, os.ModePerm)
 			if err != nil {
 				fmt.Printf("Error opening dst: %s", err.Error())
@@ -123,13 +126,14 @@ func (d *WebController) Run(_ termites.NodeControl) error {
 				fmt.Printf("Error copying routing: %s", err.Error())
 			}
 			d.ui.DataLock.Lock()
-			d.ui.UIData.RoutingPath = filepath.Join("/static", filename)
+			d.ui.UIData.RoutingPath = filepath.Join("/dbg-static/", filename)
+			fmt.Printf("File is at %s\n", d.ui.UIData.RoutingPath)
 			d.ui.DataLock.Unlock()
 		}
 	}
 }
 
 func (d *WebController) Shutdown(control termites.TeardownControl) error {
-	control.LogInfo(fmt.Sprintf("Cleaning up [%s]\n", d.ui.StaticDir))
-	return os.RemoveAll(d.ui.StaticDir)
+	control.LogInfo(fmt.Sprintf("Cleaning up [%s]\n", d.staticDir))
+	return os.RemoveAll(d.staticDir)
 }

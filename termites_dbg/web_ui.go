@@ -3,11 +3,12 @@ package termites_dbg
 import (
 	_ "embed"
 	"fmt"
-	"github.com/gorilla/mux"
 	"html/template"
 	"log"
 	"net/http"
 	"sync"
+
+	"github.com/gorilla/mux"
 
 	"github.com/RoelofRuis/termites/termites"
 )
@@ -24,7 +25,6 @@ var nodesPage string
 type WebUI struct {
 	DataLock  sync.Mutex
 	Router    *mux.Router
-	StaticDir string
 	UIData    UIData
 }
 
@@ -53,7 +53,7 @@ type ConnectionInfo struct {
 	InPortName      string
 }
 
-func NewWebUI(router *mux.Router, staticDir string) *WebUI {
+func NewWebUI(router *mux.Router) *WebUI {
 	return &WebUI{
 		Router:   router,
 		DataLock: sync.Mutex{},
@@ -61,7 +61,6 @@ func NewWebUI(router *mux.Router, staticDir string) *WebUI {
 			RoutingPath: "",
 			Nodes:       nil,
 		},
-		StaticDir: staticDir,
 	}
 }
 

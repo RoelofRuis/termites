@@ -2,11 +2,12 @@ package termites_dbg
 
 import (
 	"fmt"
-	"github.com/RoelofRuis/termites/termites_web"
-	"github.com/gorilla/mux"
 	"io/ioutil"
 	"net/http"
 	"time"
+
+	"github.com/RoelofRuis/termites/termites_web"
+	"github.com/gorilla/mux"
 
 	"github.com/RoelofRuis/termites/termites"
 )
@@ -35,7 +36,7 @@ func Init(graph termites.Graph, debugger *debugger) {
 	graph.ConnectTo(debugger.refReceiver.RefsOut, visualizer.RefsIn, termites.WithMailbox(&termites.DebouncedMailbox{Delay: 100 * time.Millisecond}))
 
 	// Web UI
-	webUI := NewWebController(NewWebUI(router, debugger.staticDir))
+	webUI := NewWebController(NewWebUI(router), debugger.staticDir)
 	graph.ConnectTo(visualizer.PathOut, webUI.PathIn)
 	graph.ConnectTo(debugger.refReceiver.RefsOut, webUI.RefsIn, termites.WithMailbox(&termites.DebouncedMailbox{Delay: 100 * time.Millisecond}))
 
@@ -45,8 +46,7 @@ func Init(graph termites.Graph, debugger *debugger) {
 	graph.ConnectTo(jsonCombiner.JsonDataOut, connector.Hub.InFromApp)
 
 	// Serve static files
-	fs := http.FileServer(http.Dir(debugger.staticDir))
-	router.Handle("/static/", http.StripPrefix("/static", fs))
+	router.PathPrefix("/dbg-static/").Methods("GET").Handler(http.StripPrefix("/dbg-static/", http.FileServer(http.Dir(debugger.staticDir))))
 
 	// Run web server
 	go func() {
