@@ -12,7 +12,9 @@
 
     let root = document.getElementById("root")
     connector.subscribe(function (tpe, data) {
-        root.textContent = data;
+        if (tpe === "onupdate") {
+            root.textContent = data;
+        }
     })
 </script>
 </html>

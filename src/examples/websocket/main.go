@@ -1,14 +1,15 @@
 package main
 
 import (
+	"log"
+	"net/http"
+	"time"
+
 	"github.com/RoelofRuis/termites/examples"
 	"github.com/RoelofRuis/termites/termites"
 	"github.com/RoelofRuis/termites/termites_dbg"
 	"github.com/RoelofRuis/termites/termites_web"
 	"github.com/gorilla/mux"
-	"log"
-	"net/http"
-	"time"
 )
 
 func main() {
@@ -41,5 +42,5 @@ func main() {
 }
 
 func handleIndex(w http.ResponseWriter, r *http.Request) {
-	http.ServeFile(w, r, "./examples/websocket/static/index.html")
+	http.ServeFile(w, r, "./src/examples/websocket/static/index.html")
 }
