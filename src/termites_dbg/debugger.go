@@ -12,8 +12,8 @@ import (
 	"github.com/RoelofRuis/termites/termites"
 )
 
-func WithDebugger(httpPort int) termites.GraphOptions {
-	dbg := NewDebugger(httpPort)
+func WithDebugger(opts ...DebuggerOption) termites.GraphOption {
+	dbg := NewDebugger(opts...)
 
 	graph := termites.NewGraph(
 		termites.Named("Termites Debugger"),
@@ -67,17 +67,33 @@ type debugger struct {
 	TempDir *termites.ManagedTempDirectory
 
 	httpPort        int
+	editor          CodeEditor
 	refReceiver     *refReceiver
 	messageReceiver *messageReceiver
 }
 
+type debuggerConfig struct {
+	httpPort int
+	editor   CodeEditor
+}
+
 // NewDebugger instantiates a non-connected debugger, mainly available for advanced usage.
-// Prefer to use the termites.GraphOptions function WithDebugger to attach it directly to a graph if possible.
-func NewDebugger(httpPort int) *debugger {
+// Prefer to use the termites.GraphOption function WithDebugger to attach it directly to a graph if possible.
+func NewDebugger(options ...DebuggerOption) *debugger {
+	config := &debuggerConfig{
+		httpPort: 4242,
+		editor:   nil,
+	}
+
+	for _, opt := range options {
+		opt(config)
+	}
+
 	return &debugger{
 		TempDir: termites.NewManagedTempDirectory("debug-"),
 
-		httpPort:        httpPort,
+		httpPort:        config.httpPort,
+		editor:          config.editor,
 		refReceiver:     newRefReceiver(),
 		messageReceiver: newMsgReceiver(),
 	}

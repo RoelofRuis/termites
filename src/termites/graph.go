@@ -26,11 +26,11 @@ type graphConfig struct {
 	printMessages      bool
 }
 
-func NewGraph(opts ...GraphOptions) Graph {
+func NewGraph(opts ...GraphOption) Graph {
 	return newGraphImpl(opts...)
 }
 
-func newGraphImpl(opts ...GraphOptions) *graphImpl {
+func newGraphImpl(opts ...GraphOption) *graphImpl {
 	config := &graphConfig{
 		name:               "",
 		subscribers:        nil,

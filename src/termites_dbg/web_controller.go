@@ -27,6 +27,7 @@ type WebController struct {
 
 	uiDataLock sync.RWMutex
 	uiData     UIData
+	editor     CodeEditor
 }
 
 type UIData struct {
@@ -114,13 +115,17 @@ func (d *WebController) HandleOpen(w http.ResponseWriter, req *http.Request) {
 }
 
 func (d *WebController) openResource(resource string, id string) error {
+	if d.editor == nil {
+		return nil
+	}
+
 	d.uiDataLock.RLock()
 	defer d.uiDataLock.RUnlock()
 
 	if resource == "run" {
 		for _, n := range d.uiData.Nodes {
 			if n.Id == id && n.RunInfo.File != "" {
-				if err := Open(n.RunInfo.File, n.RunInfo.Line); err != nil {
+				if err := d.editor.Open(n.RunInfo.File, n.RunInfo.Line); err != nil {
 					return err
 				}
 				return nil
@@ -130,7 +135,7 @@ func (d *WebController) openResource(resource string, id string) error {
 		for _, n := range d.uiData.Nodes {
 			for _, c := range n.Connections {
 				if c.Id == id && c.TransformInfo.File != "" {
-					if err := Open(c.TransformInfo.File, c.TransformInfo.Line); err != nil {
+					if err := d.editor.Open(c.TransformInfo.File, c.TransformInfo.Line); err != nil {
 						return err
 					}
 					return nil

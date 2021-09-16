@@ -128,7 +128,7 @@ The debug module contains a web debugger that can be hooked into a graph to insp
 
 ### Usage
 
-Initialize it by passing it as an option on graph creation.
+Initialize it by passing it as an option on graph creation. The debugger will be started on port `4242` by default.
 
 ```golang
 package main
@@ -137,10 +137,20 @@ import "github.com/RoelofRuis/termites/termites"
 import "github.com/RoelofRuis/termites/termites_dbg"
 
 func main() {
-	graph := termites.NewGraph(termites_dbg.WithDebugger(4242))
+	graph := termites.NewGraph(termites_dbg.WithDebugger())
 
 	// ... graph setup code ...
 }
+```
+
+### Debugger Configuration
+
+Configuration options can be passed to the debugger Graph Option.
+
+#### Change the debugger port
+
+```golang
+termites_dbg.WithDebugger(termites_dbg.OnHttpPort(1234))
 ```
 
 ## Module `termites_web`

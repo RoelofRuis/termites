@@ -16,7 +16,7 @@ func main() {
 	graph := termites.NewGraph(
 		termites.PrintLogsToConsole(),
 		termites.PrintMessagesToConsole(),
-		termites_dbg.WithDebugger(4242),
+		termites_dbg.WithDebugger(),
 	)
 
 	connector := termites_web.NewConnector(graph)
