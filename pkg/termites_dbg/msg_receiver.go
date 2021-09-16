@@ -1,6 +1,6 @@
 package termites_dbg
 
-import "github.com/RoelofRuis/termites/termites"
+import "github.com/RoelofRuis/termites/pkg/termites"
 
 type messageReceiver struct {
 	MessagesOut *termites.OutPort

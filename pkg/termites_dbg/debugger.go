@@ -5,11 +5,11 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/RoelofRuis/termites/termites_web"
+	"github.com/RoelofRuis/termites/pkg/termites_web"
 
 	"github.com/gorilla/mux"
 
-	"github.com/RoelofRuis/termites/termites"
+	"github.com/RoelofRuis/termites/pkg/termites"
 )
 
 func WithDebugger(opts ...DebuggerOption) termites.GraphOption {

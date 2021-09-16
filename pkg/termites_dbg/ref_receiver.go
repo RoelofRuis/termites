@@ -1,7 +1,7 @@
 package termites_dbg
 
 import (
-	"github.com/RoelofRuis/termites/termites"
+	"github.com/RoelofRuis/termites/pkg/termites"
 )
 
 type refReceiver struct {

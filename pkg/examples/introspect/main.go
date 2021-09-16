@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/RoelofRuis/termites/termites"
-	"github.com/RoelofRuis/termites/termites_dbg"
+	"github.com/RoelofRuis/termites/pkg/termites"
+	"github.com/RoelofRuis/termites/pkg/termites_dbg"
 )
 
 // Letting the debugger introspect its own graph 🤯

@@ -7,7 +7,7 @@ import (
 	"log"
 	"path/filepath"
 
-	"github.com/RoelofRuis/termites/termites"
+	"github.com/RoelofRuis/termites/pkg/termites"
 
 	"github.com/goccy/go-graphviz"
 )

@@ -9,7 +9,7 @@ import (
 	"net/http"
 	"sync"
 
-	"github.com/RoelofRuis/termites/termites"
+	"github.com/RoelofRuis/termites/pkg/termites"
 )
 
 //go:embed templates/base.gohtml

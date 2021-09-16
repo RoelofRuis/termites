@@ -2,7 +2,7 @@ package termites_web
 
 import (
 	"embed"
-	"github.com/RoelofRuis/termites/termites"
+	"github.com/RoelofRuis/termites/pkg/termites"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
 	"log"

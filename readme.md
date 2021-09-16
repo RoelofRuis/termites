@@ -25,7 +25,7 @@ Create a node using a `builder`
 ```go
 package yourpackage
 
-import "github.com/RoelofRuis/termites/termites"
+import "github.com/RoelofRuis/termites/pkg/termites"
 
 type YourNode struct {
 	In  *termites.InPort  // Receive messages through InPort
@@ -64,7 +64,7 @@ Connect your nodes ports in a graph:
 ```go
 package main
 
-import "github.com/RoelofRuis/termites/termites"
+import "github.com/RoelofRuis/termites/pkg/termites"
 import "yourpackage"
 
 func main() {
@@ -133,8 +133,8 @@ Initialize it by passing it as an option on graph creation. The debugger will be
 ```golang
 package main
 
-import "github.com/RoelofRuis/termites/termites"
-import "github.com/RoelofRuis/termites/termites_dbg"
+import "github.com/RoelofRuis/termites/pkg/termites"
+import "github.com/RoelofRuis/termites/pkg/termites_dbg"
 
 func main() {
 	graph := termites.NewGraph(termites_dbg.WithDebugger())
@@ -165,8 +165,8 @@ javascript code to send and retrieve data.
 ```golang
 package main
 
-import "github.com/RoelofRuis/termites/termites"
-import "github.com/RoelofRuis/termites/termites/termites_web"
+import "github.com/RoelofRuis/termites/pkg/termites"
+import "github.com/RoelofRuis/termites/pkg/termites/termites_web"
 import "github.com/gorilla/mux"
 
 func main() {

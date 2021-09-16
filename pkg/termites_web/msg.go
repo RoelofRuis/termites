@@ -2,7 +2,7 @@ package termites_web
 
 import (
 	"encoding/json"
-	"github.com/RoelofRuis/termites/termites"
+	"github.com/RoelofRuis/termites/pkg/termites"
 )
 
 type ClientMessage struct {

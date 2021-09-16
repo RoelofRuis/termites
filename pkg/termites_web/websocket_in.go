@@ -1,7 +1,7 @@
 package termites_web
 
 import (
-	"github.com/RoelofRuis/termites/termites"
+	"github.com/RoelofRuis/termites/pkg/termites"
 	"github.com/gorilla/websocket"
 	"time"
 )

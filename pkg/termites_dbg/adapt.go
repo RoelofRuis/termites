@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"path/filepath"
 
-	"github.com/RoelofRuis/termites/termites"
-	"github.com/RoelofRuis/termites/termites_web"
+	"github.com/RoelofRuis/termites/pkg/termites"
+	"github.com/RoelofRuis/termites/pkg/termites_web"
 )
 
 var VisualizerAdapter = termites.NewAdapter(

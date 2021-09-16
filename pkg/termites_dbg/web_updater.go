@@ -7,7 +7,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/RoelofRuis/termites/termites"
+	"github.com/RoelofRuis/termites/pkg/termites"
 )
 
 type WebUpdater struct {

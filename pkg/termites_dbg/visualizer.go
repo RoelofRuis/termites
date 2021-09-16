@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/RoelofRuis/termites/termites"
+	"github.com/RoelofRuis/termites/pkg/termites"
 )
 
 type Visualizer struct {

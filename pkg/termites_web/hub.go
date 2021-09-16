@@ -2,7 +2,7 @@ package termites_web
 
 import (
 	"fmt"
-	"github.com/RoelofRuis/termites/termites"
+	"github.com/RoelofRuis/termites/pkg/termites"
 	"time"
 )
 

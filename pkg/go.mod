@@ -1,4 +1,4 @@
-module github.com/RoelofRuis/termites
+module github.com/RoelofRuis/termites/pkg
 
 go 1.16
 
