@@ -8,6 +8,5 @@ docker image build \
 
 docker run -it --rm \
     -v ${PWD}:/app \
-    -v node_modules:/node_modules \
     --network host \
     node-dev $@
