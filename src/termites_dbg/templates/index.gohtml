@@ -10,6 +10,20 @@
 {{ end }}
 {{ define "content" }}
     <div class="p-3 my-2">
-        <img src="{{ .RoutingPath }}" class="img-fluid mx-auto d-block" alt="routing">
+        <img id="routing-graph" src="{{ .RoutingPath }}" class="img-fluid mx-auto d-block" alt="routing">
     </div>
+    <script>
+        connector.connect();
+
+        const img = document.getElementById("routing-graph")
+
+        connector.subscribe(function(tpe, data) {
+            if (tpe === "onupdate") {
+                const path = data.fields.routing_graph.path
+                if (typeof path !== "undefined") {
+                    img.src = path
+                }
+            }
+        })
+    </script>
 {{ end }}

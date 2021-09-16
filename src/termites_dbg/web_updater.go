@@ -2,8 +2,6 @@ package termites_dbg
 
 import (
 	"fmt"
-	"io"
-	"os"
 	"path"
 	"path/filepath"
 	"sort"
@@ -17,21 +15,18 @@ type WebUpdater struct {
 	RefsIn *termites.InPort
 
 	controller *WebController
-	staticDir  string
 }
 
-func NewWebUpdater(staticDir string, controller *WebController) *WebUpdater {
+func NewWebUpdater(controller *WebController) *WebUpdater {
 	builder := termites.NewBuilder("Web Updater")
 
 	n := &WebUpdater{
 		PathIn:     builder.InPort("Visualizer Path", ""),
 		RefsIn:     builder.InPort("Refs", map[termites.NodeId]termites.NodeRef{}),
 		controller: controller,
-		staticDir:  staticDir,
 	}
 
 	builder.OnRun(n.Run)
-	builder.OnShutdown(n.Shutdown)
 
 	return n
 }
@@ -105,28 +100,8 @@ func (d *WebUpdater) Run(_ termites.NodeControl) error {
 
 		case msg := <-d.PathIn.Receive():
 			visualizerPath := msg.Data.(string)
-			src, err := os.Open(visualizerPath)
-			if err != nil {
-				fmt.Printf("Error opening source: %s", err.Error())
-				continue
-			}
 			_, filename := filepath.Split(visualizerPath)
-			staticPath := filepath.Join(d.staticDir, filename)
-			dst, err := os.OpenFile(staticPath, os.O_CREATE|os.O_WRONLY, os.ModePerm)
-			if err != nil {
-				fmt.Printf("Error opening dst: %s", err.Error())
-				continue
-			}
-			_, err = io.Copy(dst, src)
-			if err != nil {
-				fmt.Printf("Error copying routing: %s", err.Error())
-			}
-			d.controller.SetRoutingPath(filepath.Join("/termites_dbg-static/", filename))
+			d.controller.SetRoutingPath(filepath.Join("/dbg-static/", filename))
 		}
 	}
-}
-
-func (d *WebUpdater) Shutdown(control termites.TeardownControl) error {
-	control.LogInfo(fmt.Sprintf("Cleaning up [%s]\n", d.staticDir))
-	return os.RemoveAll(d.staticDir)
 }

@@ -2,9 +2,9 @@ package termites_dbg
 
 import (
 	"fmt"
-	"github.com/RoelofRuis/termites/termites"
-	"io/ioutil"
 	"os"
+
+	"github.com/RoelofRuis/termites/termites"
 )
 
 type Visualizer struct {
@@ -13,23 +13,17 @@ type Visualizer struct {
 	writer  *graphWriter
 }
 
-func NewVisualizer() *Visualizer {
+func NewVisualizer(fileDir string) *Visualizer {
 	builder := termites.NewBuilder("Visualizer")
-
-	var writer *graphWriter
-	tempDir, err := ioutil.TempDir("", "vis-")
-	if err == nil {
-		writer = &graphWriter{
-			rootDir:      tempDir,
-			writeDotFile: false,
-			version:      0,
-		}
-	}
 
 	n := &Visualizer{
 		RefsIn:  builder.InPort("Refs", map[termites.NodeId]termites.NodeRef{}),
 		PathOut: builder.OutPort("Path", ""),
-		writer:  writer,
+		writer: &graphWriter{
+			rootDir:      fileDir,
+			writeDotFile: false,
+			version:      0,
+		},
 	}
 
 	builder.OnRun(n.Run)
@@ -51,6 +45,7 @@ func (v *Visualizer) Run(_ termites.NodeControl) error {
 		}
 
 		path := v.writer.saveRoutingGraph(nodes)
+
 		if path != "" {
 			v.PathOut.Send(path)
 		}

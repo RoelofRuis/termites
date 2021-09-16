@@ -2,6 +2,8 @@ package termites_dbg
 
 import (
 	"encoding/json"
+	"path/filepath"
+
 	"github.com/RoelofRuis/termites/termites"
 	"github.com/RoelofRuis/termites/termites_web"
 )
@@ -11,15 +13,17 @@ var VisualizerAdapter = termites.NewAdapter(
 	"",
 	termites_web.JsonPartialData{},
 	func(i interface{}) (interface{}, error) {
-		routingPath := i.(string)
+		visualizerPath := i.(string)
+		_, filename := filepath.Split(visualizerPath)
+
 		msg, err := json.Marshal(struct {
-			RoutingPath string `json:"routing_path"`
+			Path string `json:"path"`
 		}{
-			RoutingPath: routingPath,
+			Path: filepath.Join("/dbg-static/", filename),
 		})
 		if err != nil {
 			return nil, err
 		}
-		return termites_web.JsonPartialData{Key: "visualizer", Data: msg}, nil
+		return termites_web.JsonPartialData{Key: "routing_graph", Data: msg}, nil
 	},
 )

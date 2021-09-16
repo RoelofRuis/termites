@@ -19,13 +19,6 @@
         </div>
     </nav>
     {{ template "content" . }}
-    <script>
-        connector.connect();
-
-        connector.subscribe(function(tpe, data) {
-            console.log(data);
-        })
-    </script>
     </body>
     </html>
 {{ end }}
