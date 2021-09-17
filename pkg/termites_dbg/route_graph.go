@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"path/filepath"
 
 	"github.com/RoelofRuis/termites/pkg/termites"
@@ -28,7 +27,7 @@ type connectionEdge struct {
 	ViaAdapter *termites.AdapterRef
 }
 
-func (w *graphWriter) saveRoutingGraph(nodes []termites.NodeRef) string {
+func (w *graphWriter) saveRoutingGraph(nodes []termites.NodeRef) (string, error) {
 
 	var connections []connectionEdge
 
@@ -188,10 +187,9 @@ func (w *graphWriter) saveRoutingGraph(nodes []termites.NodeRef) string {
 
 	err, path := w.write(g)
 	if err != nil {
-		log.Printf("error creating routing graph: %v", err)
-		return ""
+		return "", err
 	}
-	return path
+	return path, nil
 }
 
 func (w *graphWriter) write(g routingGraph) (error, string) {

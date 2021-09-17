@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"html/template"
-	"log"
 	"net/http"
 	"sync"
 
@@ -95,6 +94,11 @@ func (d *WebController) HandleNodes(w http.ResponseWriter, req *http.Request) {
 }
 
 func (d *WebController) HandleOpen(w http.ResponseWriter, req *http.Request) {
+	if d.editor == nil {
+		http.Error(w, "no editor configured", http.StatusNotImplemented)
+		return
+	}
+
 	ids, ok := req.URL.Query()["id"]
 	if !ok || len(ids[0]) < 1 {
 		http.Error(w, "no id given", http.StatusBadRequest)
@@ -108,7 +112,8 @@ func (d *WebController) HandleOpen(w http.ResponseWriter, req *http.Request) {
 	}
 
 	if err := d.openResource(reses[0], ids[0]); err != nil {
-		log.Printf("error: %s", err.Error())
+		http.Error(w, "error opening resource", http.StatusInternalServerError)
+		return
 	}
 
 	http.Redirect(w, req, "/nodes", http.StatusFound)

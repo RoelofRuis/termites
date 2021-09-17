@@ -2,11 +2,12 @@ package termites_web
 
 import (
 	"embed"
+	"fmt"
+	"net/http"
+
 	"github.com/RoelofRuis/termites/pkg/termites"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
-	"log"
-	"net/http"
 )
 
 var upgrader = websocket.Upgrader{
@@ -51,8 +52,7 @@ type Client struct {
 func (c *connector) ConnectWebsocket(w http.ResponseWriter, r *http.Request) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		log.Printf("unable to upgrade the connection: %s", err.Error())
-		http.Error(w, "Unable to upgrade connection", http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf("unable to upgrade connection: %s", err), http.StatusInternalServerError)
 		return
 	}
 

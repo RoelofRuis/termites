@@ -3,7 +3,6 @@ package termites_web
 import (
 	"bytes"
 	"encoding/json"
-	"log"
 
 	"github.com/RoelofRuis/termites/pkg/termites"
 )
@@ -30,10 +29,10 @@ func NewJsonCombiner() *JsonCombiner {
 	return combiner
 }
 
-func (f *JsonCombiner) Run(_ termites.NodeControl) error {
+func (f *JsonCombiner) Run(c termites.NodeControl) error {
 	data, err := f.combiner.get()
 	if err != nil {
-		log.Printf("JSON error: %s", err.Error())
+		c.LogError("JSON error", err)
 	} else {
 		f.JsonDataOut.Send(data)
 	}
@@ -48,7 +47,7 @@ func (f *JsonCombiner) Run(_ termites.NodeControl) error {
 
 			data, err := f.combiner.get()
 			if err != nil {
-				log.Printf("JSON error: %s", err.Error())
+				c.LogError("JSON error", err)
 				continue
 			}
 

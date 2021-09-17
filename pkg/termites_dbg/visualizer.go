@@ -32,7 +32,7 @@ func NewVisualizer(fileDir string) *Visualizer {
 	return n
 }
 
-func (v *Visualizer) Run(_ termites.NodeControl) error {
+func (v *Visualizer) Run(c termites.NodeControl) error {
 	if v.writer == nil {
 		return fmt.Errorf("no graph writer initialized for visualizer")
 	}
@@ -44,11 +44,13 @@ func (v *Visualizer) Run(_ termites.NodeControl) error {
 			nodes = append(nodes, ref)
 		}
 
-		path := v.writer.saveRoutingGraph(nodes)
-
-		if path != "" {
-			v.PathOut.Send(path)
+		path, err := v.writer.saveRoutingGraph(nodes)
+		if err != nil {
+			c.LogError("error creating routing graph", err)
+			continue
 		}
+
+		v.PathOut.Send(path)
 	}
 
 	return nil
