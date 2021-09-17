@@ -12,6 +12,8 @@ import (
 	"github.com/gorilla/mux"
 )
 
+const WebURL = "localhost:8000"
+
 func main() {
 	graph := termites.NewGraph(
 		termites.PrintLogsToConsole(),
@@ -20,27 +22,25 @@ func main() {
 	)
 
 	connector := termites_web.NewConnector(graph)
-
 	router := mux.NewRouter()
+	router.Path("/").Methods("GET").HandlerFunc(handleIndex)
 	connector.Bind(router)
 
 	generator := examples.NewGenerator(100 * time.Millisecond)
 	graph.ConnectTo(generator.BytesOut, connector.Hub.InFromApp)
 
-	router.Path("/").Methods("GET").HandlerFunc(handleIndex)
-
 	go func() {
-		err := http.ListenAndServe(":8000", router)
+		err := http.ListenAndServe(WebURL, router)
 		if err != nil {
-			log.Println(err)
+			log.Fatal(err)
 		}
 	}()
 
-	_ = termites_web.RunBrowser("localhost:8000")
+	_ = termites_web.RunBrowser(WebURL)
 
 	graph.Wait()
 }
 
 func handleIndex(w http.ResponseWriter, r *http.Request) {
-	http.ServeFile(w, r, "./pkg/examples/websocket/static/index.html")
+	http.ServeFile(w, r, "./examples/websocket/index.html")
 }
