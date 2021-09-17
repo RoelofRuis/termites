@@ -1,9 +1,9 @@
 package termites_web
 
 import (
-	"fmt"
-	"github.com/RoelofRuis/termites/pkg/termites"
 	"time"
+
+	"github.com/RoelofRuis/termites/pkg/termites"
 )
 
 type Hub struct {
@@ -31,9 +31,8 @@ func newHub() *Hub {
 	return h
 }
 
-func (h *Hub) registerClient(client Client) {
-	fmt.Printf(" > jahoor")
-	// register and send on ConnectionOut
+func (h *Hub) registerClient(clientId string) {
+	h.ConnectionOut.Send(ClientConnection{ConnType: ClientConnect, Id: clientId})
 }
 
 func (h *Hub) Run(c termites.NodeControl) error {

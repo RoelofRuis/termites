@@ -41,14 +41,6 @@ func (c *connector) Bind(router *mux.Router) {
 	router.PathPrefix("/embedded/").Methods("GET").Handler(http.StripPrefix("/embedded/", embeddedServer))
 }
 
-type Client struct {
-	id           string
-	websocketIn  *webSocketIn
-	websocketOut *webSocketOut
-	inConn       *termites.Connection
-	outConn      *termites.Connection
-}
-
 func (c *connector) ConnectWebsocket(w http.ResponseWriter, r *http.Request) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
@@ -70,4 +62,6 @@ func (c *connector) ConnectWebsocket(w http.ResponseWriter, r *http.Request) {
 
 	connectWebsocketIn(clientId, conn, c)
 	connectWebSocketOut(clientId, conn, c)
+
+	c.Hub.registerClient(clientId)
 }
