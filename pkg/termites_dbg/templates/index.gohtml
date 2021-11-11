@@ -1,0 +1,26 @@
+{{ define "nav" }}
+    <ul class="navbar-nav me-auto">
+        <li class="navbar-item">
+            <a class="nav-link active" href="/">Graph</a>
+        </li>
+    </ul>
+{{ end }}
+{{ define "content" }}
+    <div class="p-3 my-2">
+        <object id="routing-graph" type="image/svg+xml" data="{{ .RoutingPath }}" class="img-fluid mx-auto d-block"></object>
+    </div>
+    <script>
+        connector.connect();
+
+        const img = document.getElementById("routing-graph")
+
+        connector.subscribe(function(tpe, data) {
+            if (tpe === "onupdate") {
+                const path = data.fields.routing_graph.path
+                if (typeof path !== "undefined") {
+                    img.src = path
+                }
+            }
+        })
+    </script>
+{{ end }}

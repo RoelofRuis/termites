@@ -25,7 +25,7 @@ Create a node using a `builder`
 ```go
 package yourpackage
 
-import "github.com/RoelofRuis/termites/termites"
+import "github.com/RoelofRuis/termites/pkg/termites"
 
 type YourNode struct {
 	In  *termites.InPort  // Receive messages through InPort
@@ -64,7 +64,7 @@ Connect your nodes ports in a graph:
 ```go
 package main
 
-import "github.com/RoelofRuis/termites/termites"
+import "github.com/RoelofRuis/termites/pkg/termites"
 import "yourpackage"
 
 func main() {
@@ -133,8 +133,8 @@ Initialize it by passing it as an option on graph creation. The debugger will be
 ```golang
 package main
 
-import "github.com/RoelofRuis/termites/termites"
-import "github.com/RoelofRuis/termites/termites_dbg"
+import "github.com/RoelofRuis/termites/pkg/termites"
+import "github.com/RoelofRuis/termites/pkg/termites_dbg"
 
 func main() {
 	graph := termites.NewGraph(termites_dbg.WithDebugger())
@@ -153,6 +153,15 @@ Configuration options can be passed to the debugger Graph Option.
 termites_dbg.WithDebugger(termites_dbg.OnHttpPort(1234))
 ```
 
+#### Link to a code editor
+The debugger automatically extracts source file information about the graph it is linked to.
+These files can then be opened in your favorite editor when clicking the nodes in the debugger.
+To bind an editor, use this option. The `editor.go` file defines some editors, but you can easily plug your own.
+
+```golang
+termites_dbg.OpenIn(termites_dbg.EditorGoland)
+```
+
 ## Module `termites_web`
 
 The web module contains components for easy interaction with the web, mainly through it's websocket graph component.
@@ -165,8 +174,8 @@ javascript code to send and retrieve data.
 ```golang
 package main
 
-import "github.com/RoelofRuis/termites/termites"
-import "github.com/RoelofRuis/termites/termites/termites_web"
+import "github.com/RoelofRuis/termites/pkg/termites"
+import "github.com/RoelofRuis/termites/pkg/termites/termites_web"
 import "github.com/gorilla/mux"
 
 func main() {
