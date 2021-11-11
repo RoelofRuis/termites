@@ -36,7 +36,6 @@ func Init(graph termites.Graph, debugger *debugger) {
 	controller.editor = debugger.editor
 
 	router.HandleFunc("/", controller.HandleIndex)
-	router.HandleFunc("/nodes", controller.HandleNodes)
 	router.HandleFunc("/open", controller.HandleOpen)
 
 	// Visualizer

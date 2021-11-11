@@ -20,10 +20,11 @@ type graphWriter struct {
 }
 
 type connectionEdge struct {
-	FromNode termites.NodeId
-	FromPort termites.OutPortId
-	ToNode   *termites.NodeId
-	ToPort   *termites.InPortId
+	Id         termites.ConnectionId
+	FromNode   termites.NodeId
+	FromPort   termites.OutPortId
+	ToNode     *termites.NodeId
+	ToPort     *termites.InPortId
 	ViaAdapter *termites.AdapterRef
 }
 
@@ -54,6 +55,7 @@ func (w *graphWriter) saveRoutingGraph(nodes []termites.NodeRef) (string, error)
 					toPort = &connection.In.Id
 				}
 				connections = append(connections, connectionEdge{
+					Id:         connection.Id,
 					FromNode:   fromId,
 					FromPort:   out.Id,
 					ToNode:     toId,
@@ -124,7 +126,7 @@ func (w *graphWriter) saveRoutingGraph(nodes []termites.NodeRef) (string, error)
 			ref:       ref,
 			in:        nodeInPorts,
 			out:       nodeOutPorts,
-			url:       fmt.Sprintf("/open?id=run:%x", node.Id),
+			url:       fmt.Sprintf("/open?id=runner:%x", node.Id),
 		})
 	}
 
@@ -138,6 +140,7 @@ func (w *graphWriter) saveRoutingGraph(nodes []termites.NodeRef) (string, error)
 				ref:   adapterRef,
 				name:  conn.ViaAdapter.Name,
 				shape: "rect",
+				url:   fmt.Sprintf("/open?id=adapter:%x", conn.Id),
 			})
 
 			g.addEdge(edge{

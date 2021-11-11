@@ -18,9 +18,6 @@ var basePage string
 //go:embed templates/index.gohtml
 var indexPage string
 
-//go:embed templates/nodes.gohtml
-var nodesPage string
-
 type WebController struct {
 	index *template.Template
 	nodes *template.Template
@@ -58,7 +55,6 @@ type ConnectionInfo struct {
 func NewWebController() *WebController {
 	return &WebController{
 		index:      mustParse(basePage, indexPage),
-		nodes:      mustParse(basePage, nodesPage),
 		uiDataLock: sync.RWMutex{},
 		uiData:     UIData{RoutingPath: "", Nodes: nil},
 	}
@@ -85,15 +81,6 @@ func (d *WebController) HandleIndex(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
-func (d *WebController) HandleNodes(w http.ResponseWriter, req *http.Request) {
-	d.uiDataLock.RLock()
-	err := d.nodes.ExecuteTemplate(w, "base", d.uiData)
-	d.uiDataLock.RUnlock()
-	if err != nil {
-		panic(err)
-	}
-}
-
 func (d *WebController) HandleOpen(w http.ResponseWriter, req *http.Request) {
 	if d.editor == nil {
 		http.Error(w, "no editor configured", http.StatusNotImplemented)
@@ -112,7 +99,7 @@ func (d *WebController) HandleOpen(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	if parts[0] != "run" && parts[0] != "transform" {
+	if parts[0] != "runner" && parts[0] != "adapter" {
 		http.Error(w, "invalid resource type given", http.StatusBadRequest)
 		return
 	}
@@ -133,7 +120,7 @@ func (d *WebController) openResource(resource string, id string) error {
 	d.uiDataLock.RLock()
 	defer d.uiDataLock.RUnlock()
 
-	if resource == "run" {
+	if resource == "runner" {
 		for _, n := range d.uiData.Nodes {
 			if n.Id == id {
 				if err := open(n.RunInfo, d.editor); err != nil {
@@ -142,7 +129,7 @@ func (d *WebController) openResource(resource string, id string) error {
 				return nil
 			}
 		}
-	} else if resource == "transform" {
+	} else if resource == "adapter" {
 		for _, n := range d.uiData.Nodes {
 			for _, c := range n.Connections {
 				if c.Id == id {
