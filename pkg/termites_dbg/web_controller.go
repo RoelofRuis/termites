@@ -130,7 +130,7 @@ func (d *WebController) openResource(resource string, id string) error {
 	if resource == "run" {
 		for _, n := range d.uiData.Nodes {
 			if n.Id == id && n.RunInfo.File != "" {
-				if err := d.editor.Open(n.RunInfo.File, n.RunInfo.Line); err != nil {
+				if err := d.editor(n.RunInfo.File, n.RunInfo.Line); err != nil {
 					return err
 				}
 				return nil
@@ -140,7 +140,7 @@ func (d *WebController) openResource(resource string, id string) error {
 		for _, n := range d.uiData.Nodes {
 			for _, c := range n.Connections {
 				if c.Id == id && c.TransformInfo.File != "" {
-					if err := d.editor.Open(c.TransformInfo.File, c.TransformInfo.Line); err != nil {
+					if err := d.editor(c.TransformInfo.File, c.TransformInfo.Line); err != nil {
 						return err
 					}
 					return nil
