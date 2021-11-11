@@ -27,7 +27,6 @@ func WithDebugger(opts ...DebuggerOption) termites.GraphOption {
 }
 
 func Init(graph termites.Graph, debugger *debugger) {
-
 	connector := termites_web.NewConnector(graph)
 
 	router := mux.NewRouter()

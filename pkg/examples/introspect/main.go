@@ -8,7 +8,9 @@ import (
 // Letting the debugger introspect its own graph 🤯
 func main() {
 	// Explicitly create separate debugger, so we can bind it on graph creation with WithEventSubscriber.
-	debugger := termites_dbg.NewDebugger()
+	debugger := termites_dbg.NewDebugger(termites_dbg.OnHttpPort(4242))
+
+	// Create a new graph
 	graph := termites.NewGraph(
 		termites.Named("Termites Debugger"),
 		termites.PrintLogsToConsole(),
@@ -19,4 +21,6 @@ func main() {
 
 	// Await termination.
 	graph.Wait()
+
+	// Now visit http://localhost:4242 in your browser to see the debugger inspecting itself!
 }
