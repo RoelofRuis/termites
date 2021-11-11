@@ -2,8 +2,16 @@ package termites_dbg
 
 import (
 	"fmt"
+	"github.com/RoelofRuis/termites/pkg/termites"
 	"os/exec"
 )
+
+func open(f termites.FunctionInfo, editor CodeEditor) error {
+	if f.File == "" {
+		return nil
+	}
+	return editor(f.File, f.Line)
+}
 
 type CodeEditor func(file string, line int) error
 

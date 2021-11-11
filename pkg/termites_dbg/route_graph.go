@@ -20,10 +20,10 @@ type graphWriter struct {
 }
 
 type connectionEdge struct {
-	FromActor  termites.NodeId
-	FromPort   termites.OutPortId
-	ToActor    *termites.NodeId
-	ToPort     *termites.InPortId
+	FromNode termites.NodeId
+	FromPort termites.OutPortId
+	ToNode   *termites.NodeId
+	ToPort   *termites.InPortId
 	ViaAdapter *termites.AdapterRef
 }
 
@@ -54,9 +54,9 @@ func (w *graphWriter) saveRoutingGraph(nodes []termites.NodeRef) (string, error)
 					toPort = &connection.In.Id
 				}
 				connections = append(connections, connectionEdge{
-					FromActor:  fromId,
+					FromNode:   fromId,
 					FromPort:   out.Id,
-					ToActor:    toId,
+					ToNode:     toId,
 					ToPort:     toPort,
 					ViaAdapter: connection.Adapter,
 				})
@@ -80,13 +80,13 @@ func (w *graphWriter) saveRoutingGraph(nodes []termites.NodeRef) (string, error)
 		}
 	}
 
-	actorRef := make(map[termites.NodeId]string)
+	nodeRef := make(map[termites.NodeId]string)
 	inPortRefs := make(map[termites.InPortId]string)
 	outPortRefs := make(map[termites.OutPortId]string)
 	portIdx := 0
-	for i, actor := range nodes {
+	for i, node := range nodes {
 		nodeInPorts := make(map[string]visualizerPort)
-		for inId, in := range actor.InPorts {
+		for inId, in := range node.InPorts {
 			ref := fmt.Sprintf("inPort_%d", portIdx)
 			portIdx++
 			inPortRefs[inId] = ref
@@ -101,7 +101,7 @@ func (w *graphWriter) saveRoutingGraph(nodes []termites.NodeRef) (string, error)
 		}
 
 		nodeOutPorts := make(map[string]visualizerPort)
-		for outId, out := range actor.OutPorts {
+		for outId, out := range node.OutPorts {
 			ref := fmt.Sprintf("outPort_%d", portIdx)
 			portIdx++
 			outPortRefs[outId] = ref
@@ -116,19 +116,20 @@ func (w *graphWriter) saveRoutingGraph(nodes []termites.NodeRef) (string, error)
 		}
 
 		ref := fmt.Sprintf("node_%d", i)
-		actorRef[actor.Id] = ref
+		nodeRef[node.Id] = ref
 
 		g.addNode(visualizerNode{
-			name:      actor.Name,
+			name:      node.Name,
 			fontcolor: "black",
 			ref:       ref,
 			in:        nodeInPorts,
 			out:       nodeOutPorts,
+			url:       fmt.Sprintf("/open?id=run:%x", node.Id),
 		})
 	}
 
 	for ci, conn := range connections {
-		outNodeRef := actorRef[conn.FromActor]
+		outNodeRef := nodeRef[conn.FromNode]
 		outPortRef := outPortRefs[conn.FromPort]
 
 		if conn.ViaAdapter != nil {
@@ -153,11 +154,11 @@ func (w *graphWriter) saveRoutingGraph(nodes []termites.NodeRef) (string, error)
 			outPortRef = ""
 		}
 
-		if conn.ToActor == nil || conn.ToPort == nil {
+		if conn.ToNode == nil || conn.ToPort == nil {
 			continue
 		}
 
-		inNodeRef := actorRef[*conn.ToActor]
+		inNodeRef := nodeRef[*conn.ToNode]
 		inPortRef := inPortRefs[*conn.ToPort]
 
 		edgeStyle := "solid"
@@ -235,6 +236,7 @@ type visualizerNode struct {
 	out           map[string]visualizerPort
 	subtext       string
 	shape         string
+	url           string
 }
 
 type visualizerPort struct {
@@ -280,11 +282,18 @@ func (n *visualizerNode) String() string {
 		outline = "0"
 	}
 
+	url := ""
+	if n.url != "" {
+		url = n.url
+	}
+
 	return fmt.Sprintf(`
 %s [
 	color=%s
 	fontcolor=%s
     shape=%s
+	URL="%s"
+	target="_parent"
 	label=<
   <table cellborder='%s' border='%s' cellspacing='0' style='rounded'>
     <tr>
@@ -292,7 +301,7 @@ func (n *visualizerNode) String() string {
     </tr>
   </table>
 >];
-`, n.ref, color, fontcolor, shape, outline, outline, contents)
+`, n.ref, color, fontcolor, shape, url, outline, outline, contents)
 }
 
 func ports(m map[string]visualizerPort, in bool) string {

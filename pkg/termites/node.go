@@ -78,10 +78,6 @@ func (n *node) ref() NodeRef {
 	if err != nil {
 		runInfo = FunctionInfo{}
 	}
-	shutdownInfo, err := determineFunctionInfo(n.shutdown)
-	if err != nil {
-		shutdownInfo = FunctionInfo{}
-	}
 
 	return NodeRef{
 		Id:           n.id,
@@ -90,7 +86,6 @@ func (n *node) ref() NodeRef {
 		InPorts:      inPortRefs,
 		OutPorts:     outPortRefs,
 		RunInfo:      runInfo,
-		ShutdownInfo: shutdownInfo,
 	}
 }
 

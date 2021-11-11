@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"html/template"
 	"net/http"
+	"strings"
 	"sync"
 
 	"github.com/RoelofRuis/termites/pkg/termites"
@@ -49,7 +50,7 @@ type ConnectionInfo struct {
 	OutPortName     string
 	AdapterName     string
 	AdapterFilename string
-	TransformInfo   termites.FunctionInfo
+	AdapterInfo     termites.FunctionInfo
 	InNodeName      string
 	InPortName      string
 }
@@ -105,18 +106,23 @@ func (d *WebController) HandleOpen(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	reses, ok := req.URL.Query()["res"]
-	if !ok || len(reses[0]) < 1 {
-		http.Error(w, "no res given", http.StatusBadRequest)
+	parts := strings.Split(ids[0], ":")
+	if len(parts) != 2 {
+		http.Error(w, "invalid id", http.StatusBadRequest)
 		return
 	}
 
-	if err := d.openResource(reses[0], ids[0]); err != nil {
+	if parts[0] != "run" && parts[0] != "transform" {
+		http.Error(w, "invalid resource type given", http.StatusBadRequest)
+		return
+	}
+
+	if err := d.openResource(parts[0], parts[1]); err != nil {
 		http.Error(w, "error opening resource", http.StatusInternalServerError)
 		return
 	}
 
-	http.Redirect(w, req, "/nodes", http.StatusFound)
+	http.Redirect(w, req, "/", http.StatusFound)
 }
 
 func (d *WebController) openResource(resource string, id string) error {
@@ -129,8 +135,8 @@ func (d *WebController) openResource(resource string, id string) error {
 
 	if resource == "run" {
 		for _, n := range d.uiData.Nodes {
-			if n.Id == id && n.RunInfo.File != "" {
-				if err := d.editor(n.RunInfo.File, n.RunInfo.Line); err != nil {
+			if n.Id == id {
+				if err := open(n.RunInfo, d.editor); err != nil {
 					return err
 				}
 				return nil
@@ -139,8 +145,8 @@ func (d *WebController) openResource(resource string, id string) error {
 	} else if resource == "transform" {
 		for _, n := range d.uiData.Nodes {
 			for _, c := range n.Connections {
-				if c.Id == id && c.TransformInfo.File != "" {
-					if err := d.editor(c.TransformInfo.File, c.TransformInfo.Line); err != nil {
+				if c.Id == id {
+					if err := open(c.AdapterInfo, d.editor); err != nil {
 						return err
 					}
 					return nil

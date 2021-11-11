@@ -10,7 +10,7 @@
 {{ end }}
 {{ define "content" }}
     <div class="p-3 my-2">
-        <img id="routing-graph" src="{{ .RoutingPath }}" class="img-fluid mx-auto d-block" alt="routing">
+        <object id="routing-graph" type="image/svg+xml" data="{{ .RoutingPath }}" class="img-fluid mx-auto d-block"></object>
     </div>
     <script>
         connector.connect();

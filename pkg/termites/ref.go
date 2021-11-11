@@ -12,7 +12,6 @@ type NodeRef struct {
 	InPorts      map[InPortId]InPortRef
 	OutPorts     map[OutPortId]OutPortRef
 	RunInfo      FunctionInfo
-	ShutdownInfo FunctionInfo
 }
 
 type InPortRef struct {

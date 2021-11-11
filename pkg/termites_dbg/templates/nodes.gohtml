@@ -24,7 +24,7 @@
                                 <span class="badge rounded-pill bg-success border border-secondary p-2 top-0 start-0 translate-middle position-absolute"><span class="visually-hidden">Active</span></span>
                             {{ end}}
                             <a class="link-dark" title="open [{{ .Name }}] runner source"
-                               href="/open?res=run&id={{ .Id }}">{{ .Name }}</a>
+                               href="/open?id=run:{{ .Id }}">{{ .Name }}</a>
                         </div>
                         <ul class="list-group list-group-flush">
                             {{ range .Connections }}
@@ -36,7 +36,7 @@
                                         <span class="badge rounded-pill bg-secondary">
                                             <a class="link-light"
                                                title="open adapter [{{ .AdapterName }}] transformer source"
-                                               href="/open?res=transform&id={{ .Id }}">{{ .AdapterName }}</a>
+                                               href="/open?&id=transform:{{ .Id }}">{{ .AdapterName }}</a>
                                         </span>
                                         <i class="bi bi-arrow-right"></i>
                                     {{ end }}

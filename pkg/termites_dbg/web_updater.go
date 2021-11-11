@@ -76,7 +76,7 @@ func (d *WebUpdater) Run(_ termites.NodeControl) error {
 							OutPortName:     i.Name,
 							AdapterName:     adapterName,
 							AdapterFilename: adapterFileName,
-							TransformInfo:   adapterTransform,
+							AdapterInfo:     adapterTransform,
 							InNodeName:      inNodeName,
 							InPortName:      inPortName,
 						})
