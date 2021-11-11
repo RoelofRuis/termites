@@ -8,7 +8,7 @@ func OnHttpPort(port int) DebuggerOption {
 	}
 }
 
-func OpenInEditor(editor CodeEditor) DebuggerOption {
+func OpenIn(editor CodeEditor) DebuggerOption {
 	return func(conf *debuggerConfig) {
 		conf.editor = editor
 	}

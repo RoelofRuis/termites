@@ -153,6 +153,15 @@ Configuration options can be passed to the debugger Graph Option.
 termites_dbg.WithDebugger(termites_dbg.OnHttpPort(1234))
 ```
 
+#### Link to a code editor
+The debugger automatically extracts source file information about the graph it is linked to.
+These files can then be opened in your favorite editor when clicking the nodes in the debugger.
+To bind an editor, use this option. The `editor.go` file defines some editors, but you can easily plug your own.
+
+```golang
+termites_dbg.OpenIn(termites_dbg.EditorGoland)
+```
+
 ## Module `termites_web`
 
 The web module contains components for easy interaction with the web, mainly through it's websocket graph component.

@@ -5,13 +5,9 @@ import (
 	"os/exec"
 )
 
-type CodeEditor interface {
-	Open(file string, line int) error
-}
+type CodeEditor func(file string, line int) error
 
-type Goland struct{}
-
-func (e Goland) Open(file string, line int) error {
+var EditorGoland CodeEditor = func(file string, line int) error {
 	err := exec.Command(
 		"goland",
 		"--line",
@@ -24,9 +20,7 @@ func (e Goland) Open(file string, line int) error {
 	return nil
 }
 
-type VisualStudioCode struct{}
-
-func (e VisualStudioCode) Open(file string, line int) error {
+var EditorVSCode CodeEditor = func(file string, line int) error {
 	err := exec.Command(
 		"code",
 		"--goto",
