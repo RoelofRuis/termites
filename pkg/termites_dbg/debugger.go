@@ -10,13 +10,15 @@ import (
 	"github.com/gorilla/mux"
 )
 
+// WithDebugger initializes a new debugger (represented by its own termites.Graph!) and returns it as an option so it
+// can be attached the main program graph.
 func WithDebugger(opts ...DebuggerOption) termites.GraphOption {
 	dbg := NewDebugger(opts...)
 
 	graph := termites.NewGraph(
 		termites.Named("Termites Debugger"),
 		termites.WithoutSigtermHandler(),
-		termites.WithEventSubscriber(dbg.TempDir),
+		termites.WithEventSubscriber(dbg.tempDir),
 	)
 
 	Init(graph, dbg)
@@ -24,7 +26,9 @@ func WithDebugger(opts ...DebuggerOption) termites.GraphOption {
 	return termites.WithEventSubscriber(dbg)
 }
 
-func Init(graph *termites.Graph, debugger *debugger) {
+// Init initializes the given graph with the given debugger. Prefer to use the termites.GraphOption WithDebugger
+// function to initiate a connection.
+func Init(graph *termites.Graph, debugger *Debugger) {
 	connector := termites_web.NewConnector(graph)
 
 	router := mux.NewRouter()
@@ -37,7 +41,7 @@ func Init(graph *termites.Graph, debugger *debugger) {
 	router.HandleFunc("/open", controller.HandleOpen)
 
 	// Visualizer
-	visualizer := NewVisualizer(debugger.TempDir.Dir)
+	visualizer := NewVisualizer(debugger.tempDir.Dir)
 	graph.ConnectTo(debugger.refReceiver.RefsOut, visualizer.RefsIn, termites.WithMailbox(&termites.DebouncedMailbox{Delay: 100 * time.Millisecond}))
 
 	// Web UI
@@ -51,7 +55,7 @@ func Init(graph *termites.Graph, debugger *debugger) {
 	graph.ConnectTo(jsonCombiner.JsonDataOut, connector.Hub.InFromApp)
 
 	// Serve static files
-	router.PathPrefix("/dbg-static/").Methods("GET").Handler(http.StripPrefix("/dbg-static/", http.FileServer(http.Dir(debugger.TempDir.Dir))))
+	router.PathPrefix("/dbg-static/").Methods("GET").Handler(http.StripPrefix("/dbg-static/", http.FileServer(http.Dir(debugger.tempDir.Dir))))
 
 	// Run termites_web server
 	go func() {
@@ -61,8 +65,8 @@ func Init(graph *termites.Graph, debugger *debugger) {
 	}()
 }
 
-type debugger struct {
-	TempDir *termites.ManagedTempDirectory
+type Debugger struct {
+	tempDir *termites.ManagedTempDirectory
 
 	httpPort        int
 	editor          CodeEditor
@@ -75,9 +79,9 @@ type debuggerConfig struct {
 	editor   CodeEditor
 }
 
-// NewDebugger instantiates a non-connected debugger, mainly available for advanced usage.
+// NewDebugger instantiates a non-connected Debugger, mainly available for advanced usage.
 // Prefer to use the termites.GraphOption function WithDebugger to attach it directly to a graph if possible.
-func NewDebugger(options ...DebuggerOption) *debugger {
+func NewDebugger(options ...DebuggerOption) *Debugger {
 	config := &debuggerConfig{
 		httpPort: 4242,
 		editor:   nil,
@@ -87,8 +91,8 @@ func NewDebugger(options ...DebuggerOption) *debugger {
 		opt(config)
 	}
 
-	return &debugger{
-		TempDir: termites.NewManagedTempDirectory("debug-"),
+	return &Debugger{
+		tempDir: termites.NewManagedTempDirectory("debug-"),
 
 		httpPort:        config.httpPort,
 		editor:          config.editor,
@@ -97,12 +101,12 @@ func NewDebugger(options ...DebuggerOption) *debugger {
 	}
 }
 
-func (d *debugger) SetEventBus(b termites.EventBus) {
+func (d *Debugger) SetEventBus(b termites.EventBus) {
 	b.Subscribe(termites.NodeRefUpdated, d.OnNodeRefUpdated)
 	b.Subscribe(termites.NodeStopped, d.OnNodeStopped)
 }
 
-func (d *debugger) OnNodeRefUpdated(e termites.Event) error {
+func (d *Debugger) OnNodeRefUpdated(e termites.Event) error {
 	n, ok := e.Data.(termites.NodeUpdatedEvent)
 	if !ok {
 		return termites.InvalidEventError
@@ -111,7 +115,7 @@ func (d *debugger) OnNodeRefUpdated(e termites.Event) error {
 	return nil
 }
 
-func (d *debugger) OnNodeStopped(e termites.Event) error {
+func (d *Debugger) OnNodeStopped(e termites.Event) error {
 	n, ok := e.Data.(termites.NodeStoppedEvent)
 	if !ok {
 		return termites.InvalidEventError

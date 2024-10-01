@@ -5,18 +5,11 @@ import (
 	"sync"
 )
 
+// A Graph manages a collection nodes and their connections and serves as the builder of the connections.
 type Graph struct {
 	name     string
 	eventBus *eventBus
 	close    *sync.WaitGroup
-}
-
-type graphConfig struct {
-	name               string
-	subscribers        []EventSubscriber
-	withSigtermHandler bool
-	printLogs          bool
-	printMessages      bool
 }
 
 func NewGraph(opts ...GraphOption) *Graph {

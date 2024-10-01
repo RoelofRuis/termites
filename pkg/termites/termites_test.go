@@ -180,16 +180,13 @@ func TestAdapter(t *testing.T) {
 
 	adapter := NewAdapter(
 		"string to int",
-		"",
-		0,
-		func(in interface{}) (interface{}, error) {
-			s := in.(string)
-			if s == "skip" {
-				return nil, nil
+		func(in string) (int, error) {
+			if in == "skip" {
+				return 0, SkipElement
 			}
-			i, err := strconv.ParseInt(s, 10, 64)
+			i, err := strconv.ParseInt(in, 10, 64)
 			if err != nil {
-				return nil, err
+				return 0, err
 			}
 			return int(i), nil
 		},

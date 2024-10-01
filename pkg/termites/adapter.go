@@ -1,28 +1,30 @@
 package termites
 
-import "reflect"
+import (
+	"errors"
+	"reflect"
+)
+
+var SkipElement = errors.New("skip element")
 
 type Adapter struct {
 	name        string
+	transform   func(interface{}) (interface{}, error)
 	inDataType  reflect.Type
 	outDataType reflect.Type
-	transform   func(interface{}) (interface{}, error)
 }
 
 func NewAdapter[A any, B any](
 	name string,
-	exampleMessageIn A,
-	exampleMessageOut B,
-	transform func(interface{}) (interface{}, error),
+	transform func(A) (B, error),
 ) *Adapter {
-	inDataType := reflect.TypeOf(exampleMessageIn)
-	outDataType := reflect.TypeOf(exampleMessageOut)
+	untypedTransform, inDataType, outDataType := extractFunc(transform)
 
 	return &Adapter{
 		name:        name,
 		inDataType:  inDataType,
 		outDataType: outDataType,
-		transform:   transform,
+		transform:   untypedTransform,
 	}
 }
 

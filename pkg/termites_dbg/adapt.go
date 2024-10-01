@@ -10,10 +10,7 @@ import (
 
 var VisualizerAdapter = termites.NewAdapter(
 	"Visualizer Path",
-	"",
-	termites_web.JsonPartialData{},
-	func(i interface{}) (interface{}, error) {
-		visualizerPath := i.(string)
+	func(visualizerPath string) (termites_web.JsonPartialData, error) {
 		_, filename := filepath.Split(visualizerPath)
 
 		msg, err := json.Marshal(struct {
@@ -22,7 +19,7 @@ var VisualizerAdapter = termites.NewAdapter(
 			Path: filepath.Join("/dbg-static/", filename),
 		})
 		if err != nil {
-			return nil, err
+			return termites_web.JsonPartialData{}, err
 		}
 		return termites_web.JsonPartialData{Key: "routing_graph", Data: msg}, nil
 	},

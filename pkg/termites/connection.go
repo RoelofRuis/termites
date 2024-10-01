@@ -23,12 +23,15 @@ func (c *Connection) send(data interface{}) {
 	if c.adapter != nil {
 		var err error
 		connData, err = c.adapter.transform(connData)
+		if errors.Is(err, SkipElement) {
+			return
+		}
 		if err != nil {
 			c.notifySent(err)
 		}
 	}
 
-	if c.mailbox == nil || connData == nil {
+	if c.mailbox == nil {
 		return
 	}
 
@@ -41,6 +44,7 @@ func (c *Connection) send(data interface{}) {
 	c.notifySent(nil)
 }
 
+// notifySent notify the
 func (c *Connection) notifySent(err error) {
 	toName := ""
 	toPortName := ""
