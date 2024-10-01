@@ -1,21 +1,19 @@
-package termites_web
+package termites
 
 import (
 	"bytes"
 	"encoding/json"
-
-	"github.com/RoelofRuis/termites/pkg/termites"
 )
 
 type JsonCombiner struct {
-	JsonDataIn  *termites.InPort
-	JsonDataOut *termites.OutPort
+	JsonDataIn  *InPort
+	JsonDataOut *OutPort
 
 	combiner *combiner
 }
 
 func NewJsonCombiner() *JsonCombiner {
-	builder := termites.NewBuilder("JSON Combiner")
+	builder := NewBuilder("JSON Combiner")
 
 	combiner := &JsonCombiner{
 		JsonDataIn:  builder.InPort("Partial Data", JsonPartialData{}),
@@ -29,7 +27,7 @@ func NewJsonCombiner() *JsonCombiner {
 	return combiner
 }
 
-func (f *JsonCombiner) Run(c termites.NodeControl) error {
+func (f *JsonCombiner) Run(c NodeControl) error {
 	data, err := f.combiner.get()
 	if err != nil {
 		c.LogError("JSON error", err)

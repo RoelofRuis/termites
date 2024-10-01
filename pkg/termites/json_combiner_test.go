@@ -1,4 +1,4 @@
-package termites_web
+package termites
 
 import "testing"
 

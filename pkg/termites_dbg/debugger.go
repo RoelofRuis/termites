@@ -50,7 +50,7 @@ func Init(graph *termites.Graph, debugger *Debugger) {
 	graph.ConnectTo(debugger.refReceiver.RefsOut, webUpdater.RefsIn, termites.WithMailbox(&termites.DebouncedMailbox{Delay: 100 * time.Millisecond}))
 
 	// JSON combiner
-	jsonCombiner := termites_web.NewJsonCombiner()
+	jsonCombiner := termites.NewJsonCombiner()
 	graph.ConnectTo(visualizer.PathOut, jsonCombiner.JsonDataIn, termites.Via(VisualizerAdapter))
 	graph.ConnectTo(jsonCombiner.JsonDataOut, connector.Hub.InFromApp)
 
@@ -66,7 +66,7 @@ func Init(graph *termites.Graph, debugger *Debugger) {
 }
 
 type Debugger struct {
-	tempDir *termites.ManagedTempDirectory
+	tempDir *ManagedTempDirectory
 
 	httpPort        int
 	editor          CodeEditor
@@ -92,7 +92,7 @@ func NewDebugger(options ...DebuggerOption) *Debugger {
 	}
 
 	return &Debugger{
-		tempDir: termites.NewManagedTempDirectory("debug-"),
+		tempDir: NewManagedTempDirectory("debug-"),
 
 		httpPort:        config.httpPort,
 		editor:          config.editor,
