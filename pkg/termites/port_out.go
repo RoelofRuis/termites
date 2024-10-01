@@ -1,13 +1,14 @@
 package termites
 
 import (
+	"reflect"
 	"sync"
 )
 
 type OutPort struct {
 	id       OutPortId
 	name     string
-	dataType string
+	dataType reflect.Type
 	owner    *node
 
 	connectionLock *sync.RWMutex
@@ -15,7 +16,7 @@ type OutPort struct {
 }
 
 // Create via the termites.Builder
-func newOutPort(name string, dataType string, owner *node) *OutPort {
+func newOutPort(name string, dataType reflect.Type, owner *node) *OutPort {
 	return &OutPort{
 		id:             NewIdentifier("out-port"),
 		name:           name,

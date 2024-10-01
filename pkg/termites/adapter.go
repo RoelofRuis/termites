@@ -1,20 +1,22 @@
 package termites
 
+import "reflect"
+
 type Adapter struct {
 	name        string
-	inDataType  string
-	outDataType string
+	inDataType  reflect.Type
+	outDataType reflect.Type
 	transform   func(interface{}) (interface{}, error)
 }
 
-func NewAdapter(
+func NewAdapter[A any, B any](
 	name string,
-	exampleMessageIn interface{},
-	exampleMessageOut interface{},
+	exampleMessageIn A,
+	exampleMessageOut B,
 	transform func(interface{}) (interface{}, error),
 ) *Adapter {
-	inDataType := determineDataType(exampleMessageIn)
-	outDataType := determineDataType(exampleMessageOut)
+	inDataType := reflect.TypeOf(exampleMessageIn)
+	outDataType := reflect.TypeOf(exampleMessageOut)
 
 	return &Adapter{
 		name:        name,

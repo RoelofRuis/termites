@@ -1,6 +1,7 @@
 package termites
 
 import (
+	"reflect"
 	"sync"
 )
 
@@ -28,7 +29,7 @@ func NewBuilder(name string) Builder {
 }
 
 func (b *Builder) InPort(name string, exampleMsg interface{}) *InPort {
-	dataType := determineDataType(exampleMsg)
+	dataType := reflect.TypeOf(exampleMsg)
 
 	in := newInPort(name, dataType, b.node)
 	b.node.inPorts = append(b.node.inPorts, in)
@@ -37,7 +38,7 @@ func (b *Builder) InPort(name string, exampleMsg interface{}) *InPort {
 }
 
 func (b *Builder) OutPort(name string, exampleMsg interface{}) *OutPort {
-	dataType := determineDataType(exampleMsg)
+	dataType := reflect.TypeOf(exampleMsg)
 
 	out := newOutPort(name, dataType, b.node)
 	b.node.outPorts = append(b.node.outPorts, out)

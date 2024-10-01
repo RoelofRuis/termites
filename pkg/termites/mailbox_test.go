@@ -1,12 +1,13 @@
 package termites
 
 import (
+	"reflect"
 	"testing"
 	"time"
 )
 
 func TestDebouncingMailboxWithoutDelay(t *testing.T) {
-	port := newInPort("test", "", nil)
+	port := newInPort("test", reflect.TypeOf(""), nil)
 	mailbox := mailboxFromConfig(port, &DebouncedMailbox{Delay: 100 * time.Millisecond})
 
 	go func() {
@@ -22,7 +23,7 @@ func TestDebouncingMailboxWithoutDelay(t *testing.T) {
 }
 
 func TestDebouncingMailboxWithDelay(t *testing.T) {
-	port := newInPort("test", "", nil)
+	port := newInPort("test", reflect.TypeOf(""), nil)
 	mailbox := mailboxFromConfig(port, &DebouncedMailbox{Delay: 100 * time.Millisecond})
 
 	go func() {

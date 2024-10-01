@@ -1,11 +1,14 @@
 package termites
 
-import "sync"
+import (
+	"reflect"
+	"sync"
+)
 
 type InPort struct {
 	id       InPortId
 	name     string
-	dataType string
+	dataType reflect.Type
 	owner    *node
 	receive  chan Message
 
@@ -14,7 +17,7 @@ type InPort struct {
 }
 
 // Create via the termites.Builder
-func newInPort(name string, dataType string, owner *node) *InPort {
+func newInPort(name string, dataType reflect.Type, owner *node) *InPort {
 	return &InPort{
 		id:       NewIdentifier("in-port"),
 		name:     name,

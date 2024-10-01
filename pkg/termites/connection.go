@@ -3,6 +3,7 @@ package termites
 import (
 	"errors"
 	"fmt"
+	"reflect"
 	"time"
 )
 
@@ -129,7 +130,7 @@ func newConnection(out *OutPort, opts ...ConnectionOption) (*Connection, error) 
 		)
 	}
 
-	if config.adapter != nil && config.to == nil && config.adapter.outDataType != determineDataType(nil) {
+	if config.adapter != nil && config.to == nil && config.adapter.outDataType != reflect.TypeOf(nil) {
 		return nil, fmt.Errorf("adapter [%s (%s)] is not connected to in and must have 'nil' data out\n",
 			config.adapter.name,
 			config.adapter.outDataType,
