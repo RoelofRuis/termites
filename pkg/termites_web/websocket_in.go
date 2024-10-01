@@ -15,7 +15,7 @@ type webSocketIn struct {
 	graphConnection *termites.Connection
 }
 
-func connectWebsocketIn(id string, conn *websocket.Conn, connector *connector) {
+func connectWebsocketIn(id string, conn *websocket.Conn, connector *Connector) {
 	builder := termites.NewBuilder("websocket IN")
 
 	ws := &webSocketIn{

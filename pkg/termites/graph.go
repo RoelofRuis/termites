@@ -5,14 +5,7 @@ import (
 	"sync"
 )
 
-type Graph interface {
-	Connect(out *OutPort, opts ...ConnectionOption) *Connection
-	ConnectTo(out *OutPort, in *InPort, opts ...ConnectionOption) *Connection
-	Wait()
-	Close()
-}
-
-type graphImpl struct {
+type Graph struct {
 	name     string
 	eventBus *eventBus
 	close    *sync.WaitGroup
@@ -26,11 +19,7 @@ type graphConfig struct {
 	printMessages      bool
 }
 
-func NewGraph(opts ...GraphOption) Graph {
-	return newGraphImpl(opts...)
-}
-
-func newGraphImpl(opts ...GraphOption) *graphImpl {
+func NewGraph(opts ...GraphOption) *Graph {
 	config := &graphConfig{
 		name:               "",
 		subscribers:        nil,
@@ -52,7 +41,7 @@ func newGraphImpl(opts ...GraphOption) *graphImpl {
 	closer := &sync.WaitGroup{}
 	closer.Add(1)
 
-	g := &graphImpl{
+	g := &Graph{
 		name:     name,
 		eventBus: bus,
 		close:    closer,
@@ -73,25 +62,25 @@ func newGraphImpl(opts ...GraphOption) *graphImpl {
 	return g
 }
 
-func (g *graphImpl) onExit(_ Event) error {
+func (g *Graph) onExit(_ Event) error {
 	g.close.Done()
 	g.eventBus.Send(LogInfo(fmt.Sprintf("Graph [%s] closed", g.name)))
 	return nil
 }
 
-func (g *graphImpl) Wait() {
+func (g *Graph) Wait() {
 	g.close.Wait()
 }
 
-func (g *graphImpl) Close() {
+func (g *Graph) Close() {
 	g.eventBus.Send(Event{Type: Kill})
 }
 
-func (g *graphImpl) ConnectTo(out *OutPort, in *InPort, opts ...ConnectionOption) *Connection {
+func (g *Graph) ConnectTo(out *OutPort, in *InPort, opts ...ConnectionOption) *Connection {
 	return g.Connect(out, append(opts, To(in))...)
 }
 
-func (g *graphImpl) Connect(out *OutPort, opts ...ConnectionOption) *Connection {
+func (g *Graph) Connect(out *OutPort, opts ...ConnectionOption) *Connection {
 	connection, err := newConnection(out, opts...)
 	if err != nil {
 		panic(fmt.Errorf("node connection error: %w", err))

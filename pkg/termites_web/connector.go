@@ -15,8 +15,8 @@ var upgrader = websocket.Upgrader{
 	WriteBufferSize: 1024,
 }
 
-type connector struct {
-	graph termites.Graph
+type Connector struct {
+	graph *termites.Graph
 	Hub   *Hub
 
 	clientIds map[string]bool
@@ -25,8 +25,8 @@ type connector struct {
 //go:embed connect.js
 var embeddedJS embed.FS
 
-func NewConnector(graph termites.Graph) *connector {
-	return &connector{
+func NewConnector(graph *termites.Graph) *Connector {
+	return &Connector{
 		graph: graph,
 		Hub:   newHub(),
 
@@ -34,14 +34,14 @@ func NewConnector(graph termites.Graph) *connector {
 	}
 }
 
-func (c *connector) Bind(router *mux.Router) {
+func (c *Connector) Bind(router *mux.Router) {
 	router.Path("/ws").Methods("GET").HandlerFunc(c.ConnectWebsocket)
 
 	embeddedServer := http.FileServer(http.FS(embeddedJS))
 	router.PathPrefix("/embedded/").Methods("GET").Handler(http.StripPrefix("/embedded/", embeddedServer))
 }
 
-func (c *connector) ConnectWebsocket(w http.ResponseWriter, r *http.Request) {
+func (c *Connector) ConnectWebsocket(w http.ResponseWriter, r *http.Request) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("unable to upgrade connection: %s", err), http.StatusInternalServerError)

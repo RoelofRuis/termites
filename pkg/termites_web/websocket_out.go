@@ -17,7 +17,7 @@ type webSocketOut struct {
 	graphConnection *termites.Connection
 }
 
-func connectWebSocketOut(id string, conn *websocket.Conn, connector *connector) {
+func connectWebSocketOut(id string, conn *websocket.Conn, connector *Connector) {
 	builder := termites.NewBuilder("websocket OUT")
 
 	ws := &webSocketOut{
