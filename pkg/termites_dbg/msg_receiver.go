@@ -12,7 +12,7 @@ func newMsgReceiver() *messageReceiver {
 	builder := termites.NewBuilder("Msg Receiver")
 
 	n := &messageReceiver{
-		MessagesOut: builder.OutPort("Messages", termites.MessageSentEvent{}),
+		MessagesOut: termites.NewOutPort[termites.MessageSentEvent](builder, "Messages"),
 	}
 
 	builder.OnRun(n.run)

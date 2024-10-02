@@ -28,8 +28,9 @@ func NewBuilder(name string) Builder {
 	}
 }
 
-func (b *Builder) InPort(name string, exampleMsg interface{}) *InPort {
-	dataType := reflect.TypeOf(exampleMsg)
+func NewInPort[A any](b Builder, name string) *InPort {
+	var msg A
+	dataType := reflect.TypeOf(msg)
 
 	in := newInPort(name, dataType, b.node)
 	b.node.inPorts = append(b.node.inPorts, in)
@@ -37,8 +38,9 @@ func (b *Builder) InPort(name string, exampleMsg interface{}) *InPort {
 	return in
 }
 
-func (b *Builder) OutPort(name string, exampleMsg interface{}) *OutPort {
-	dataType := reflect.TypeOf(exampleMsg)
+func NewOutPort[A any](b Builder, name string) *OutPort {
+	var msg A
+	dataType := reflect.TypeOf(msg)
 
 	out := newOutPort(name, dataType, b.node)
 	b.node.outPorts = append(b.node.outPorts, out)

@@ -17,7 +17,7 @@ func newRefReceiver() *refReceiver {
 	builder := termites.NewBuilder("Ref Receiver")
 
 	n := &refReceiver{
-		RefsOut:        builder.OutPort("Refs", map[termites.NodeId]termites.NodeRef{}),
+		RefsOut:        termites.NewOutPort[map[termites.NodeId]termites.NodeRef](builder, "Refs"),
 		refChan:        make(chan termites.NodeRef),
 		removeChan:     make(chan termites.NodeId),
 		registeredRefs: make(map[termites.NodeId]termites.NodeRef),

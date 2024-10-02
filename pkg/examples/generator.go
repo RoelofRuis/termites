@@ -17,8 +17,8 @@ func NewGenerator(sleep time.Duration) *Generator {
 	builder := termites.NewBuilder("Generator")
 
 	g := &Generator{
-		TextOut:  builder.OutPort("Text", ""),
-		BytesOut: builder.OutPort("Bytes", []byte{}),
+		TextOut:  termites.NewOutPort[string](builder, "Text"),
+		BytesOut: termites.NewOutPort[[]byte](builder, "Bytes"),
 
 		sleep: sleep,
 	}

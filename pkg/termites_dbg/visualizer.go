@@ -17,8 +17,8 @@ func NewVisualizer(fileDir string) *Visualizer {
 	builder := termites.NewBuilder("Visualizer")
 
 	n := &Visualizer{
-		RefsIn:  builder.InPort("Refs", map[termites.NodeId]termites.NodeRef{}),
-		PathOut: builder.OutPort("Path", ""),
+		RefsIn:  termites.NewInPort[map[termites.NodeId]termites.NodeRef](builder, "Refs"),
+		PathOut: termites.NewOutPort[string](builder, "Path"),
 		writer: &graphWriter{
 			rootDir:      fileDir,
 			writeDotFile: false,

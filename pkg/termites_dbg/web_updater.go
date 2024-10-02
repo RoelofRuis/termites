@@ -21,8 +21,8 @@ func NewWebUpdater(controller *WebController) *WebUpdater {
 	builder := termites.NewBuilder("Web Updater")
 
 	n := &WebUpdater{
-		PathIn:     builder.InPort("Visualizer Path", ""),
-		RefsIn:     builder.InPort("Refs", map[termites.NodeId]termites.NodeRef{}),
+		PathIn:     termites.NewInPort[string](builder, "Visualizer Path"),
+		RefsIn:     termites.NewInPort[map[termites.NodeId]termites.NodeRef](builder, "Refs"),
 		controller: controller,
 	}
 

@@ -18,11 +18,11 @@ func newHub() *Hub {
 	builder := termites.NewBuilder("Websocket Hub")
 
 	h := &Hub{
-		InFromWeb:     builder.InPort("In From Web", ClientMessage{}),
-		OutToApp:      builder.OutPort("Out To App", ClientMessage{}),
-		InFromApp:     builder.InPort("In From App", []byte{}),
-		OutToWeb:      builder.OutPort("Out To Web", []byte{}),
-		ConnectionOut: builder.OutPort("Client status out", ClientConnection{}),
+		InFromWeb:     termites.NewInPort[ClientMessage](builder, "In From Web"),
+		OutToApp:      termites.NewOutPort[ClientMessage](builder, "Out To App"),
+		InFromApp:     termites.NewInPort[[]byte](builder, "In From App"),
+		OutToWeb:      termites.NewOutPort[[]byte](builder, "Out To Web"),
+		ConnectionOut: termites.NewOutPort[ClientConnection](builder, "Client status out"),
 	}
 
 	builder.OnRun(h.Run)

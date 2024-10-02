@@ -20,7 +20,9 @@ together and start the processing.
 
 ### Usage
 
-Create a node using a `builder`
+A `Builder` is used to create a cohesive node.
+
+First create a builder using `termites.NewBuilder` and then use this builder when constructing ports.
 
 ```go
 package yourpackage
@@ -38,8 +40,8 @@ func NewYourNode() *YourNode {
 	builder := termites.NewBuilder("Your Node")
 
 	n := &YourNode{
-		In:  builder.InPort("In", 0),
-		Out: builder.OutPort("Out", 0),
+		In:  termites.NewOutPort[int](builder, "In"),
+		Out: termites.NewOutPort[int](builder, "Out"),
 	}
 
 	builder.OnRun(n.Run)

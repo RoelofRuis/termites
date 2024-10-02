@@ -18,8 +18,8 @@ func NewInspectableIntNode(name string) *InspectableIntNode {
 	builder := NewBuilder(name)
 
 	n := &InspectableIntNode{
-		In:      builder.InPort("int in", 0),
-		Out:     builder.OutPort("int out", 0),
+		In:      NewInPort[int](builder, "int in"),
+		Out:     NewOutPort[int](builder, "int out"),
 		Send:    make(chan int),
 		Receive: make(chan int, 128),
 	}
@@ -55,8 +55,8 @@ func NewInspectableStringNode(name string) *InspectableStringNode {
 	builder := NewBuilder(name)
 
 	n := &InspectableStringNode{
-		In:  builder.InPort("string in", ""),
-		Out: builder.OutPort("string out", ""),
+		In:  NewInPort[string](builder, "string in"),
+		Out: NewOutPort[string](builder, "string out"),
 	}
 
 	builder.OnRun(n.Run)
@@ -85,8 +85,8 @@ func NewDelayedIntNode(name string, delay time.Duration) *DelayedIntNode {
 	builder := NewBuilder(name)
 
 	n := &DelayedIntNode{
-		In:      builder.InPort("int in", 0),
-		Out:     builder.OutPort("int out", 0),
+		In:      NewInPort[int](builder, "int in"),
+		Out:     NewOutPort[int](builder, "int out"),
 		Receive: make(chan int),
 		Delay:   delay,
 	}

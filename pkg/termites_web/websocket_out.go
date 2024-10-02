@@ -21,7 +21,7 @@ func connectWebSocketOut(id string, conn *websocket.Conn, connector *Connector) 
 	builder := termites.NewBuilder("websocket OUT")
 
 	ws := &webSocketOut{
-		DataIn: builder.InPort("Data In", []byte{}),
+		DataIn: termites.NewInPort[[]byte](builder, "Data In"),
 
 		id:            id,
 		conn:          conn,

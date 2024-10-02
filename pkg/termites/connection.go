@@ -115,10 +115,11 @@ func newConnection(out *OutPort, opts ...ConnectionOption) (*Connection, error) 
 	}
 
 	if config.adapter == nil && config.from.dataType != config.to.dataType {
-		return nil, fmt.Errorf("out port [%s:%s (%s)] and in port [%s (%s)] have differing data types\n",
+		return nil, fmt.Errorf("out port [%s:%s (%s)] and in port [%s:%s (%s)] have differing data types\n",
 			config.from.owner.name,
 			config.from.name,
 			config.from.dataType,
+			config.to.owner.name,
 			config.to.name,
 			config.to.dataType,
 		)

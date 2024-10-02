@@ -16,8 +16,8 @@ func NewJsonCombiner() *JsonCombiner {
 	builder := NewBuilder("JSON Combiner")
 
 	combiner := &JsonCombiner{
-		JsonDataIn:  builder.InPort("Partial Data", JsonPartialData{}),
-		JsonDataOut: builder.OutPort("Data", []byte{}),
+		JsonDataIn:  NewInPort[JsonPartialData](builder, "Partial Data"),
+		JsonDataOut: NewOutPort[[]byte](builder, "Data"),
 
 		combiner: newCombiner(),
 	}
