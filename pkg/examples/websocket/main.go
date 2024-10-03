@@ -12,7 +12,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
-const WebURL = "localhost:8000"
+const WebURL = "localhost:8008"
 
 func main() {
 	graph := termites.NewGraph(

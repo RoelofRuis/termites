@@ -5,12 +5,31 @@
     <script type="text/javascript" src="/embedded/connect.js"></script>
 </head>
 <body>
-<div id="root"></div>
+<table>
+    <tbody>
+    <tr>
+        <td>Server</td>
+        <td><span id="data"></span></td>
+    </tr>
+    <tr>
+        <td>Live</td>
+        <td><span id="reference"></span></td>
+    </tr>
+    </tbody>
+</table>
 </body>
 <script>
+    let referenceCount = 0;
+    const counterElement = document.getElementById('reference')
+
+    setInterval(() => {
+        referenceCount += 1
+        counterElement.textContent = referenceCount
+    }, 100)
+
     connector.connect();
 
-    let root = document.getElementById("root")
+    let root = document.getElementById("data")
     connector.subscribe(function (tpe, data) {
         if (tpe === "onupdate") {
             root.textContent = data;
