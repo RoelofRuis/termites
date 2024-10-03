@@ -7,116 +7,13 @@ import (
 	"time"
 )
 
-type InspectableIntNode struct {
-	In      *InPort
-	Out     *OutPort
-	Send    chan int
-	Receive chan int
-}
-
-func NewInspectableIntNode(name string) *InspectableIntNode {
-	builder := NewBuilder(name)
-
-	n := &InspectableIntNode{
-		In:      NewInPort[int](builder, "int in"),
-		Out:     NewOutPort[int](builder, "int out"),
-		Send:    make(chan int),
-		Receive: make(chan int, 128),
-	}
-
-	builder.OnRun(n.Run)
-
-	return n
-}
-
-func (c *InspectableIntNode) Run(_ NodeControl) error {
-	for {
-		select {
-		case msg := <-c.In.Receive():
-			decoded := msg.Data.(int)
-			c.Receive <- decoded
-			c.Out.Send(decoded)
-
-		case v := <-c.Send:
-			if v == -1 {
-				panic("handler error")
-			}
-			c.Out.Send(v)
-		}
-	}
-}
-
-type InspectableStringNode struct {
-	In  *InPort
-	Out *OutPort
-}
-
-func NewInspectableStringNode(name string) *InspectableStringNode {
-	builder := NewBuilder(name)
-
-	n := &InspectableStringNode{
-		In:  NewInPort[string](builder, "string in"),
-		Out: NewOutPort[string](builder, "string out"),
-	}
-
-	builder.OnRun(n.Run)
-
-	return n
-}
-
-func (c *InspectableStringNode) Run(_ NodeControl) error {
-	for {
-		select {
-		case msg := <-c.In.Receive():
-			decoded := msg.Data.(string)
-			c.Out.Send(decoded)
-		}
-	}
-}
-
-type DelayedIntNode struct {
-	In      *InPort
-	Out     *OutPort
-	Receive chan int
-	Delay   time.Duration
-}
-
-func NewDelayedIntNode(name string, delay time.Duration) *DelayedIntNode {
-	builder := NewBuilder(name)
-
-	n := &DelayedIntNode{
-		In:      NewInPort[int](builder, "int in"),
-		Out:     NewOutPort[int](builder, "int out"),
-		Receive: make(chan int),
-		Delay:   delay,
-	}
-
-	builder.OnRun(n.Run)
-
-	return n
-}
-
-func (c *DelayedIntNode) Run(_ NodeControl) error {
-	for {
-		select {
-		case msg := <-c.In.Receive():
-			decoded := msg.Data.(int)
-			time.Sleep(c.Delay) // simulate work
-			c.Receive <- decoded
-			c.Out.Send(decoded)
-		}
-	}
-}
-
-// TESTS
-
 func TestConnections(t *testing.T) {
 	graph := NewGraph()
 
-	nodeA := NewInspectableIntNode("Component A")
-	nodeB := NewInspectableIntNode("Component B")
-	nodeC := NewInspectableIntNode("Component C")
-	nodeD := NewInspectableIntNode("Component D")
+	nodeA := NewInspectableNode[int]("Component A")
+	nodeB := NewInspectableNode[int]("Component B")
+	nodeC := NewInspectableNode[int]("Component C")
+	nodeD := NewInspectableNode[int]("Component D")
 
 	graph.ConnectTo(nodeA.Out, nodeB.In)
 	graph.ConnectTo(nodeB.Out, nodeC.In)
@@ -136,9 +33,9 @@ func TestConnections(t *testing.T) {
 func TestDynamicConnections(t *testing.T) {
 	graph := NewGraph()
 
-	nodeA := NewInspectableIntNode("Component A")
-	nodeB1 := NewInspectableIntNode("Component B1")
-	nodeB2 := NewInspectableIntNode("Component B2")
+	nodeA := NewInspectableNode[int]("Component A")
+	nodeB1 := NewInspectableNode[int]("Component B1")
+	nodeB2 := NewInspectableNode[int]("Component B2")
 
 	connB1 := graph.ConnectTo(nodeA.Out, nodeB1.In)
 
@@ -192,8 +89,8 @@ func TestAdapter(t *testing.T) {
 		},
 	)
 
-	nodeA := NewInspectableStringNode("Component A")
-	nodeB := NewInspectableIntNode("Component B")
+	nodeA := NewInspectableNode[string]("Component A")
+	nodeB := NewInspectableNode[int]("Component B")
 
 	graph.ConnectTo(nodeA.Out, nodeB.In, Via(adapter))
 
@@ -211,12 +108,12 @@ func TestAdapter(t *testing.T) {
 func TestNodePanic(t *testing.T) {
 	graph := NewGraph()
 
-	nodeA := NewInspectableIntNode("Component A")
-	nodeB := NewInspectableIntNode("Component B")
+	nodeA := NewInspectableNode[int]("Component A")
+	nodeB := NewInspectableNode[int]("Component B")
 
 	graph.ConnectTo(nodeA.Out, nodeB.In)
 
-	nodeA.Send <- -1
+	nodeA.Panic <- struct{}{}
 
 	time.Sleep(100 * time.Millisecond)
 	t.Log("Program has not crashed")
@@ -225,8 +122,9 @@ func TestNodePanic(t *testing.T) {
 func TestTimeout(t *testing.T) {
 	graph := NewGraph()
 
-	nodeA := NewDelayedIntNode("Component A", 0*time.Second)
-	nodeB := NewDelayedIntNode("Component B", 2*time.Second) // Should time out
+	nodeA := NewInspectableNode[int]("Component A")
+	nodeB := NewInspectableNode[int]("Component B")
+	nodeB.Delay = 2 * time.Second // Should time out
 
 	graph.ConnectTo(nodeA.Out, nodeB.In)
 
@@ -259,10 +157,13 @@ func TestTimeout(t *testing.T) {
 func TestAsyncSendTiming(t *testing.T) {
 	graph := NewGraph()
 
-	nodeA := NewDelayedIntNode("Component A", 0*time.Second)
-	nodeB := NewDelayedIntNode("Component B", 500*time.Millisecond)
-	nodeC := NewDelayedIntNode("Component C", 500*time.Millisecond)
-	nodeD := NewDelayedIntNode("Component D", 500*time.Millisecond)
+	nodeA := NewInspectableNode[int]("Component A")
+	nodeB := NewInspectableNode[int]("Component B")
+	nodeB.Delay = 500 * time.Millisecond
+	nodeC := NewInspectableNode[int]("Component C")
+	nodeC.Delay = 500 * time.Millisecond
+	nodeD := NewInspectableNode[int]("Component D")
+	nodeD.Delay = 500 * time.Millisecond
 
 	graph.ConnectTo(nodeA.Out, nodeB.In)
 	graph.ConnectTo(nodeA.Out, nodeC.In)
