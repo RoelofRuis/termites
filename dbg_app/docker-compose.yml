@@ -1,0 +1,11 @@
+version: '3'
+
+services:
+  node:
+    image: node:16
+    volumes:
+      - .:/var/www
+    working_dir: /var/www
+    ports:
+      - "3666:3666"
+      - "3667:3667"
