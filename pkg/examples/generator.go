@@ -3,12 +3,13 @@ package examples
 import (
 	"fmt"
 	"github.com/RoelofRuis/termites/pkg/termites"
+	"github.com/RoelofRuis/termites/pkg/termites_web"
 	"time"
 )
 
 type Generator struct {
-	TextOut  *termites.OutPort
-	BytesOut *termites.OutPort
+	TextOut   *termites.OutPort
+	ClientOut *termites.OutPort
 
 	sleep time.Duration
 }
@@ -17,8 +18,8 @@ func NewGenerator(sleep time.Duration) *Generator {
 	builder := termites.NewBuilder("Generator")
 
 	g := &Generator{
-		TextOut:  termites.NewOutPort[string](builder, "Text"),
-		BytesOut: termites.NewOutPort[[]byte](builder, "Bytes"),
+		TextOut:   termites.NewOutPort[string](builder, "Text"),
+		ClientOut: termites.NewOutPort[termites_web.ClientMessage](builder, "Bytes"),
 
 		sleep: sleep,
 	}
@@ -33,7 +34,7 @@ func (g *Generator) Run(_ termites.NodeControl) error {
 	for {
 		text := fmt.Sprintf("%d", counter)
 		g.TextOut.Send(text)
-		g.BytesOut.Send([]byte(text))
+		g.ClientOut.Send(termites_web.ClientMessage{Data: []byte(text)})
 		counter++
 		time.Sleep(g.sleep)
 	}

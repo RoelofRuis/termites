@@ -5,9 +5,15 @@ import (
 	"github.com/RoelofRuis/termites/pkg/termites"
 )
 
+// ClientMessage is a message used to interact with a web client.
 type ClientMessage struct {
-	Sender string
-	Data   []byte
+	// ClientId is a unique identifier for an attached client.
+	// If this field is set on an incoming message, it means the message was sent over websocket by the given client.
+	// If this field is set on an outgoing message, it will only be sent to the client with that ID.
+	ClientId string
+
+	// Data any data bytes to be sent to the client.
+	Data []byte
 }
 
 type ClientConnection struct {

@@ -20,9 +20,9 @@ func newHub() *Hub {
 	h := &Hub{
 		InFromWeb:     termites.NewInPort[ClientMessage](builder, "In From Web"),
 		OutToApp:      termites.NewOutPort[ClientMessage](builder, "Out To App"),
-		InFromApp:     termites.NewInPort[[]byte](builder, "In From App"),
-		OutToWeb:      termites.NewOutPort[[]byte](builder, "Out To Web"),
-		ConnectionOut: termites.NewOutPort[ClientConnection](builder, "Client status out"),
+		InFromApp:     termites.NewInPort[ClientMessage](builder, "In From App"),
+		OutToWeb:      termites.NewOutPort[ClientMessage](builder, "Out To Web"),
+		ConnectionOut: termites.NewOutPort[ClientConnection](builder, "ClientId status out"),
 	}
 
 	builder.OnRun(h.Run)
@@ -44,13 +44,15 @@ func (h *Hub) Run(c termites.NodeControl) error {
 			h.OutToApp.Send(msg.Data)
 
 		case msg := <-h.InFromApp.Receive():
+			clientMessage := msg.Data.(ClientMessage)
+
 			var err error
-			lastState, err = MakeUpdateMessage(msg.Data.([]byte))
+			lastState, err = MakeUpdateMessage(clientMessage.Data)
 			if err != nil {
 				c.LogError("cannot send update message", err)
 				continue
 			}
-			h.OutToWeb.Send(lastState)
+			h.OutToWeb.Send(ClientMessage{ClientId: clientMessage.ClientId, Data: lastState})
 		}
 	}
 }
@@ -60,7 +62,7 @@ func (h *Hub) Shutdown(_ termites.TeardownControl) error {
 	if err != nil {
 		return err
 	}
-	h.OutToWeb.Send(msg)
+	h.OutToWeb.Send(ClientMessage{Data: msg})
 	time.Sleep(50 * time.Millisecond) // Give time to send close message
 	return nil
 }

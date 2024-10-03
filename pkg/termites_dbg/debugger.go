@@ -52,7 +52,7 @@ func Init(graph *termites.Graph, debugger *Debugger) {
 	// JSON combiner
 	jsonCombiner := termites.NewJsonCombiner()
 	graph.ConnectTo(visualizer.PathOut, jsonCombiner.JsonDataIn, termites.Via(VisualizerAdapter))
-	graph.ConnectTo(jsonCombiner.JsonDataOut, connector.Hub.InFromApp)
+	graph.ConnectTo(jsonCombiner.JsonDataOut, connector.Hub.InFromApp, termites.Via(ClientAdapter))
 
 	// Serve static files
 	router.PathPrefix("/dbg-static/").Methods("GET").Handler(http.StripPrefix("/dbg-static/", http.FileServer(http.Dir(debugger.tempDir.Dir))))

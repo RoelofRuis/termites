@@ -21,7 +21,7 @@ func connectWebSocketOut(id string, conn *websocket.Conn, connector *Connector) 
 	builder := termites.NewBuilder("websocket OUT")
 
 	ws := &webSocketOut{
-		DataIn: termites.NewInPort[[]byte](builder, "Data In"),
+		DataIn: termites.NewInPort[ClientMessage](builder, "Data In"),
 
 		id:            id,
 		conn:          conn,
@@ -45,21 +45,26 @@ func (w *webSocketOut) Run(c termites.NodeControl) error {
 
 	for {
 		select {
-		case message, ok := <-w.DataIn.Receive():
-			bytes := message.Data.([]byte)
-			if err := w.conn.SetWriteDeadline(time.Now().Add(w.writeDeadline)); err != nil {
-				c.LogError("error setting write deadline", err)
-			}
+		case msg, ok := <-w.DataIn.Receive():
 			if !ok {
 				_ = w.conn.WriteMessage(websocket.CloseMessage, []byte{})
 				return nil
+			}
+
+			clientMessage := msg.Data.(ClientMessage)
+			if clientMessage.ClientId != "" && clientMessage.ClientId != w.id {
+				continue // drop message not intended for this client
+			}
+
+			if err := w.conn.SetWriteDeadline(time.Now().Add(w.writeDeadline)); err != nil {
+				c.LogError("error setting write deadline", err)
 			}
 
 			w, err := w.conn.NextWriter(websocket.TextMessage)
 			if err != nil {
 				return nil
 			}
-			if _, err = w.Write(bytes); err != nil {
+			if _, err = w.Write(clientMessage.Data); err != nil {
 				return fmt.Errorf("write failed: %w", err)
 			}
 			if err = w.Close(); err != nil {

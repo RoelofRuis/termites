@@ -57,7 +57,7 @@ func (w *webSocketIn) Run(c termites.NodeControl) error {
 			}
 			break
 		}
-		w.DataOut.Send(ClientMessage{Sender: w.id, Data: message})
+		w.DataOut.Send(ClientMessage{ClientId: w.id, Data: message})
 	}
 
 	return nil

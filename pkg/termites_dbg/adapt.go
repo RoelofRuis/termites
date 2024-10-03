@@ -2,6 +2,7 @@ package termites_dbg
 
 import (
 	"encoding/json"
+	"github.com/RoelofRuis/termites/pkg/termites_web"
 	"path/filepath"
 
 	"github.com/RoelofRuis/termites/pkg/termites"
@@ -21,5 +22,12 @@ var VisualizerAdapter = termites.NewAdapter(
 			return termites.JsonPartialData{}, err
 		}
 		return termites.JsonPartialData{Key: "routing_graph", Data: msg}, nil
+	},
+)
+
+var ClientAdapter = termites.NewAdapter(
+	"Client Adapter",
+	func(bytes []byte) (termites_web.ClientMessage, error) {
+		return termites_web.ClientMessage{Data: bytes}, nil
 	},
 )
