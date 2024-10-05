@@ -35,7 +35,7 @@ func (v *StateTracker) Run(c termites.NodeControl) error {
 		select {
 		case msg := <-v.ConnectionIn.Receive():
 			connection := msg.Data.(ClientConnection)
-			data, _ := MakeMessage("state/full", v.fullState)
+			data, _ := WebUpdate("state/full", v.fullState)
 			v.MessageOut.Send(ClientMessage{ClientId: connection.Id, Data: data})
 
 		case msg := <-v.StateIn.Receive():
@@ -49,7 +49,7 @@ func (v *StateTracker) Run(c termites.NodeControl) error {
 				}
 				v.fullState = newState
 			}
-			data, _ := MakeMessage("state/patch", mergePatch)
+			data, _ := WebUpdate("state/patch", mergePatch)
 			v.MessageOut.Send(ClientMessage{Data: data})
 		}
 	}

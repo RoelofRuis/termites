@@ -35,9 +35,7 @@ func (h *Hub) registerClient(clientId string) {
 	h.ConnectionOut.Send(ClientConnection{ConnType: ClientConnect, Id: clientId})
 }
 
-func (h *Hub) Run(c termites.NodeControl) error {
-	var lastState []byte = nil
-
+func (h *Hub) Run(_ termites.NodeControl) error {
 	for {
 		select {
 		case msg := <-h.InFromWeb.Receive():
@@ -45,20 +43,13 @@ func (h *Hub) Run(c termites.NodeControl) error {
 
 		case msg := <-h.InFromApp.Receive():
 			clientMessage := msg.Data.(ClientMessage)
-
-			var err error
-			lastState, err = MakeUpdateMessage(clientMessage.Data)
-			if err != nil {
-				c.LogError("cannot send update message", err)
-				continue
-			}
-			h.OutToWeb.Send(ClientMessage{ClientId: clientMessage.ClientId, Data: lastState})
+			h.OutToWeb.Send(clientMessage)
 		}
 	}
 }
 
 func (h *Hub) Shutdown(_ termites.TeardownControl) error {
-	msg, err := MakeCloseMessage()
+	msg, err := WebClose()
 	if err != nil {
 		return err
 	}

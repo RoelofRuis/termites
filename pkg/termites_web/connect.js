@@ -65,18 +65,18 @@ let connector = (function (storage) {
     function onmessage(msg) {
         let data = msg.data
 
-        if (msg.type === "update") {
-            publish("onupdate", msg.data);
+        if (msg.msg_type === "update") {
+            publish("onupdate", msg.payload);
             return;
         }
 
-        if (msg.type === "_connected") { // tells which id is linked to this client
+        if (msg.msg_type === "_connected") { // tells which id is linked to this client
             let id = data.id;
             storage.put("id", id);
             return;
         }
 
-        if (msg.type === "_close") {
+        if (msg.msg_type === "_close") {
             window.close();
         }
     }

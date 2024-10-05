@@ -2,7 +2,6 @@ package termites_web
 
 import (
 	"encoding/json"
-	"github.com/RoelofRuis/termites/pkg/termites"
 )
 
 // ClientMessage is a message used to interact with a web client.
@@ -14,6 +13,12 @@ type ClientMessage struct {
 
 	// Data any data bytes to be sent to the client.
 	Data []byte
+}
+
+type WebMessage struct {
+	MsgType     string          `json:"msg_type"`
+	ContentType string          `json:"content_type"`
+	Payload     json.RawMessage `json:"payload"`
 }
 
 type ClientConnection struct {
@@ -29,51 +34,33 @@ const (
 	ClientReconnect  ConnectionType = 2
 )
 
-const CloseMessageType = "_close"
-const ConnectedMessageType = "_connected"
-const UpdateMessageType = "update"
+const (
+	MsgClose  = "_close"
+	MsgUpdate = "update"
+)
 
-func MakeUpdateMessage(data []byte) ([]byte, error) {
-	return wrapMessage(UpdateMessageType, data)
+func WebClose() ([]byte, error) {
+	return marshalWebMessage(WebMessage{MsgType: MsgClose})
 }
 
-func MakeCloseMessage() ([]byte, error) {
-	return MakeMessage(CloseMessageType, nil)
-}
-
-func MakeConnectedMessage(id termites.Identifier) ([]byte, error) {
-	data := struct {
-		Id string `json:"id"`
-	}{
-		Id: id.Id,
-	}
-	return MakeMessage(ConnectedMessageType, data)
-}
-
-func MakeMessage(tpe string, data interface{}) ([]byte, error) {
+func WebUpdate(contentType string, data interface{}) ([]byte, error) {
 	dataBytes, err := json.Marshal(data)
 	if err != nil {
 		return nil, err
 	}
 
-	return wrapMessage(tpe, dataBytes)
+	return marshalWebMessage(WebMessage{
+		MsgType:     MsgUpdate,
+		ContentType: contentType,
+		Payload:     dataBytes,
+	})
 }
 
-func wrapMessage(tpe string, data []byte) ([]byte, error) {
-	msg := message{
-		Type: tpe,
-		Data: data,
-	}
-
+func marshalWebMessage(msg WebMessage) ([]byte, error) {
 	msgBytes, err := json.Marshal(msg)
 	if err != nil {
 		return nil, err
 	}
 
 	return msgBytes, nil
-}
-
-type message struct {
-	Type string          `json:"type"`
-	Data json.RawMessage `json:"data"`
 }

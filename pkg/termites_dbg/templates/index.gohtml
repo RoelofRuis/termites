@@ -16,7 +16,7 @@
 
         connector.subscribe(function(tpe, data) {
             if (tpe === "onupdate") {
-                img.data = data.data.graph.path
+                img.data = data.graph.path
             }
         })
     </script>
