@@ -27,19 +27,16 @@ func TestStateTracker(t *testing.T) {
 	if msg.ClientId != "abc123" {
 		t.Errorf("Expected client connection to be 'abc123', got '%s'", msg.ClientId)
 	}
-	if msg.Data != nil {
-		t.Errorf("Expected data to be nil, got %v", msg.Data)
-	}
+
+	jsonMustEqual(t, msg.Data, "{\"type\":\"state/full\",\"data\":null}")
 
 	// Update the state
-	stateNode.Send <- []byte("{\"name\": \"alice\", \"count\": 42}")
+	stateNode.Send <- []byte("{\"name\":\"alice\",\"count\":42}")
 
 	// Expect a patch update to be sent to all receivers
 	msg = <-clientMessages.Receive
 
-	if string(msg.Data) != "{\"name\": \"alice\", \"count\": 42}" {
-		t.Errorf("Expected data to be '{\"name\": \"testing\", \"count\": 42}', got '%s'", msg.Data)
-	}
+	jsonMustEqual(t, msg.Data, "{\"type\":\"state/patch\",\"data\":{\"name\":\"alice\",\"count\":42}}")
 
 	// Update the state again.
 	stateNode.Send <- []byte("{\"name\": \"bob\"}")
@@ -47,9 +44,7 @@ func TestStateTracker(t *testing.T) {
 	// Expect a patch update to be sent to all receivers
 	msg = <-clientMessages.Receive
 
-	if string(msg.Data) != "{\"name\": \"bob\"}" {
-		t.Errorf("Expected data to be '{\"name\": \"bob\"}', got '%s'", msg.Data)
-	}
+	jsonMustEqual(t, msg.Data, "{\"type\":\"state/patch\",\"data\":{\"name\":\"bob\"}}")
 
 	// Send a client connect message
 	connectionsNode.Send <- ClientConnection{ConnType: ClientConnect, Id: "789xyz"}
@@ -59,7 +54,12 @@ func TestStateTracker(t *testing.T) {
 	if msg.ClientId != "789xyz" {
 		t.Errorf("Expected client connection to be '789xyz', got '%s'", msg.ClientId)
 	}
-	if string(msg.Data) != "{\"name\":\"bob\",\"count\":42}" {
-		t.Errorf("Expected data to be '{\"name\":\"bob\",\"count\":42}', got '%s'", msg.Data)
+
+	jsonMustEqual(t, msg.Data, "{\"type\":\"state/full\",\"data\":{\"name\":\"bob\",\"count\":42}}")
+}
+
+func jsonMustEqual(t *testing.T, actual []byte, expected string) {
+	if string(actual) != expected {
+		t.Errorf("Expected data to be '%s', got '%s'", expected, actual)
 	}
 }

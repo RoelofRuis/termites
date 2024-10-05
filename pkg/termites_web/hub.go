@@ -22,7 +22,7 @@ func newHub() *Hub {
 		OutToApp:      termites.NewOutPort[ClientMessage](builder, "Out To App"),
 		InFromApp:     termites.NewInPort[ClientMessage](builder, "In From App"),
 		OutToWeb:      termites.NewOutPort[ClientMessage](builder, "Out To Web"),
-		ConnectionOut: termites.NewOutPort[ClientConnection](builder, "ClientId status out"),
+		ConnectionOut: termites.NewOutPort[ClientConnection](builder, "Connection Info"),
 	}
 
 	builder.OnRun(h.Run)

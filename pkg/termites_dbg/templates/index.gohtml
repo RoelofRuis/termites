@@ -16,10 +16,7 @@
 
         connector.subscribe(function(tpe, data) {
             if (tpe === "onupdate") {
-                const path = data.fields.routing_graph.path
-                if (typeof path !== "undefined") {
-                    img.src = path
-                }
+                img.data = data.data.graph.path
             }
         })
     </script>

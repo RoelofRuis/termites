@@ -2,6 +2,7 @@ package termites_dbg
 
 import (
 	"fmt"
+	"github.com/RoelofRuis/termites/pkg/termites_state"
 	"net/http"
 	"time"
 
@@ -49,10 +50,14 @@ func Init(graph *termites.Graph, debugger *Debugger) {
 	graph.ConnectTo(visualizer.PathOut, webUpdater.PathIn)
 	graph.ConnectTo(debugger.refReceiver.RefsOut, webUpdater.RefsIn, termites.WithMailbox(&termites.DebouncedMailbox{Delay: 100 * time.Millisecond}))
 
-	// JSON combiner
-	jsonCombiner := termites.NewJsonCombiner()
-	graph.ConnectTo(visualizer.PathOut, jsonCombiner.JsonDataIn, termites.Via(VisualizerAdapter))
-	graph.ConnectTo(jsonCombiner.JsonDataOut, connector.Hub.InFromApp, termites.Via(ClientAdapter))
+	// State
+	stateTracker := termites_web.NewStateTracker()
+	graph.ConnectTo(connector.Hub.ConnectionOut, stateTracker.ConnectionIn)
+	graph.ConnectTo(stateTracker.MessageOut, connector.Hub.InFromApp)
+
+	stateStore := termites_state.NewStateStore()
+	graph.ConnectTo(stateStore.PatchOut, stateTracker.StateIn)
+	graph.ConnectTo(visualizer.PathOut, stateStore.StateIn, termites.Via(VisualizerAdapter))
 
 	// Serve static files
 	router.PathPrefix("/dbg-static/").Methods("GET").Handler(http.StripPrefix("/dbg-static/", http.FileServer(http.Dir(debugger.tempDir.Dir))))

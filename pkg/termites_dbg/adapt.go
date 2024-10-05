@@ -2,7 +2,7 @@ package termites_dbg
 
 import (
 	"encoding/json"
-	"github.com/RoelofRuis/termites/pkg/termites_web"
+	"github.com/RoelofRuis/termites/pkg/termites_state"
 	"path/filepath"
 
 	"github.com/RoelofRuis/termites/pkg/termites"
@@ -10,7 +10,7 @@ import (
 
 var VisualizerAdapter = termites.NewAdapter(
 	"Visualizer Path",
-	func(visualizerPath string) (termites.JsonPartialData, error) {
+	func(visualizerPath string) (termites_state.StateMessage, error) {
 		_, filename := filepath.Split(visualizerPath)
 
 		msg, err := json.Marshal(struct {
@@ -19,15 +19,8 @@ var VisualizerAdapter = termites.NewAdapter(
 			Path: filepath.Join("/dbg-static/", filename),
 		})
 		if err != nil {
-			return termites.JsonPartialData{}, err
+			return termites_state.StateMessage{}, err
 		}
-		return termites.JsonPartialData{Key: "routing_graph", Data: msg}, nil
-	},
-)
-
-var ClientAdapter = termites.NewAdapter(
-	"Client Adapter",
-	func(bytes []byte) (termites_web.ClientMessage, error) {
-		return termites_web.ClientMessage{Data: bytes}, nil
+		return termites_state.StateMessage{Key: "graph", Data: msg}, nil
 	},
 )

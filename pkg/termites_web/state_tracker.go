@@ -6,20 +6,12 @@ import (
 	jsonpatch "github.com/evanphx/json-patch/v5"
 )
 
-// We can have a separate state holder that just holds and updates a state
-// Then have that send a diff to whoever wants to accept it.
-
-// Then have the state tracker hold a copy of the state (built by reading the diffs)
-// and send that over the web through connection in and diff messages
-
-// This is a test design with mutable state and diffs that can be sent via websocket.
-
 type StateTracker struct {
 	ConnectionIn *termites.InPort
 	StateIn      *termites.InPort
 	MessageOut   *termites.OutPort
 
-	serializedState json.RawMessage
+	fullState json.RawMessage
 }
 
 func NewStateTracker() *StateTracker {
@@ -30,7 +22,7 @@ func NewStateTracker() *StateTracker {
 		StateIn:      termites.NewInPort[json.RawMessage](builder, "State"),
 		MessageOut:   termites.NewOutPort[ClientMessage](builder, "Message"),
 
-		serializedState: nil,
+		fullState: nil,
 	}
 
 	builder.OnRun(t.Run)
@@ -38,27 +30,27 @@ func NewStateTracker() *StateTracker {
 	return t
 }
 
-// TODO: difference between full and patch message!
-
 func (v *StateTracker) Run(c termites.NodeControl) error {
 	for {
 		select {
 		case msg := <-v.ConnectionIn.Receive():
 			connection := msg.Data.(ClientConnection)
-			v.MessageOut.Send(ClientMessage{ClientId: connection.Id, Data: v.serializedState})
+			data, _ := MakeMessage("state/full", v.fullState)
+			v.MessageOut.Send(ClientMessage{ClientId: connection.Id, Data: data})
 
 		case msg := <-v.StateIn.Receive():
 			mergePatch := msg.Data.(json.RawMessage)
-			if v.serializedState == nil {
-				v.serializedState = mergePatch
+			if v.fullState == nil {
+				v.fullState = mergePatch
 			} else {
-				newState, err := jsonpatch.MergePatch(v.serializedState, mergePatch)
+				newState, err := jsonpatch.MergePatch(v.fullState, mergePatch)
 				if err != nil {
 					c.LogError("Failed to apply merge patch", err)
 				}
-				v.serializedState = newState
+				v.fullState = newState
 			}
-			v.MessageOut.Send(ClientMessage{Data: mergePatch})
+			data, _ := MakeMessage("state/patch", mergePatch)
+			v.MessageOut.Send(ClientMessage{Data: data})
 		}
 	}
 }
