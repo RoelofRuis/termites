@@ -64,6 +64,8 @@ type JsonData struct {
 	Fields  map[string]json.RawMessage `json:"fields"`
 }
 
+// Deprecated
+// will be moved to state
 type combiner struct {
 	data JsonData
 }
@@ -81,6 +83,8 @@ func (c *combiner) get() ([]byte, error) {
 	return json.Marshal(c.data)
 }
 
+// update combines partial data. If there is no change, returns false.
+// If there was a change, updates the data under the field key and increases the version.
 func (c *combiner) update(data JsonPartialData) bool {
 	existing, has := c.data.Fields[data.Key]
 	if has && bytes.Compare(existing, data.Data) == 0 {
