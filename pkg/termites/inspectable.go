@@ -1,6 +1,9 @@
 package termites
 
-import "time"
+import (
+	"errors"
+	"time"
+)
 
 // InspectableNode should mainly be used as a testing aid.
 // Pick a type A for which to create the node, then send and receive messages via the channel.
@@ -48,6 +51,17 @@ func (n *InspectableNode[A]) Run(_ NodeControl) error {
 		case v := <-n.Send:
 			n.Out.Send(v)
 		}
+	}
+}
+
+func (n *InspectableNode[A]) ReceiveWithin(d time.Duration) (A, error) {
+	timer := time.NewTimer(d)
+	select {
+	case v := <-n.Receive:
+		return v, nil
+	case <-timer.C:
+		var unit A
+		return unit, errors.New("did not receive message within timeout")
 	}
 }
 
