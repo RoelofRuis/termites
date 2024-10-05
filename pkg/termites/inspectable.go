@@ -28,24 +28,33 @@ func NewInspectableNode[A any](name string) *InspectableNode[A] {
 	}
 
 	builder.OnRun(n.Run)
+	builder.OnShutdown(n.Shutdown)
 
 	return n
 }
 
-func (c *InspectableNode[A]) Run(_ NodeControl) error {
+func (n *InspectableNode[A]) Run(_ NodeControl) error {
 	for {
 		select {
-		case msg := <-c.In.Receive():
+		case msg := <-n.In.Receive():
 			decoded := msg.Data.(A)
-			time.Sleep(c.Delay)
-			c.Receive <- decoded
-			c.Out.Send(decoded)
+			time.Sleep(n.Delay)
+			n.Receive <- decoded
+			n.Out.Send(decoded)
 
-		case <-c.Panic:
+		case <-n.Panic:
 			panic("handler error")
 
-		case v := <-c.Send:
-			c.Out.Send(v)
+		case v := <-n.Send:
+			n.Out.Send(v)
 		}
 	}
+}
+
+func (n *InspectableNode[A]) Shutdown(_ TeardownControl) error {
+	close(n.Send)
+	close(n.Receive)
+	close(n.Panic)
+
+	return nil
 }
