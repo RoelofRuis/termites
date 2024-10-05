@@ -3,6 +3,7 @@ package termites_web
 import (
 	"encoding/json"
 	"github.com/RoelofRuis/termites/pkg/termites"
+	jsonpatch "github.com/evanphx/json-patch/v5"
 )
 
 // We can have a separate state holder that just holds and updates a state
@@ -45,14 +46,17 @@ func (v *StateTracker) Run(c termites.NodeControl) error {
 			v.MessageOut.Send(ClientMessage{ClientId: connection.Id, Data: v.serializedState})
 
 		case msg := <-v.StateIn.Receive():
-			raw := msg.Data.(json.RawMessage)
-			// This is a diff always!
+			mergePatch := msg.Data.(json.RawMessage)
 			if v.serializedState == nil {
-				v.serializedState = raw
+				v.serializedState = mergePatch
 			} else {
-				// we need to perform the merge patch
+				newState, err := jsonpatch.MergePatch(v.serializedState, mergePatch)
+				if err != nil {
+					c.LogError("Failed to apply merge patch", err)
+				}
+				v.serializedState = newState
 			}
-			v.MessageOut.Send(ClientMessage{Data: raw})
+			v.MessageOut.Send(ClientMessage{Data: mergePatch})
 		}
 	}
 }
