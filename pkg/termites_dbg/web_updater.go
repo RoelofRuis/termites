@@ -3,7 +3,6 @@ package termites_dbg
 import (
 	"fmt"
 	"path"
-	"path/filepath"
 	"sort"
 	"strings"
 
@@ -11,19 +10,15 @@ import (
 )
 
 type WebUpdater struct {
-	PathIn *termites.InPort
 	RefsIn *termites.InPort
 
 	controller *WebController
 }
 
-// Deprecated
-// This can all be done via state and websockets now
 func NewWebUpdater(controller *WebController) *WebUpdater {
 	builder := termites.NewBuilder("Web Updater")
 
 	n := &WebUpdater{
-		PathIn:     termites.NewInPort[string](builder, "Visualizer Path"),
 		RefsIn:     termites.NewInPort[map[termites.NodeId]termites.NodeRef](builder, "Refs"),
 		controller: controller,
 	}
@@ -99,11 +94,6 @@ func (d *WebUpdater) Run(_ termites.NodeControl) error {
 				return strings.Compare(nodes[i].Name, nodes[j].Name) < 0
 			})
 			d.controller.SetNodes(nodes)
-
-		case msg := <-d.PathIn.Receive():
-			visualizerPath := msg.Data.(string)
-			_, filename := filepath.Split(visualizerPath)
-			d.controller.SetRoutingPath(filepath.Join("/dbg-static/", filename))
 		}
 	}
 }

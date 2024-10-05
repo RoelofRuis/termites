@@ -28,8 +28,7 @@ type WebController struct {
 }
 
 type UIData struct {
-	RoutingPath string
-	Nodes       []NodeInfo
+	Nodes []NodeInfo
 }
 
 type NodeInfo struct {
@@ -56,19 +55,13 @@ func NewWebController() *WebController {
 	return &WebController{
 		index:      mustParse(basePage, indexPage),
 		uiDataLock: sync.RWMutex{},
-		uiData:     UIData{RoutingPath: "", Nodes: nil},
+		uiData:     UIData{Nodes: nil},
 	}
 }
 
 func (d *WebController) SetNodes(nodes []NodeInfo) {
 	d.uiDataLock.Lock()
 	d.uiData.Nodes = nodes
-	d.uiDataLock.Unlock()
-}
-
-func (d *WebController) SetRoutingPath(path string) {
-	d.uiDataLock.Lock()
-	d.uiData.RoutingPath = path
 	d.uiDataLock.Unlock()
 }
 

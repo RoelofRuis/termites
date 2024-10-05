@@ -45,9 +45,8 @@ func Init(graph *termites.Graph, debugger *Debugger) {
 	visualizer := NewVisualizer(debugger.tempDir.Dir)
 	graph.ConnectTo(debugger.refReceiver.RefsOut, visualizer.RefsIn, termites.WithMailbox(&termites.DebouncedMailbox{Delay: 100 * time.Millisecond}))
 
-	// Web UI
+	// Open References
 	webUpdater := NewWebUpdater(controller)
-	graph.ConnectTo(visualizer.PathOut, webUpdater.PathIn)
 	graph.ConnectTo(debugger.refReceiver.RefsOut, webUpdater.RefsIn, termites.WithMailbox(&termites.DebouncedMailbox{Delay: 100 * time.Millisecond}))
 
 	// State

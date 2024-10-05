@@ -37,6 +37,7 @@ func determineFunctionInfo(f interface{}) (FunctionInfo, error) {
 		return FunctionInfo{}, fmt.Errorf("cannot determine info of `nil` function")
 	}
 
+	// FIXME: this was broken in go 1.18 due to update to FuncForPC
 	file, line := runtime.FuncForPC(v.Pointer()).FileLine(v.Pointer())
 
 	return FunctionInfo{
