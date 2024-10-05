@@ -17,6 +17,8 @@ type WebUpdater struct {
 	controller *WebController
 }
 
+// Deprecated
+// This can all be done via state and websockets now
 func NewWebUpdater(controller *WebController) *WebUpdater {
 	builder := termites.NewBuilder("Web Updater")
 
