@@ -3,6 +3,7 @@ package termites_state
 import (
 	"encoding/json"
 	"github.com/RoelofRuis/termites/pkg/termites"
+	jsonpatch "github.com/evanphx/json-patch/v5"
 )
 
 type StateMessage struct {
@@ -39,22 +40,27 @@ func (s *StateStore) Run(c termites.NodeControl) error {
 	for msg := range s.StateIn.Receive() {
 		stateMessage := msg.Data.(StateMessage)
 
-		_, has := s.statesByKey[stateMessage.Key]
-		if !has {
-			s.statesByKey[stateMessage.Key] = stateMessage.Data
-			raw, err := json.Marshal(s.statesByKey)
-			if err != nil {
-				c.LogError("failed to marshal state", err)
-			}
-
-			s.PatchOut.Send(json.RawMessage(raw))
+		original, err := json.Marshal(s.statesByKey)
+		if err != nil {
+			c.LogError("failed to marshal state", err)
 			continue
 		}
 
-		// je zegt: de staat van dit object, met deze key, is nu zo.
-		// Wat is dan de hele diff op alles?
+		s.statesByKey[stateMessage.Key] = stateMessage.Data
 
-		// wrap de key er omheen, maak de diff, dat is de patch.
+		modified, err := json.Marshal(s.statesByKey)
+		if err != nil {
+			c.LogError("failed to marshal state", err)
+			continue
+		}
+
+		patch, err := jsonpatch.CreateMergePatch(original, modified)
+		if err != nil {
+			c.LogError("failed to create merge patch", err)
+			continue
+		}
+
+		s.PatchOut.Send(json.RawMessage(patch))
 	}
 
 	return nil
