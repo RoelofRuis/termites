@@ -25,7 +25,7 @@ type StateTracker struct {
 func NewStateTracker() *StateTracker {
 	builder := termites.NewBuilder("StateTracker")
 
-	v := &StateTracker{
+	t := &StateTracker{
 		ConnectionIn: termites.NewInPort[ClientConnection](builder, "Connection"),
 		StateIn:      termites.NewInPort[json.RawMessage](builder, "State"),
 		MessageOut:   termites.NewOutPort[ClientMessage](builder, "Message"),
@@ -33,10 +33,12 @@ func NewStateTracker() *StateTracker {
 		serializedState: nil,
 	}
 
-	builder.OnRun(v.Run)
+	builder.OnRun(t.Run)
 
-	return v
+	return t
 }
+
+// TODO: difference between full and patch message!
 
 func (v *StateTracker) Run(c termites.NodeControl) error {
 	for {

@@ -2,6 +2,8 @@ package termites
 
 import (
 	"errors"
+	"fmt"
+	"log"
 	"time"
 )
 
@@ -40,7 +42,11 @@ func (n *InspectableNode[A]) Run(_ NodeControl) error {
 	for {
 		select {
 		case msg := <-n.In.Receive():
-			decoded := msg.Data.(A)
+			decoded, is := msg.Data.(A)
+			if !is {
+				log.Printf("decoding message failed: %s\n", msg.Data)
+				panic(fmt.Sprintf("decoding message failed: %+v", msg))
+			}
 			time.Sleep(n.Delay)
 			n.Receive <- decoded
 			n.Out.Send(decoded)
