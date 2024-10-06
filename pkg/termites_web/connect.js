@@ -41,10 +41,10 @@ let connector = (function (storage) {
         conn = new WebSocket(url);
 
         conn.onopen = function (evt) {
-            onopen()
+            publish("onopen", {})
         }
         conn.onclose = function (evt) {
-            onclose()
+            publish("onclose", {})
         }
         conn.onmessage = function (evt) {
             const msg = JSON.parse(evt.data);
@@ -52,14 +52,6 @@ let connector = (function (storage) {
         }
 
         return true
-    }
-
-    function onopen() {
-        publish("onopen", {})
-    }
-
-    function onclose() {
-        publish("onclose", {})
     }
 
     function onmessage(msg) {
