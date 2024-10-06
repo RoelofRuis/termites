@@ -22,7 +22,7 @@ func main() {
 	graph := termites.NewGraph(
 		termites.PrintLogsToConsole(),
 		termites.PrintMessagesToConsole(),
-		termites_dbg.WithDebugger(),
+		termites_dbg.WithDebugger(), // Visit http://localhost:4242 to view the debugger
 	)
 
 	// Create a router and bind the appropriate handlers
