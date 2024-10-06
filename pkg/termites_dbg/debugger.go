@@ -3,6 +3,7 @@ package termites_dbg
 import (
 	"fmt"
 	"github.com/RoelofRuis/termites/pkg/termites_state"
+	"github.com/gorilla/websocket"
 	"net/http"
 	"time"
 
@@ -30,7 +31,7 @@ func WithDebugger(opts ...DebuggerOption) termites.GraphOption {
 // Init initializes the given graph with the given debugger. Prefer to use the termites.GraphOption WithDebugger
 // function to initiate a connection.
 func Init(graph *termites.Graph, debugger *Debugger) {
-	connector := termites_web.NewConnector(graph)
+	connector := termites_web.NewConnector(graph, debugger.upgrader)
 
 	router := mux.NewRouter()
 	connector.Bind(router)
@@ -73,6 +74,7 @@ type Debugger struct {
 	tempDir *ManagedTempDirectory
 
 	httpPort        int
+	upgrader        websocket.Upgrader
 	editor          CodeEditor
 	refReceiver     *refReceiver
 	messageReceiver *messageReceiver
@@ -81,6 +83,7 @@ type Debugger struct {
 type debuggerConfig struct {
 	httpPort int
 	editor   CodeEditor
+	upgrader websocket.Upgrader
 }
 
 // NewDebugger instantiates a non-connected Debugger, mainly available for advanced usage.
@@ -89,6 +92,10 @@ func NewDebugger(options ...DebuggerOption) *Debugger {
 	config := &debuggerConfig{
 		httpPort: 4242,
 		editor:   nil,
+		upgrader: websocket.Upgrader{
+			ReadBufferSize:  1024,
+			WriteBufferSize: 1024,
+		},
 	}
 
 	for _, opt := range options {
@@ -99,6 +106,7 @@ func NewDebugger(options ...DebuggerOption) *Debugger {
 		tempDir: NewManagedTempDirectory("debug-"),
 
 		httpPort:        config.httpPort,
+		upgrader:        config.upgrader,
 		editor:          config.editor,
 		refReceiver:     newRefReceiver(),
 		messageReceiver: newMsgReceiver(),

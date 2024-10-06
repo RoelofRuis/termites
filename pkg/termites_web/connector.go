@@ -10,14 +10,10 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-var upgrader = websocket.Upgrader{
-	ReadBufferSize:  1024,
-	WriteBufferSize: 1024,
-}
-
 type Connector struct {
-	graph *termites.Graph
-	Hub   *Hub
+	graph    *termites.Graph
+	Hub      *Hub
+	upgrader websocket.Upgrader
 
 	clientIds map[string]bool
 }
@@ -25,11 +21,11 @@ type Connector struct {
 //go:embed connect.js
 var embeddedJS embed.FS
 
-func NewConnector(graph *termites.Graph) *Connector {
+func NewConnector(graph *termites.Graph, upgrader websocket.Upgrader) *Connector {
 	return &Connector{
-		graph: graph,
-		Hub:   newHub(),
-
+		graph:     graph,
+		Hub:       newHub(),
+		upgrader:  upgrader,
 		clientIds: make(map[string]bool),
 	}
 }
@@ -42,7 +38,7 @@ func (c *Connector) Bind(router *mux.Router) {
 }
 
 func (c *Connector) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	conn, err := upgrader.Upgrade(w, r, nil)
+	conn, err := c.upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("unable to upgrade connection: %s", err), http.StatusInternalServerError)
 		return

@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"github.com/RoelofRuis/termites/pkg/termites_state"
+	"github.com/gorilla/websocket"
 	"log"
 	"net/http"
 	"time"
@@ -15,6 +16,11 @@ import (
 )
 
 const WebURL = "localhost:8008"
+
+var upgrader = websocket.Upgrader{
+	ReadBufferSize:  1024,
+	WriteBufferSize: 1024,
+}
 
 // Setting up a full duplex websocket connection
 func main() {
@@ -30,7 +36,7 @@ func main() {
 	router.Path("/").Methods("GET").HandlerFunc(handleIndex)
 
 	// Create a new web connector
-	connector := termites_web.NewConnector(graph)
+	connector := termites_web.NewConnector(graph, upgrader)
 	connector.Bind(router)
 
 	// For demo purposes we create a generator.
