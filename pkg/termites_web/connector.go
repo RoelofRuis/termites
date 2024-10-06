@@ -31,13 +31,13 @@ func NewConnector(graph *termites.Graph, upgrader websocket.Upgrader) *Connector
 }
 
 func (c *Connector) Bind(router *mux.Router) {
-	router.Path("/ws").Methods("GET").HandlerFunc(c.HandleWS)
+	router.Path("/ws").Methods("GET").HandlerFunc(c.ServeHTTP)
 
 	embeddedServer := http.FileServer(http.FS(embeddedJS))
 	router.PathPrefix("/embedded/").Methods("GET").Handler(http.StripPrefix("/embedded/", embeddedServer))
 }
 
-func (c *Connector) HandleWS(w http.ResponseWriter, r *http.Request) {
+func (c *Connector) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	conn, err := c.upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("unable to upgrade connection: %s", err), http.StatusInternalServerError)

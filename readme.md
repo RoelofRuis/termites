@@ -127,12 +127,6 @@ event from being fired.
 termites.NewGraph(termites.WithoutSigtermHandler())
 ```
 
-## Module `termites_state`
-
-The state module holds a state node, but it is under active development and not yet stable.
-
-It might later be included into the `termites` core directly.
-
 ## Module `termites_dbg`
 
 The debug module contains a web debugger that can be hooked into a graph to inspect it.
@@ -225,3 +219,7 @@ termites_web.RunBrowser("localhost:8000")
 // Component syntax
 manager := termites_web.NewBrowserManager("localhost:8000")
 ```
+
+## Module `termites_lab`
+
+The lab module contains experimental components that might later be incorporated into one of the other modules.

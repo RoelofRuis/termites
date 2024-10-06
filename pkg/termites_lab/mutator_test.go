@@ -1,4 +1,4 @@
-package termites_state
+package termites_lab
 
 import (
 	"github.com/RoelofRuis/termites/pkg/termites"

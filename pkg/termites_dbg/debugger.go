@@ -2,7 +2,6 @@ package termites_dbg
 
 import (
 	"fmt"
-	"github.com/RoelofRuis/termites/pkg/termites_state"
 	"github.com/gorilla/websocket"
 	"net/http"
 	"time"
@@ -55,9 +54,7 @@ func Init(graph *termites.Graph, debugger *Debugger) {
 	graph.ConnectTo(connector.Hub.ConnectionOut, stateTracker.ConnectionIn)
 	graph.ConnectTo(stateTracker.MessageOut, connector.Hub.InFromApp)
 
-	stateStore := termites_state.NewStateStore()
-	graph.ConnectTo(stateStore.PatchOut, stateTracker.StateIn)
-	graph.ConnectTo(visualizer.PathOut, stateStore.StateIn, termites.Via("Visualizer adapter", VisualizerAdapter))
+	graph.ConnectTo(visualizer.PathOut, stateTracker.StateIn, termites.Via("Visualizer adapter", VisualizerAdapter))
 
 	// Serve static files
 	router.PathPrefix("/dbg-static/").Methods("GET").Handler(http.StripPrefix("/dbg-static/", http.FileServer(http.Dir(debugger.tempDir.Dir))))

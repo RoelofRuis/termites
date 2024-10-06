@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"github.com/RoelofRuis/termites/pkg/termites_state"
 	"github.com/gorilla/websocket"
 	"log"
 	"net/http"
@@ -43,14 +42,11 @@ func main() {
 	// This is where the custom application logic would go.
 	generator := examples.NewGenerator(100 * time.Millisecond)
 
-	// We create a state store that would collect application state
-	state := termites_state.NewStateStore()
-	graph.ConnectTo(generator.IntOut, state.StateIn, termites.Via("generator adapter", generatorAdapter))
-
+	// We create a state tracker that collects the web-sharable state
 	stateTracker := termites_web.NewStateTracker()
-	graph.ConnectTo(state.PatchOut, stateTracker.StateIn)
 	graph.ConnectTo(stateTracker.MessageOut, connector.Hub.InFromApp)
 	graph.ConnectTo(connector.Hub.ConnectionOut, stateTracker.ConnectionIn)
+	graph.ConnectTo(generator.IntOut, stateTracker.StateIn, termites.Via("generator adapter", generatorAdapter))
 
 	go func() {
 		// Run the webserver
@@ -71,15 +67,15 @@ func handleIndex(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, "./examples/websocket/index.html")
 }
 
-func generatorAdapter(i int) (termites_state.StateMessage, error) {
+func generatorAdapter(i int) (termites_web.StateMessage, error) {
 	msg, err := json.Marshal(struct {
 		Count int `json:"count"`
 	}{
 		Count: i,
 	})
 	if err != nil {
-		return termites_state.StateMessage{}, err
+		return termites_web.StateMessage{}, err
 	}
 
-	return termites_state.StateMessage{Key: "generator", Data: msg}, nil
+	return termites_web.StateMessage{Key: "generator", Data: msg}, nil
 }

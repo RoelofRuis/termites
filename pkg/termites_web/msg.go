@@ -43,16 +43,11 @@ func WebClose() ([]byte, error) {
 	return marshalWebMessage(WebMessage{MsgType: MsgClose})
 }
 
-func WebUpdate(contentType string, data interface{}) ([]byte, error) {
-	dataBytes, err := json.Marshal(data)
-	if err != nil {
-		return nil, err
-	}
-
+func WebUpdate(contentType string, data []byte) ([]byte, error) {
 	return marshalWebMessage(WebMessage{
 		MsgType:     MsgUpdate,
 		ContentType: contentType,
-		Payload:     dataBytes,
+		Payload:     data,
 	})
 }
 

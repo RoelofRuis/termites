@@ -6,12 +6,17 @@ import (
 	jsonpatch "github.com/evanphx/json-patch/v5"
 )
 
+type StateMessage struct {
+	Key  string
+	Data json.RawMessage
+}
+
 type StateTracker struct {
 	ConnectionIn *termites.InPort
 	StateIn      *termites.InPort
 	MessageOut   *termites.OutPort
 
-	fullState json.RawMessage
+	fullState map[string]json.RawMessage
 }
 
 func NewStateTracker() *StateTracker {
@@ -19,10 +24,10 @@ func NewStateTracker() *StateTracker {
 
 	t := &StateTracker{
 		ConnectionIn: termites.NewInPort[ClientConnection](builder, "Connection"),
-		StateIn:      termites.NewInPort[json.RawMessage](builder, "State"),
+		StateIn:      termites.NewInPort[StateMessage](builder, "State"),
 		MessageOut:   termites.NewOutPort[ClientMessage](builder, "Message"),
 
-		fullState: nil,
+		fullState: make(map[string]json.RawMessage),
 	}
 
 	builder.OnRun(t.Run)
@@ -35,21 +40,37 @@ func (v *StateTracker) Run(c termites.NodeControl) error {
 		select {
 		case msg := <-v.ConnectionIn.Receive():
 			connection := msg.Data.(ClientConnection)
-			data, _ := WebUpdate("state/full", v.fullState)
+
+			newState, err := json.Marshal(v.fullState)
+			if err != nil {
+				c.LogError("failed to marshal state", err)
+				continue
+			}
+
+			data, _ := WebUpdate("state/full", newState)
 			v.MessageOut.Send(ClientMessage{ClientId: connection.Id, Data: data})
 
 		case msg := <-v.StateIn.Receive():
-			mergePatch := msg.Data.(json.RawMessage)
-			if v.fullState == nil {
-				v.fullState = mergePatch
-			} else {
-				newState, err := jsonpatch.MergePatch(v.fullState, mergePatch)
-				if err != nil {
-					c.LogError("Failed to apply merge patch", err)
-				}
-				v.fullState = newState
+			stateMessage := msg.Data.(StateMessage)
+
+			oldState, err := json.Marshal(v.fullState)
+			if err != nil {
+				c.LogError("failed to marshal state", err)
+				continue
 			}
-			data, _ := WebUpdate("state/patch", mergePatch)
+
+			v.fullState[stateMessage.Key] = stateMessage.Data
+
+			newState, err := json.Marshal(v.fullState)
+			if err != nil {
+				c.LogError("failed to marshal state", err)
+				continue
+			}
+
+			patch, err := jsonpatch.CreateMergePatch(oldState, newState)
+
+			data, _ := WebUpdate("state/patch", patch)
+
 			v.MessageOut.Send(ClientMessage{Data: data})
 		}
 	}
