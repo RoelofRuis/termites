@@ -75,24 +75,21 @@ func TestDynamicConnections(t *testing.T) {
 func TestAdapter(t *testing.T) {
 	graph := NewGraph()
 
-	adapter := NewAdapter(
-		"string to int",
-		func(in string) (int, error) {
-			if in == "skip" {
-				return 0, SkipElement
-			}
-			i, err := strconv.ParseInt(in, 10, 64)
-			if err != nil {
-				return 0, err
-			}
-			return int(i), nil
-		},
-	)
+	stringToInt := func(in string) (int, error) {
+		if in == "skip" {
+			return 0, SkipElement
+		}
+		i, err := strconv.ParseInt(in, 10, 64)
+		if err != nil {
+			return 0, err
+		}
+		return int(i), nil
+	}
 
 	nodeA := NewInspectableNode[string]("Component A")
 	nodeB := NewInspectableNode[int]("Component B")
 
-	graph.ConnectTo(nodeA.Out, nodeB.In, Via(adapter))
+	graph.ConnectTo(nodeA.Out, nodeB.In, Via("string to int", stringToInt))
 
 	nodeA.Out.Send("skip")
 	nodeA.Out.Send("42")

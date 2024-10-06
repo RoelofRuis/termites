@@ -14,9 +14,9 @@
 
         const img = document.getElementById("routing-graph")
 
-        connector.subscribe(function(tpe, data) {
+        connector.subscribe(function(tpe, msg) {
             if (tpe === "onupdate") {
-                img.data = data.graph.path
+                img.data = msg.payload.graph.path
             }
         })
     </script>

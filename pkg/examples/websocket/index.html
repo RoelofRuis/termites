@@ -12,7 +12,7 @@
         <td><span id="data"></span></td>
     </tr>
     <tr>
-        <td>Live</td>
+        <td>Client</td>
         <td><span id="reference"></span></td>
     </tr>
     </tbody>
@@ -30,9 +30,12 @@
     connector.connect();
 
     let root = document.getElementById("data")
-    connector.subscribe(function (tpe, data) {
+    connector.subscribe(function (tpe, msg) {
         if (tpe === "onupdate") {
-            root.textContent = data;
+            root.textContent = msg.payload.generator.count;
+            if (msg.content_type === "state/full") {
+                referenceCount = msg.payload.generator.count;
+            }
         }
     })
 </script>

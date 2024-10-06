@@ -14,7 +14,7 @@ func main() {
 
 	go func() {
 		for {
-			conn := graph.ConnectTo(generator.TextOut, printer.TextIn)
+			conn := graph.ConnectTo(generator.StringOut, printer.TextIn)
 			time.Sleep(1 * time.Second)
 			conn.Disconnect()
 			time.Sleep(1 * time.Second)

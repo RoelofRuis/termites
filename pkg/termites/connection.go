@@ -11,7 +11,7 @@ type Connection struct {
 	id      ConnectionId
 	from    *OutPort
 	mailbox *mailbox
-	adapter *Adapter
+	adapter *adapter
 }
 
 func (c *Connection) Disconnect() {
@@ -91,7 +91,7 @@ func (c *Connection) ref() ConnectionRef {
 type connectionConfig struct {
 	from    *OutPort
 	to      *InPort
-	adapter *Adapter
+	adapter *adapter
 	mailbox MailboxConfig
 }
 

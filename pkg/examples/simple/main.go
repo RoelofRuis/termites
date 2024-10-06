@@ -12,7 +12,7 @@ func main() {
 	generator := examples.NewGenerator(1 * time.Millisecond)
 	printer := examples.NewPrinter()
 
-	graph.ConnectTo(generator.TextOut, printer.TextIn)
+	graph.ConnectTo(generator.StringOut, printer.TextIn)
 
 	graph.Wait()
 }

@@ -7,12 +7,16 @@ import (
 
 type ConnectionOption func(conn *connectionConfig)
 
-func Via(adapter *Adapter) ConnectionOption {
-	if adapter == nil {
-		panic(fmt.Errorf("invalid connection option: adapter cannot be nil"))
-	}
+func Via[A any, B any](name string, transform func(A) (B, error)) ConnectionOption {
+	untypedTransform, inDataType, outDataType := extractFunc(transform)
+
 	return func(conn *connectionConfig) {
-		conn.adapter = adapter
+		conn.adapter = &adapter{
+			name:        name,
+			inDataType:  inDataType,
+			outDataType: outDataType,
+			transform:   untypedTransform,
+		}
 	}
 }
 

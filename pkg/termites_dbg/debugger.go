@@ -56,7 +56,7 @@ func Init(graph *termites.Graph, debugger *Debugger) {
 
 	stateStore := termites_state.NewStateStore()
 	graph.ConnectTo(stateStore.PatchOut, stateTracker.StateIn)
-	graph.ConnectTo(visualizer.PathOut, stateStore.StateIn, termites.Via(VisualizerAdapter))
+	graph.ConnectTo(visualizer.PathOut, stateStore.StateIn, termites.Via("Visualizer adapter", VisualizerAdapter))
 
 	// Serve static files
 	router.PathPrefix("/dbg-static/").Methods("GET").Handler(http.StripPrefix("/dbg-static/", http.FileServer(http.Dir(debugger.tempDir.Dir))))
