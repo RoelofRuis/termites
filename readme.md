@@ -7,9 +7,12 @@ nodes communicate by sending messages to each other over *connections* establish
 
 The `termites` core module provides these basic building blocks. Optionally, you can use the debugging tools from `termites_dbg` and/or the web components provided in `termites_web`.
 
+### Development status
+The library API is currently still unstable and does not yet serve a v1.
+
 ## Examples
 
-See the [examples](termites/examples) folder for small example implementations.
+See the [examples](termites/examples) folder for example implementations.
 
 ## Module `termites`
 
@@ -124,6 +127,12 @@ event from being fired.
 termites.NewGraph(termites.WithoutSigtermHandler())
 ```
 
+## Module `termites_state`
+
+The state module holds a state node, but it is under active development and not yet stable.
+
+It might later be included into the `termites` core directly.
+
 ## Module `termites_dbg`
 
 The debug module contains a web debugger that can be hooked into a graph to inspect it.
@@ -153,15 +162,6 @@ Configuration options can be passed to the debugger Graph Option.
 
 ```golang
 termites_dbg.WithDebugger(termites_dbg.OnHttpPort(1234))
-```
-
-#### Link to a code editor
-The debugger automatically extracts source file information about the graph it is linked to.
-These files can then be opened in your favorite editor when clicking the nodes in the debugger.
-To bind an editor, use this option. The `editor.go` file defines some editors, but you can easily plug your own.
-
-```golang
-termites_dbg.OpenIn(termites_dbg.EditorGoland)
 ```
 
 ## Module `termites_web`
