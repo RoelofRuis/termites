@@ -5,18 +5,18 @@ import (
 	"testing"
 )
 
-func TestStateTracker(t *testing.T) {
+func TestState(t *testing.T) {
 	graph := termites.NewGraph()
 
-	stateTracker := NewStateTracker()
+	state := NewState()
 
 	stateNode := termites.NewInspectableNode[StateMessage]("State")
 	connectionsNode := termites.NewInspectableNode[ClientConnection]("Connections")
 	clientMessages := termites.NewInspectableNode[ClientMessage]("Client Messages")
 
-	graph.ConnectTo(stateNode.Out, stateTracker.StateIn)
-	graph.ConnectTo(connectionsNode.Out, stateTracker.ConnectionIn)
-	graph.ConnectTo(stateTracker.MessageOut, clientMessages.In)
+	graph.ConnectTo(stateNode.Out, state.In)
+	graph.ConnectTo(connectionsNode.Out, state.ConnectionIn)
+	graph.ConnectTo(state.MessageOut, clientMessages.In)
 
 	// Send a client connect message
 	connectionsNode.Send <- ClientConnection{ConnType: ClientConnect, Id: "abc123"}

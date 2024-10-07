@@ -50,11 +50,11 @@ func Init(graph *termites.Graph, debugger *Debugger) {
 	graph.ConnectTo(debugger.refReceiver.RefsOut, webUpdater.RefsIn, termites.WithMailbox(&termites.DebouncedMailbox{Delay: 100 * time.Millisecond}))
 
 	// State
-	stateTracker := termites_web.NewStateTracker()
-	graph.ConnectTo(connector.Hub.ConnectionOut, stateTracker.ConnectionIn)
-	graph.ConnectTo(stateTracker.MessageOut, connector.Hub.InFromApp)
+	state := termites_web.NewState()
+	graph.ConnectTo(connector.Hub.ConnectionOut, state.ConnectionIn)
+	graph.ConnectTo(state.MessageOut, connector.Hub.InFromApp)
 
-	graph.ConnectTo(visualizer.PathOut, stateTracker.StateIn, termites.Via(VisualizerAdapter))
+	graph.ConnectTo(visualizer.PathOut, state.In, termites.Via(VisualizerAdapter))
 
 	// Serve static files
 	router.PathPrefix("/dbg-static/").Methods("GET").Handler(http.StripPrefix("/dbg-static/", http.FileServer(http.Dir(debugger.tempDir.Dir))))

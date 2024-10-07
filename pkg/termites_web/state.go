@@ -11,20 +11,20 @@ type StateMessage struct {
 	Data json.RawMessage
 }
 
-type StateTracker struct {
+type State struct {
 	ConnectionIn *termites.InPort
-	StateIn      *termites.InPort
+	In           *termites.InPort
 	MessageOut   *termites.OutPort
 
 	fullState map[string]json.RawMessage
 }
 
-func NewStateTracker() *StateTracker {
-	builder := termites.NewBuilder("StateTracker")
+func NewState() *State {
+	builder := termites.NewBuilder("State")
 
-	t := &StateTracker{
+	t := &State{
 		ConnectionIn: termites.NewInPort[ClientConnection](builder),
-		StateIn:      termites.NewInPort[StateMessage](builder),
+		In:           termites.NewInPort[StateMessage](builder),
 		MessageOut:   termites.NewOutPort[ClientMessage](builder),
 
 		fullState: make(map[string]json.RawMessage),
@@ -35,7 +35,7 @@ func NewStateTracker() *StateTracker {
 	return t
 }
 
-func (v *StateTracker) Run(c termites.NodeControl) error {
+func (v *State) Run(c termites.NodeControl) error {
 	for {
 		select {
 		case msg := <-v.ConnectionIn.Receive():
@@ -50,7 +50,7 @@ func (v *StateTracker) Run(c termites.NodeControl) error {
 			data, _ := WebUpdate("state/full", newState)
 			v.MessageOut.Send(ClientMessage{ClientId: connection.Id, Data: data})
 
-		case msg := <-v.StateIn.Receive():
+		case msg := <-v.In.Receive():
 			stateMessage := msg.Data.(StateMessage)
 
 			oldState, err := json.Marshal(v.fullState)
