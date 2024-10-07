@@ -13,7 +13,7 @@ func NewPrinter() *Printer {
 	builder := termites.NewBuilder("Printer")
 
 	p := &Printer{
-		TextIn: termites.NewInPort[string](builder, "Text"),
+		TextIn: termites.NewInPort[string](builder),
 	}
 
 	builder.OnRun(p.Run)

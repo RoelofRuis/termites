@@ -23,9 +23,9 @@ func NewStateTracker() *StateTracker {
 	builder := termites.NewBuilder("StateTracker")
 
 	t := &StateTracker{
-		ConnectionIn: termites.NewInPort[ClientConnection](builder, "Connection"),
-		StateIn:      termites.NewInPort[StateMessage](builder, "State"),
-		MessageOut:   termites.NewOutPort[ClientMessage](builder, "Message"),
+		ConnectionIn: termites.NewInPort[ClientConnection](builder),
+		StateIn:      termites.NewInPort[StateMessage](builder),
+		MessageOut:   termites.NewOutPort[ClientMessage](builder),
 
 		fullState: make(map[string]json.RawMessage),
 	}

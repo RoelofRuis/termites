@@ -1,6 +1,7 @@
 package termites
 
 import (
+	"fmt"
 	"reflect"
 	"sync"
 )
@@ -28,7 +29,28 @@ func NewBuilder(name string) Builder {
 	}
 }
 
-func NewInPort[A any](b Builder, name string) *InPort {
+func NewInPort[A any](b Builder) *InPort {
+	var msg A
+	dataType := reflect.TypeOf(msg)
+	fmt.Printf("%+v\n", dataType)
+
+	in := newInPort(dataType.Name(), dataType, b.node)
+	b.node.inPorts = append(b.node.inPorts, in)
+
+	return in
+}
+
+func NewOutPort[A any](b Builder) *OutPort {
+	var msg A
+	dataType := reflect.TypeOf(msg)
+
+	out := newOutPort(dataType.Name(), dataType, b.node)
+	b.node.outPorts = append(b.node.outPorts, out)
+
+	return out
+}
+
+func NewInPortNamed[A any](b Builder, name string) *InPort {
 	var msg A
 	dataType := reflect.TypeOf(msg)
 
@@ -38,7 +60,7 @@ func NewInPort[A any](b Builder, name string) *InPort {
 	return in
 }
 
-func NewOutPort[A any](b Builder, name string) *OutPort {
+func NewOutPortNamed[A any](b Builder, name string) *OutPort {
 	var msg A
 	dataType := reflect.TypeOf(msg)
 

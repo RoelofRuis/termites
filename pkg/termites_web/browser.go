@@ -18,7 +18,7 @@ func NewBrowserManager(url string) *BrowserManager {
 	builder := termites.NewBuilder("Browser Manager")
 
 	manager := &BrowserManager{
-		CommandIn: termites.NewInPort[struct{}](builder, "Command"),
+		CommandIn: termites.NewInPort[struct{}](builder),
 
 		url: url,
 	}

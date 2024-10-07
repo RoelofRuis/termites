@@ -22,8 +22,8 @@ func NewGenerator(sleep time.Duration) *Generator {
 	builder := termites.NewBuilder("Generator")
 
 	g := &Generator{
-		StringOut: termites.NewOutPort[string](builder, "String"),
-		CountOut:  termites.NewOutPort[Count](builder, "Int"),
+		StringOut: termites.NewOutPort[string](builder),
+		CountOut:  termites.NewOutPort[Count](builder),
 
 		sleep: sleep,
 	}

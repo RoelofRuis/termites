@@ -24,8 +24,8 @@ func NewInspectableNode[A any](name string) *InspectableNode[A] {
 	builder := NewBuilder(name)
 
 	n := &InspectableNode[A]{
-		In:      NewInPort[A](builder, "int in"),
-		Out:     NewOutPort[A](builder, "int out"),
+		In:      NewInPort[A](builder),
+		Out:     NewOutPort[A](builder),
 		Send:    make(chan A),
 		Receive: make(chan A, 128),
 		Panic:   make(chan struct{}),

@@ -219,7 +219,3 @@ termites_web.RunBrowser("localhost:8000")
 // Component syntax
 manager := termites_web.NewBrowserManager("localhost:8000")
 ```
-
-## Module `termites_lab`
-
-The lab module contains experimental components that might later be incorporated into one of the other modules.
