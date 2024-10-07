@@ -1,7 +1,6 @@
 package termites
 
 import (
-	"fmt"
 	"reflect"
 	"sync"
 )
@@ -32,7 +31,6 @@ func NewBuilder(name string) Builder {
 func NewInPort[A any](b Builder) *InPort {
 	var msg A
 	dataType := reflect.TypeOf(msg)
-	fmt.Printf("%+v\n", dataType)
 
 	in := newInPort(dataType.Name(), dataType, b.node)
 	b.node.inPorts = append(b.node.inPorts, in)
