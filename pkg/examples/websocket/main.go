@@ -43,9 +43,9 @@ func main() {
 
 	// We collect the web-sharable state in a state instance
 	state := termites_web.NewState()
-	graph.ConnectTo(state.MessageOut, connector.Hub.InFromApp)
-	graph.ConnectTo(connector.Hub.ConnectionOut, state.ConnectionIn)
-	graph.ConnectTo(generator.CountOut, state.In, termites.Via(termites_web.MarshalState("generator")))
+	graph.Connect(state.MessageOut, connector.Hub.InFromApp)
+	graph.Connect(connector.Hub.ConnectionOut, state.ConnectionIn)
+	graph.Connect(generator.CountOut, state.In, termites.Via(termites_web.MarshalState("generator")))
 
 	go func() {
 		// Run the webserver

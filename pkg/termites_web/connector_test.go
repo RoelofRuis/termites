@@ -21,8 +21,8 @@ func TestConnector_ConnectWebsocket(t *testing.T) {
 	clientIn := termites.NewInspectableNode[ClientConnection]("ClientConnection")
 	messageIn := termites.NewInspectableNode[ClientMessage]("ClientMessage")
 
-	graph.ConnectTo(connector.Hub.ConnectionOut, clientIn.In)
-	graph.ConnectTo(connector.Hub.OutToApp, messageIn.In)
+	graph.Connect(connector.Hub.ConnectionOut, clientIn.In)
+	graph.Connect(connector.Hub.OutToApp, messageIn.In)
 
 	server := httptest.NewServer(connector)
 	wsUrl := strings.ReplaceAll(server.URL, "http", "ws")

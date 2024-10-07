@@ -31,7 +31,7 @@ func connectWebSocketOut(id string, conn *websocket.Conn, connector *Connector) 
 
 	builder.OnRun(ws.Run)
 
-	outConn := connector.graph.ConnectTo(connector.Hub.OutToWeb, ws.DataIn)
+	outConn := connector.graph.Connect(connector.Hub.OutToWeb, ws.DataIn)
 	ws.graphConnection = outConn
 }
 

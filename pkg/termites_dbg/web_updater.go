@@ -19,7 +19,7 @@ func NewWebUpdater(controller *WebController) *WebUpdater {
 	builder := termites.NewBuilder("Web Updater")
 
 	n := &WebUpdater{
-		RefsIn:     termites.NewInPort[map[termites.NodeId]termites.NodeRef](builder),
+		RefsIn:     termites.NewInPortNamed[map[termites.NodeId]termites.NodeRef](builder, "Refs"),
 		controller: controller,
 	}
 

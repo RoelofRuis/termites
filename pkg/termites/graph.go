@@ -69,11 +69,11 @@ func (g *Graph) Close() {
 	g.eventBus.Send(Event{Type: Kill})
 }
 
-func (g *Graph) ConnectTo(out *OutPort, in *InPort, opts ...ConnectionOption) *Connection {
-	return g.Connect(out, append(opts, To(in))...)
+func (g *Graph) Connect(out *OutPort, in *InPort, opts ...ConnectionOption) *Connection {
+	return g.ConnectBy(out, append(opts, To(in))...)
 }
 
-func (g *Graph) Connect(out *OutPort, opts ...ConnectionOption) *Connection {
+func (g *Graph) ConnectBy(out *OutPort, opts ...ConnectionOption) *Connection {
 	connection, err := newConnection(out, opts...)
 	if err != nil {
 		panic(fmt.Errorf("node connection error: %w", err))

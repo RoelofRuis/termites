@@ -28,7 +28,7 @@ func connectWebsocketIn(id string, conn *websocket.Conn, connector *Connector) {
 
 	builder.OnRun(ws.Run)
 
-	inConn := connector.graph.ConnectTo(ws.DataOut, connector.Hub.InFromWeb)
+	inConn := connector.graph.Connect(ws.DataOut, connector.Hub.InFromWeb)
 
 	ws.graphConnection = inConn
 }

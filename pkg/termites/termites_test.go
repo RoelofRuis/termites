@@ -15,9 +15,9 @@ func TestConnections(t *testing.T) {
 	nodeC := NewInspectableNode[int]("Component C")
 	nodeD := NewInspectableNode[int]("Component D")
 
-	graph.ConnectTo(nodeA.Out, nodeB.In)
-	graph.ConnectTo(nodeB.Out, nodeC.In)
-	graph.ConnectTo(nodeB.Out, nodeD.In)
+	graph.Connect(nodeA.Out, nodeB.In)
+	graph.Connect(nodeB.Out, nodeC.In)
+	graph.Connect(nodeB.Out, nodeD.In)
 
 	nodeA.Send <- 42
 
@@ -37,7 +37,7 @@ func TestDynamicConnections(t *testing.T) {
 	nodeB1 := NewInspectableNode[int]("Component B1")
 	nodeB2 := NewInspectableNode[int]("Component B2")
 
-	connB1 := graph.ConnectTo(nodeA.Out, nodeB1.In)
+	connB1 := graph.Connect(nodeA.Out, nodeB1.In)
 
 	nodeA.Send <- 42
 
@@ -48,7 +48,7 @@ func TestDynamicConnections(t *testing.T) {
 		t.Error("Incorrect message")
 	}
 
-	graph.ConnectTo(nodeA.Out, nodeB2.In)
+	graph.Connect(nodeA.Out, nodeB2.In)
 
 	nodeA.Send <- 43
 
@@ -89,7 +89,7 @@ func TestAdapter(t *testing.T) {
 	nodeA := NewInspectableNode[string]("Component A")
 	nodeB := NewInspectableNode[int]("Component B")
 
-	graph.ConnectTo(nodeA.Out, nodeB.In, Via(stringToInt))
+	graph.Connect(nodeA.Out, nodeB.In, Via(stringToInt))
 
 	nodeA.Out.Send("skip")
 	nodeA.Out.Send("42")
@@ -108,7 +108,7 @@ func TestNodePanic(t *testing.T) {
 	nodeA := NewInspectableNode[int]("Component A")
 	nodeB := NewInspectableNode[int]("Component B")
 
-	graph.ConnectTo(nodeA.Out, nodeB.In)
+	graph.Connect(nodeA.Out, nodeB.In)
 
 	nodeA.Panic <- struct{}{}
 
@@ -123,7 +123,7 @@ func TestTimeout(t *testing.T) {
 	nodeB := NewInspectableNode[int]("Component B")
 	nodeB.Delay = 2 * time.Second // Should time out
 
-	graph.ConnectTo(nodeA.Out, nodeB.In)
+	graph.Connect(nodeA.Out, nodeB.In)
 
 	go func() {
 		nodeA.Out.Send(41)
@@ -162,9 +162,9 @@ func TestAsyncSendTiming(t *testing.T) {
 	nodeD := NewInspectableNode[int]("Component D")
 	nodeD.Delay = 500 * time.Millisecond
 
-	graph.ConnectTo(nodeA.Out, nodeB.In)
-	graph.ConnectTo(nodeA.Out, nodeC.In)
-	graph.ConnectTo(nodeA.Out, nodeD.In)
+	graph.Connect(nodeA.Out, nodeB.In)
+	graph.Connect(nodeA.Out, nodeC.In)
+	graph.Connect(nodeA.Out, nodeD.In)
 
 	wg := sync.WaitGroup{}
 	wg.Add(3)

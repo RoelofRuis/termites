@@ -43,18 +43,18 @@ func Init(graph *termites.Graph, debugger *Debugger) {
 
 	// Visualizer
 	visualizer := NewVisualizer(debugger.tempDir.Dir)
-	graph.ConnectTo(debugger.refReceiver.RefsOut, visualizer.RefsIn, termites.WithMailbox(&termites.DebouncedMailbox{Delay: 100 * time.Millisecond}))
+	graph.Connect(debugger.refReceiver.RefsOut, visualizer.RefsIn, termites.WithMailbox(&termites.DebouncedMailbox{Delay: 100 * time.Millisecond}))
 
 	// Open References
 	webUpdater := NewWebUpdater(controller)
-	graph.ConnectTo(debugger.refReceiver.RefsOut, webUpdater.RefsIn, termites.WithMailbox(&termites.DebouncedMailbox{Delay: 100 * time.Millisecond}))
+	graph.Connect(debugger.refReceiver.RefsOut, webUpdater.RefsIn, termites.WithMailbox(&termites.DebouncedMailbox{Delay: 100 * time.Millisecond}))
 
 	// State
 	state := termites_web.NewState()
-	graph.ConnectTo(connector.Hub.ConnectionOut, state.ConnectionIn)
-	graph.ConnectTo(state.MessageOut, connector.Hub.InFromApp)
+	graph.Connect(connector.Hub.ConnectionOut, state.ConnectionIn)
+	graph.Connect(state.MessageOut, connector.Hub.InFromApp)
 
-	graph.ConnectTo(visualizer.PathOut, state.In, termites.Via(VisualizerAdapter))
+	graph.Connect(visualizer.PathOut, state.In, termites.Via(VisualizerAdapter))
 
 	// Serve static files
 	router.PathPrefix("/dbg-static/").Methods("GET").Handler(http.StripPrefix("/dbg-static/", http.FileServer(http.Dir(debugger.tempDir.Dir))))

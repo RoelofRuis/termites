@@ -14,9 +14,9 @@ func TestState(t *testing.T) {
 	connectionsNode := termites.NewInspectableNode[ClientConnection]("Connections")
 	clientMessages := termites.NewInspectableNode[ClientMessage]("Client Messages")
 
-	graph.ConnectTo(stateNode.Out, state.In)
-	graph.ConnectTo(connectionsNode.Out, state.ConnectionIn)
-	graph.ConnectTo(state.MessageOut, clientMessages.In)
+	graph.Connect(stateNode.Out, state.In)
+	graph.Connect(connectionsNode.Out, state.ConnectionIn)
+	graph.Connect(state.MessageOut, clientMessages.In)
 
 	// Send a client connect message
 	connectionsNode.Send <- ClientConnection{ConnType: ClientConnect, Id: "abc123"}
