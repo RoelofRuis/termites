@@ -75,3 +75,15 @@ func (v *StateTracker) Run(c termites.NodeControl) error {
 		}
 	}
 }
+
+// MarshalState adapts any data to be wrapped as a JSON encoded state message.
+// Use with the termites.Via connection option to set it as state adapter.
+func MarshalState(key string) func(in interface{}) (StateMessage, error) {
+	return func(in interface{}) (StateMessage, error) {
+		data, err := json.Marshal(in)
+		if err != nil {
+			return StateMessage{}, err
+		}
+		return StateMessage{Key: key, Data: data}, nil
+	}
+}

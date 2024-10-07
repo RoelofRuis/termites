@@ -125,7 +125,7 @@ func newConnection(out *OutPort, opts ...ConnectionOption) (*Connection, error) 
 		)
 	}
 
-	if config.adapter != nil && config.from.dataType != config.adapter.inDataType {
+	if config.adapter != nil && config.adapter.inDataType != reflect.TypeFor[interface{}]() && config.from.dataType != config.adapter.inDataType {
 		return nil, fmt.Errorf("out port [%s:%s (%s)] and adapter [%s (%s)] have differing data types\n",
 			config.from.owner.name,
 			config.from.name,

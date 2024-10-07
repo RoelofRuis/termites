@@ -89,7 +89,7 @@ func TestAdapter(t *testing.T) {
 	nodeA := NewInspectableNode[string]("Component A")
 	nodeB := NewInspectableNode[int]("Component B")
 
-	graph.ConnectTo(nodeA.Out, nodeB.In, Via("string to int", stringToInt))
+	graph.ConnectTo(nodeA.Out, nodeB.In, Via(stringToInt))
 
 	nodeA.Out.Send("skip")
 	nodeA.Out.Send("42")

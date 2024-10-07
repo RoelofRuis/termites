@@ -7,7 +7,20 @@ import (
 
 type ConnectionOption func(conn *connectionConfig)
 
-func Via[A any, B any](name string, transform func(A) (B, error)) ConnectionOption {
+func Via[A any, B any](transform func(A) (B, error)) ConnectionOption {
+	untypedTransform, inDataType, outDataType := extractFunc(transform)
+
+	return func(conn *connectionConfig) {
+		conn.adapter = &adapter{
+			name:        fmt.Sprintf("As %s", outDataType.Name()),
+			inDataType:  inDataType,
+			outDataType: outDataType,
+			transform:   untypedTransform,
+		}
+	}
+}
+
+func ViaNamed[A any, B any](transform func(A) (B, error), name string) ConnectionOption {
 	untypedTransform, inDataType, outDataType := extractFunc(transform)
 
 	return func(conn *connectionConfig) {

@@ -6,9 +6,14 @@ import (
 	"time"
 )
 
+// Count serves as a general state struct that can be sent throughout the program.
+type Count struct {
+	Count int `json:"count"`
+}
+
 type Generator struct {
 	StringOut *termites.OutPort
-	IntOut    *termites.OutPort
+	CountOut  *termites.OutPort
 
 	sleep time.Duration
 }
@@ -18,7 +23,7 @@ func NewGenerator(sleep time.Duration) *Generator {
 
 	g := &Generator{
 		StringOut: termites.NewOutPort[string](builder, "String"),
-		IntOut:    termites.NewOutPort[int](builder, "Int"),
+		CountOut:  termites.NewOutPort[Count](builder, "Int"),
 
 		sleep: sleep,
 	}
@@ -33,7 +38,7 @@ func (g *Generator) Run(_ termites.NodeControl) error {
 	for {
 		text := fmt.Sprintf("%d", counter)
 		g.StringOut.Send(text)
-		g.IntOut.Send(counter)
+		g.CountOut.Send(Count{counter})
 		counter++
 		time.Sleep(g.sleep)
 	}
