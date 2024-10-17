@@ -49,3 +49,12 @@ type WebMessage struct {
 	Topic   string          `json:"topic"`
 	Payload json.RawMessage `json:"payload"`
 }
+
+// WebMsgAdapter unpacks the ClientMessage data into a WebMessage.
+func WebMsgAdapter(c ClientMessage) (WebMessage, error) {
+	msg := WebMessage{}
+	if err := json.Unmarshal(c.Data, &msg); err != nil {
+		return msg, err
+	}
+	return msg, nil
+}
