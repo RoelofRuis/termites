@@ -25,7 +25,7 @@ func main() {
 	// Create a new graph
 	graph := termites.NewGraph(
 		termites.PrintLogsToConsole(),
-		termites.PrintMessagesToConsole(),
+		//termites.PrintMessagesToConsole(),
 		termites_dbg.WithDebugger(), // Visit http://localhost:4242 to view the debugger
 	)
 

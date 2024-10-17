@@ -14,6 +14,17 @@ type Hub struct {
 	ConnectionOut *termites.OutPort
 }
 
+type ClientConnection struct {
+	ConnType ConnectionType
+	Id       string
+}
+
+type ConnectionType uint8
+
+const (
+	ClientConnect ConnectionType = 0
+)
+
 func newHub() *Hub {
 	builder := termites.NewBuilder("Websocket Hub")
 
@@ -49,11 +60,11 @@ func (h *Hub) Run(_ termites.NodeControl) error {
 }
 
 func (h *Hub) Shutdown(_ termites.TeardownControl) error {
-	msg, err := WebClose()
+	msg, err := NewClientMessage(SystemCloseTopic, nil)
 	if err != nil {
 		return err
 	}
-	h.OutToWeb.Send(ClientMessage{Data: msg})
+	h.OutToWeb.Send(msg)
 	time.Sleep(50 * time.Millisecond) // Give time to send close message
 	return nil
 }

@@ -41,14 +41,13 @@ func (v *State) Run(c termites.NodeControl) error {
 		case msg := <-v.ConnectionIn.Receive():
 			connection := msg.Data.(ClientConnection)
 
-			newState, err := json.Marshal(v.fullState)
+			clientMessage, err := NewClientMessageFor("state/full", connection.Id, v.fullState)
 			if err != nil {
 				c.LogError("failed to marshal state", err)
 				continue
 			}
 
-			data, _ := WebUpdate("state/full", newState)
-			v.MessageOut.Send(ClientMessage{ClientId: connection.Id, Data: data})
+			v.MessageOut.Send(clientMessage)
 
 		case msg := <-v.In.Receive():
 			stateMessage := msg.Data.(StateMessage)
@@ -69,9 +68,9 @@ func (v *State) Run(c termites.NodeControl) error {
 
 			patch, err := jsonpatch.CreateMergePatch(oldState, newState)
 
-			data, _ := WebUpdate("state/patch", patch)
+			clientMessage, _ := NewClientMessage("state/patch", patch)
 
-			v.MessageOut.Send(ClientMessage{Data: data})
+			v.MessageOut.Send(clientMessage)
 		}
 	}
 }

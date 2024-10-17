@@ -4,9 +4,9 @@ connector.connect();
 
 const img = document.getElementById('routing-graph')
 
-connector.subscribe(function(tpe, data) {
-  if (tpe === 'opnupdate') {
-    const path = data.fields.routing_graph.path
+connector.subscribe(function(msg) {
+  if (tpe === 'onupdate') {
+    const path = msg.fields.routing_graph.path
     if (typeof path !== "undefined") {
       img.src = path
     }
