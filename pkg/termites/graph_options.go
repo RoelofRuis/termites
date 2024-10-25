@@ -11,6 +11,7 @@ type graphConfig struct {
 	withSigtermHandler bool
 	printLogs          bool
 	printMessages      bool
+	deferredStart      bool
 }
 
 // GraphOption allows modifications to the graphConfig
@@ -47,5 +48,12 @@ func WithoutSigtermHandler() GraphOption {
 func WithEventSubscriber(sub EventSubscriber) GraphOption {
 	return func(conf *graphConfig) {
 		conf.subscribers = append(conf.subscribers, sub)
+	}
+}
+
+// DeferredStart defers running the nodes until Graph.Wait is called.
+func DeferredStart() GraphOption {
+	return func(conf *graphConfig) {
+		conf.deferredStart = true
 	}
 }

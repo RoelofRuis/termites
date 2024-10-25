@@ -7,9 +7,10 @@ import (
 
 // A Graph manages a collection nodes and their connections and serves as the builder of the connections.
 type Graph struct {
-	name     string
-	eventBus *eventBus
-	close    *sync.WaitGroup
+	name        string
+	eventBus    *eventBus
+	close       *sync.WaitGroup
+	connections []*Connection
 }
 
 func NewGraph(opts ...GraphOption) *Graph {
@@ -19,6 +20,7 @@ func NewGraph(opts ...GraphOption) *Graph {
 		withSigtermHandler: true,
 		printLogs:          false,
 		printMessages:      false,
+		deferredStart:      false,
 	}
 
 	for _, opt := range opts {
@@ -34,10 +36,16 @@ func NewGraph(opts ...GraphOption) *Graph {
 	closer := &sync.WaitGroup{}
 	closer.Add(1)
 
+	var connections []*Connection = nil
+	if config.deferredStart {
+		connections = []*Connection{}
+	}
+
 	g := &Graph{
-		name:     name,
-		eventBus: bus,
-		close:    closer,
+		name:        name,
+		eventBus:    bus,
+		close:       closer,
+		connections: connections,
 	}
 
 	bus.Subscribe(Exit, g.onExit)
@@ -62,6 +70,11 @@ func (g *Graph) onExit(_ Event) error {
 }
 
 func (g *Graph) Wait() {
+	for _, conn := range g.connections {
+		g.start(conn)
+	}
+	g.connections = nil
+
 	g.close.Wait()
 }
 
@@ -79,10 +92,18 @@ func (g *Graph) ConnectBy(out *OutPort, opts ...ConnectionOption) *Connection {
 		panic(fmt.Errorf("node connection error: %w", err))
 	}
 
-	out.owner.start(g.eventBus)
-	if connection.mailbox != nil && connection.mailbox.to != nil {
-		connection.mailbox.to.owner.start(g.eventBus)
+	if g.connections == nil {
+		g.start(connection)
+	} else {
+		g.connections = append(g.connections, connection)
 	}
 
 	return connection
+}
+
+func (g *Graph) start(c *Connection) {
+	c.from.owner.start(g.eventBus)
+	if c.mailbox != nil && c.mailbox.to != nil {
+		c.mailbox.to.owner.start(g.eventBus)
+	}
 }

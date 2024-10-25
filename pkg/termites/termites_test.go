@@ -30,6 +30,37 @@ func TestConnections(t *testing.T) {
 	}
 }
 
+func TestDeferredStart(t *testing.T) {
+	graph := NewGraph(DeferredStart())
+
+	nodeA := NewInspectableNode[int]("Component A")
+	nodeB := NewInspectableNode[int]("Component B")
+
+	graph.Connect(nodeA.Out, nodeB.In)
+
+	go func() {
+		nodeA.Send <- 42
+	}()
+
+	timeout := time.NewTicker(1 * time.Second)
+	select {
+	case <-nodeB.Receive:
+		t.Errorf("should not receive message")
+	case <-timeout.C:
+	}
+
+	go func() {
+		graph.Wait()
+	}()
+
+	timeout = time.NewTicker(1 * time.Second)
+	select {
+	case <-timeout.C:
+		t.Errorf("should not have timed out")
+	case <-nodeB.Receive:
+	}
+}
+
 func TestDynamicConnections(t *testing.T) {
 	graph := NewGraph()
 

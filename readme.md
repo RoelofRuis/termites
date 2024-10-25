@@ -88,6 +88,15 @@ func main() {
 
 Several configuration options can be passed to the graph constructor:
 
+#### Defer starting the processes until Graph.Wait is called
+```golang
+graph := termites.NewGraph(termites.DeferredStart())
+
+// Connect the nodes without them directly running
+
+graph.Wait() // Now all nodes/connections will be started together.
+```
+
 #### Printing logs
 
 ```golang
