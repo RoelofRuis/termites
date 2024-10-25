@@ -40,12 +40,6 @@ let connector = (function (storage) {
 
         conn = new WebSocket(url);
 
-        conn.onopen = function (evt) {
-            publish("onopen", {})
-        }
-        conn.onclose = function (evt) {
-            publish("onclose", {})
-        }
         conn.onmessage = function (evt) {
             const msg = JSON.parse(evt.data);
             onmessage(msg);
@@ -55,27 +49,21 @@ let connector = (function (storage) {
     }
 
     function onmessage(msg) {
-        if (msg.msg_type === "update") {
-            publish("onupdate", msg);
+        if (!msg.topic.startsWith("system/")) {
+            publish(msg);
             return;
         }
 
-        if (msg.msg_type === "_connected") { // tells which id is linked to this client
-            let id = msg.payload.id;
-            storage.put("id", id);
-            return;
-        }
-
-        if (msg.msg_type === "_close") {
+        if (msg.topic === "system/close") {
             window.close();
         }
     }
 
     const subscriptions = [];
 
-    function publish(event, data) {
+    function publish(msg) {
         subscriptions.forEach((callback) => {
-            callback(event, data)
+            callback(msg)
         })
     }
 

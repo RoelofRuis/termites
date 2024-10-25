@@ -5,9 +5,11 @@ Termites is a reactive/dataflow framework.
 It aims for easy separable and inspectable components, treating each as a separate *node* in a directed *graph*. The
 nodes communicate by sending messages to each other over *connections* established between their *ports*.
 
-The `termites` core module provides these basic building blocks. Optionally, you can use the debugging tools from `termites_dbg` and/or the web components provided in `termites_web`.
+The `termites` core module provides these basic building blocks. Optionally, you can use the debugging tools from
+`termites_dbg` and/or the web components provided in `termites_web`.
 
 ### Development status
+
 The library API is currently still unstable and does not yet serve a v1.
 
 ## Examples
@@ -23,9 +25,10 @@ together and start the processing.
 
 ### Usage
 
-When writing a constructor for a node, first create a builder using `termites.NewBuilder`. 
+When writing a constructor for a node, first create a builder using `termites.NewBuilder`.
 
-Pass this builder when constructing ports for your node, using the `termites.NewInPort` and `termites.NewOutPort` functions.
+Pass this builder when constructing ports for your node, using the `termites.NewInPort` and `termites.NewOutPort`
+functions.
 
 ```go
 package yourpackage
@@ -43,8 +46,8 @@ func NewYourNode() *YourNode {
 	builder := termites.NewBuilder("Your Node")
 
 	n := &YourNode{
-		In:  termites.NewOutPort[int](builder, "In"), // specify the port message type
-		Out: termites.NewOutPort[int](builder, "Out"),
+		In:  termites.NewOutPort[int](builder),
+		Out: termites.NewOutPort[int](builder),
 	}
 
 	builder.OnRun(n.Run)
@@ -174,7 +177,7 @@ The web module contains components for easy interaction with the web, mainly thr
 ### Usage
 
 Configure a connector, bind to a router with your custom router logic attached. Then load and connect the pre-served
-javascript code to send and retrieve data.
+javascript code or integrate with your own code to send and retrieve data.
 
 ```golang
 package main
@@ -197,6 +200,48 @@ func main() {
 }
 ```
 
+#### Sending messages
+
+To send messages, connect your component to the connector hub:
+
+```golang
+package yourpackage
+
+import "github.com/RoelofRuis/termites/pkg/termites_web"
+
+type WebSender struct {
+	Out *termites.OutPort
+}
+
+func NewWebSender() *WebSender {
+	// The standard termites node setup 
+	builder := termites.NewBuilder("WebSender")
+
+	n := &WebSender{
+		Out: termites.NewOutPort[termites_web.ClientMessage](builder),
+	}
+
+	builder.OnRun(n.Run)
+
+	return n
+}
+
+func (n *YourNode) Run(_ termites.NodeControl) error {
+	// In this example, web sender just sends a message immediately and then quits.
+	// Here you could do all kinds of conditional processing, react to other incoming messages, etc.
+	n.Out.Send(termites_web.NewClientMessage("your/custom/topic", YourData{42}))
+
+	return nil
+}
+
+// YourData can be any data should be sent to the client.
+type YourData struct {
+	Count int `json:"count"`
+}
+```
+
+#### Receiving messages
+
 In your HTML page include:
 
 ```html
@@ -211,7 +256,7 @@ And call:
 <script>
     connector.connect();
 
-    connector.subscribe(function (tpe, data) {
+    connector.subscribe(function (msg) {
         // ... connect to your front-end logic ...
     })
 </script>

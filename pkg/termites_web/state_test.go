@@ -27,7 +27,7 @@ func TestState(t *testing.T) {
 		t.Errorf("Expected client id to be 'abc123', got '%s'", msg.ClientId)
 	}
 
-	jsonMustEqual(t, msg.Data, "{\"msg_type\":\"update\",\"content_type\":\"state/full\",\"payload\":{}}")
+	jsonMustEqual(t, msg.Data, "{\"topic\":\"state/full\",\"payload\":{}}")
 
 	// Send an update for the state of Alice
 	stateNode.Send <- StateMessage{Key: "alice", Data: []byte("{\"balance\": 42}")}
@@ -38,7 +38,7 @@ func TestState(t *testing.T) {
 		t.Errorf("Expected client id to be '', got '%s'", msg.ClientId)
 	}
 
-	jsonMustEqual(t, msg.Data, "{\"msg_type\":\"update\",\"content_type\":\"state/patch\",\"payload\":{\"alice\":{\"balance\":42}}}")
+	jsonMustEqual(t, msg.Data, "{\"topic\":\"state/patch\",\"payload\":{\"alice\":{\"balance\":42}}}")
 
 	// Send an update for the state of Bob
 	stateNode.Send <- StateMessage{Key: "bob", Data: []byte("{\"balance\": 10, \"name\": \"Bobby\"}")}
@@ -49,7 +49,7 @@ func TestState(t *testing.T) {
 		t.Errorf("Expected client id to be '', got '%s'", msg.ClientId)
 	}
 
-	jsonMustEqual(t, msg.Data, "{\"msg_type\":\"update\",\"content_type\":\"state/patch\",\"payload\":{\"bob\":{\"balance\":10,\"name\":\"Bobby\"}}}")
+	jsonMustEqual(t, msg.Data, "{\"topic\":\"state/patch\",\"payload\":{\"bob\":{\"balance\":10,\"name\":\"Bobby\"}}}")
 
 	// Send an update for the state of Bob
 	stateNode.Send <- StateMessage{Key: "bob", Data: []byte("{\"balance\": 8, \"name\": \"Bobby\"}")}
@@ -60,7 +60,7 @@ func TestState(t *testing.T) {
 		t.Errorf("Expected client id to be '', got '%s'", msg.ClientId)
 	}
 
-	jsonMustEqual(t, msg.Data, "{\"msg_type\":\"update\",\"content_type\":\"state/patch\",\"payload\":{\"bob\":{\"balance\":8}}}")
+	jsonMustEqual(t, msg.Data, "{\"topic\":\"state/patch\",\"payload\":{\"bob\":{\"balance\":8}}}")
 
 	// Send a client connect message
 	connectionsNode.Send <- ClientConnection{ConnType: ClientConnect, Id: "xyz789"}
@@ -71,7 +71,7 @@ func TestState(t *testing.T) {
 		t.Errorf("Expected client id to be 'abc123', got '%s'", msg.ClientId)
 	}
 
-	jsonMustEqual(t, msg.Data, "{\"msg_type\":\"update\",\"content_type\":\"state/full\",\"payload\":{\"alice\":{\"balance\":42},\"bob\":{\"balance\":8,\"name\":\"Bobby\"}}}")
+	jsonMustEqual(t, msg.Data, "{\"topic\":\"state/full\",\"payload\":{\"alice\":{\"balance\":42},\"bob\":{\"balance\":8,\"name\":\"Bobby\"}}}")
 }
 
 func jsonMustEqual(t *testing.T, actual []byte, expected string) {

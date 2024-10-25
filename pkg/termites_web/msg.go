@@ -11,51 +11,50 @@ type ClientMessage struct {
 	// If this field is set on an outgoing message, it will only be sent to the client with that ID.
 	ClientId string
 
-	// Data any data bytes to be sent to the client.
+	// Data any data to be sent to the client.
 	Data []byte
 }
 
-type WebMessage struct {
-	MsgType     string          `json:"msg_type"`
-	ContentType string          `json:"content_type"`
-	Payload     json.RawMessage `json:"payload"`
+// NewClientMessage creates a new client message with the given topic and any data.
+// If the data is already of type []byte, it will be sent as is, otherwise, json encoding will be performed first.
+func NewClientMessage(topic string, data any) (ClientMessage, error) {
+	return NewClientMessageFor(topic, "", data)
 }
 
-type ClientConnection struct {
-	ConnType ConnectionType
-	Id       string
-}
-
-type ConnectionType uint8
-
-const (
-	ClientConnect    ConnectionType = 0
-	ClientDisconnect ConnectionType = 1
-	ClientReconnect  ConnectionType = 2
-)
-
-const (
-	MsgClose  = "_close"
-	MsgUpdate = "update"
-)
-
-func WebClose() ([]byte, error) {
-	return marshalWebMessage(WebMessage{MsgType: MsgClose})
-}
-
-func WebUpdate(contentType string, data []byte) ([]byte, error) {
-	return marshalWebMessage(WebMessage{
-		MsgType:     MsgUpdate,
-		ContentType: contentType,
-		Payload:     data,
-	})
-}
-
-func marshalWebMessage(msg WebMessage) ([]byte, error) {
-	msgBytes, err := json.Marshal(msg)
-	if err != nil {
-		return nil, err
+func NewClientMessageFor(topic string, clientId string, data any) (message ClientMessage, err error) {
+	payload, is := data.([]byte)
+	if !is {
+		payload, err = json.Marshal(data)
+		if err != nil {
+			return message, err
+		}
 	}
 
-	return msgBytes, nil
+	clientData, err := json.Marshal(WebMessage{
+		Topic:   topic,
+		Payload: payload,
+	})
+	if err != nil {
+		return message, err
+	}
+
+	message.ClientId = clientId
+	message.Data = clientData
+	return message, nil
+}
+
+const SystemCloseTopic = "system/close"
+
+type WebMessage struct {
+	Topic   string          `json:"topic"`
+	Payload json.RawMessage `json:"payload"`
+}
+
+// WebMsgAdapter unpacks the ClientMessage data into a WebMessage.
+func WebMsgAdapter(c ClientMessage) (WebMessage, error) {
+	msg := WebMessage{}
+	if err := json.Unmarshal(c.Data, &msg); err != nil {
+		return msg, err
+	}
+	return msg, nil
 }
