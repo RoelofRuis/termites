@@ -8,8 +8,8 @@ import (
 )
 
 // InspectableNode should mainly be used as a testing aid.
-// Pick a type A for which to create the node, then send and receive messages via the channel.
-// Send on the Panic chanel to cause a panic in the run loop.
+// Pick a type A for which to create the node, then send and receive messages via the channels.
+// Send on the Panic channel to cause a panic in the run loop.
 // Optionally set the Delay value to introduce a delay between receiving a message and passing it on.
 type InspectableNode[A any] struct {
 	In      *InPort

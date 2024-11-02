@@ -56,8 +56,11 @@ func (c *Connector) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		clientId = proposedId
 	}
 
-	connectWebsocketIn(clientId, conn, c)
-	connectWebSocketOut(clientId, conn, c)
+	wsIn := newWebsocketIn(clientId, conn)
+	wsIn.graphConnection = c.graph.Connect(wsIn.DataOut, c.Hub.InFromWeb)
+
+	wsOut := newWebsocketOut(clientId, conn)
+	wsOut.graphConnection = c.graph.Connect(c.Hub.OutToWeb, wsOut.DataIn)
 
 	c.Hub.registerClient(clientId)
 }

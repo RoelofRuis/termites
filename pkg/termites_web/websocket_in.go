@@ -15,7 +15,7 @@ type webSocketIn struct {
 	graphConnection *termites.Connection
 }
 
-func connectWebsocketIn(id string, conn *websocket.Conn, connector *Connector) {
+func newWebsocketIn(id string, conn *websocket.Conn) *webSocketIn {
 	builder := termites.NewBuilder("websocket IN")
 
 	ws := &webSocketIn{
@@ -28,9 +28,7 @@ func connectWebsocketIn(id string, conn *websocket.Conn, connector *Connector) {
 
 	builder.OnRun(ws.Run)
 
-	inConn := connector.graph.Connect(ws.DataOut, connector.Hub.InFromWeb)
-
-	ws.graphConnection = inConn
+	return ws
 }
 
 func (w *webSocketIn) Run(c termites.NodeControl) error {
@@ -39,15 +37,15 @@ func (w *webSocketIn) Run(c termites.NodeControl) error {
 		w.graphConnection.Disconnect()
 	}()
 
-	w.conn.SetReadLimit(512)
-	if err := w.conn.SetReadDeadline(time.Now().Add(w.readDeadline)); err != nil {
-		return err
-	}
+	//w.conn.SetReadLimit(512)
+	//if err := w.conn.SetReadDeadline(time.Now().Add(w.readDeadline)); err != nil {
+	//	return err
+	//}
 
-	w.conn.SetPongHandler(func(string) error {
-		_ = w.conn.SetReadDeadline(time.Now().Add(w.readDeadline))
-		return nil
-	})
+	//w.conn.SetPongHandler(func(string) error {
+	//	_ = w.conn.SetReadDeadline(time.Now().Add(w.readDeadline))
+	//	return nil
+	//})
 
 	for {
 		_, message, err := w.conn.ReadMessage()

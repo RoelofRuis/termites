@@ -17,7 +17,7 @@ type webSocketOut struct {
 	graphConnection *termites.Connection
 }
 
-func connectWebSocketOut(id string, conn *websocket.Conn, connector *Connector) {
+func newWebsocketOut(id string, conn *websocket.Conn) *webSocketOut {
 	builder := termites.NewBuilder("websocket OUT")
 
 	ws := &webSocketOut{
@@ -31,8 +31,7 @@ func connectWebSocketOut(id string, conn *websocket.Conn, connector *Connector) 
 
 	builder.OnRun(ws.Run)
 
-	outConn := connector.graph.Connect(connector.Hub.OutToWeb, ws.DataIn)
-	ws.graphConnection = outConn
+	return ws
 }
 
 func (w *webSocketOut) Run(c termites.NodeControl) error {
