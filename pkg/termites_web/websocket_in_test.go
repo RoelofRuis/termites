@@ -46,4 +46,8 @@ func TestWebSocketIn(t *testing.T) {
 	if string(message.Data) != "Test 123" {
 		t.Errorf("received incorrect message")
 	}
+
+	if err := wsConn.WriteControl(websocket.CloseMessage, []byte{}, time.Now().Add(time.Second)); err != nil {
+		t.Fatal(err)
+	}
 }

@@ -1,6 +1,7 @@
 package termites_web
 
 import (
+	"fmt"
 	"github.com/RoelofRuis/termites/pkg/termites"
 	"github.com/gorilla/websocket"
 	"time"
@@ -37,20 +38,29 @@ func (w *webSocketIn) Run(c termites.NodeControl) error {
 		w.graphConnection.Disconnect()
 	}()
 
-	//w.conn.SetReadLimit(512)
-	//if err := w.conn.SetReadDeadline(time.Now().Add(w.readDeadline)); err != nil {
-	//	return err
-	//}
+	w.conn.SetReadLimit(512)
+	if err := w.conn.SetReadDeadline(time.Now().Add(w.readDeadline)); err != nil {
+		return err
+	}
 
-	//w.conn.SetPongHandler(func(string) error {
-	//	_ = w.conn.SetReadDeadline(time.Now().Add(w.readDeadline))
-	//	return nil
-	//})
+	w.conn.SetPongHandler(func(string) error {
+		fmt.Printf("PONG!")
+		_ = w.conn.SetReadDeadline(time.Now().Add(w.readDeadline))
+		return nil
+	})
 
 	for {
+		if err := w.conn.SetReadDeadline(time.Now().Add(w.readDeadline)); err != nil {
+			return err
+		}
+
 		_, message, err := w.conn.ReadMessage()
 		if err != nil {
-			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
+			if websocket.IsUnexpectedCloseError(err,
+				websocket.CloseNormalClosure,
+				websocket.CloseGoingAway,
+				websocket.CloseAbnormalClosure,
+			) {
 				c.LogError("websocket unexpected close error: %s", err)
 			}
 			break

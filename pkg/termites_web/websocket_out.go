@@ -38,6 +38,7 @@ func (w *webSocketOut) Run(c termites.NodeControl) error {
 	ticker := time.NewTicker(w.pingInterval)
 	defer func() {
 		ticker.Stop()
+		_ = w.conn.WriteControl(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""), time.Time{})
 		_ = w.conn.Close()
 		w.graphConnection.Disconnect()
 	}()
@@ -46,7 +47,6 @@ func (w *webSocketOut) Run(c termites.NodeControl) error {
 		select {
 		case msg, ok := <-w.DataIn.Receive():
 			if !ok {
-				_ = w.conn.WriteMessage(websocket.CloseMessage, []byte{})
 				return nil
 			}
 
@@ -55,25 +55,26 @@ func (w *webSocketOut) Run(c termites.NodeControl) error {
 				continue // drop message not intended for this client
 			}
 
+			writer, err := w.conn.NextWriter(websocket.TextMessage)
+			if err != nil {
+				return nil
+			}
+
 			if err := w.conn.SetWriteDeadline(time.Now().Add(w.writeDeadline)); err != nil {
 				c.LogError("error setting write deadline", err)
 			}
 
-			w, err := w.conn.NextWriter(websocket.TextMessage)
-			if err != nil {
-				return nil
+			if _, err = writer.Write(clientMessage.Data); err != nil {
+				return fmt.Errorf("write failed: %writer", err)
 			}
-			if _, err = w.Write(clientMessage.Data); err != nil {
-				return fmt.Errorf("write failed: %w", err)
-			}
-			if err = w.Close(); err != nil {
-				return fmt.Errorf("unable to close writer: %w", err)
+			if err = writer.Close(); err != nil {
+				return fmt.Errorf("unable to close writer: %writer", err)
 			}
 
 		case <-ticker.C:
 			_ = w.conn.SetWriteDeadline(time.Now().Add(w.writeDeadline))
-			if err := w.conn.WriteMessage(websocket.PingMessage, nil); err != nil {
-				return fmt.Errorf("unable to send ping message: %w", err)
+			if err := w.conn.WriteControl(websocket.PingMessage, []byte{}, time.Time{}); err != nil {
+				return fmt.Errorf("unable to send ping message: %writer", err)
 			}
 		}
 	}
