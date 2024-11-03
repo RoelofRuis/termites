@@ -1,36 +1,49 @@
 package termites_web
 
 import (
-	"fmt"
 	"github.com/RoelofRuis/termites/pkg/termites"
+	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
+	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"time"
 )
 
 func TestWebSocketIn(t *testing.T) {
 	graph := termites.NewGraph()
-	connector := NewConnector(graph, upgrader)
+	dataOut := termites.NewInspectableNode[ClientMessage]("ClientMessage")
 
-	server := httptest.NewServer(connector)
+	router := mux.NewRouter()
+	router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		conn, err := upgrader.Upgrade(w, r, nil)
+		if err != nil {
+			panic(err)
+		}
+
+		ws := newWebsocketIn("test-in", conn)
+		graph.Connect(ws.DataOut, dataOut.In)
+	})
+
+	server := httptest.NewServer(router)
 	wsUrl := strings.ReplaceAll(server.URL, "http", "ws")
+
 	wsConn, _, err := websocket.DefaultDialer.Dial(wsUrl, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	ws := newWebsocketIn("test-in", wsConn)
-	dataOut := termites.NewInspectableNode[ClientMessage]("ClientMessage")
-	graph.Connect(ws.DataOut, dataOut.In)
-
-	// Ping message
-	if err := wsConn.WriteMessage(websocket.PingMessage, nil); err != nil {
+	if err := wsConn.WriteMessage(websocket.TextMessage, []byte("Test 123")); err != nil {
 		t.Fatal(err)
 	}
-	tpe, data, err := wsConn.ReadMessage()
+
+	message, err := dataOut.ReceiveWithin(1 * time.Second)
 	if err != nil {
 		t.Fatal(err)
 	}
-	fmt.Printf("%+v %+v\n", tpe, data)
+
+	if string(message.Data) != "Test 123" {
+		t.Errorf("received incorrect message")
+	}
 }
