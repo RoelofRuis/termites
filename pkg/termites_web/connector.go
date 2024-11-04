@@ -1,12 +1,10 @@
 package termites_web
 
 import (
-	"embed"
 	"fmt"
 	"net/http"
 
 	"github.com/RoelofRuis/termites/pkg/termites"
-	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
 )
 
@@ -18,9 +16,6 @@ type Connector struct {
 	clientIds map[string]bool
 }
 
-//go:embed connect.js
-var embeddedJS embed.FS
-
 func NewConnector(graph *termites.Graph, upgrader websocket.Upgrader) *Connector {
 	return &Connector{
 		graph:     graph,
@@ -28,13 +23,6 @@ func NewConnector(graph *termites.Graph, upgrader websocket.Upgrader) *Connector
 		upgrader:  upgrader,
 		clientIds: make(map[string]bool),
 	}
-}
-
-func (c *Connector) Bind(router *mux.Router) {
-	router.Path("/ws").Methods("GET").HandlerFunc(c.ServeHTTP)
-
-	embeddedServer := http.FileServer(http.FS(embeddedJS))
-	router.PathPrefix("/embedded/").Methods("GET").Handler(http.StripPrefix("/embedded/", embeddedServer))
 }
 
 func (c *Connector) ServeHTTP(w http.ResponseWriter, r *http.Request) {

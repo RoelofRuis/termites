@@ -214,13 +214,13 @@ func main() {
 	connector := termites_web.NewConnector(graph)
 
 	router := mux.NewRouter()
-	connector.Bind(router)
+	router.Path("/ws").Methods("GET").Handler(connector)
+	
+	// ... other custom (router) setup logic ...
 
 	processor := yourpackage.NewWebProcessor()
 	graph.Connect(connector.Hub.OutToApp, processor.In)
 	graph.Connect(processor.Out, connector.Hub.InFromApp)
-	
-	// ... other custom (router) setup logic ...
 
 	graph.Wait()
 }

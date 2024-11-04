@@ -33,7 +33,8 @@ func Init(graph *termites.Graph, debugger *Debugger) {
 	connector := termites_web.NewConnector(graph, debugger.upgrader)
 
 	router := mux.NewRouter()
-	connector.Bind(router)
+	router.Path("/ws").Methods("GET").Handler(connector)
+	router.PathPrefix("/embedded/").Methods("GET").Handler(http.StripPrefix("/embedded/", termites_web.EmbeddedJS()))
 
 	controller := NewWebController()
 	controller.editor = debugger.editor

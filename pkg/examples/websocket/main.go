@@ -29,13 +29,14 @@ func main() {
 		termites_dbg.WithDebugger(), // Visit http://localhost:4242 to view the debugger
 	)
 
+	// Create a new web connector
+	connector := termites_web.NewConnector(graph, upgrader)
+
 	// Create a router and bind the appropriate handlers
 	router := mux.NewRouter()
 	router.Path("/").Methods("GET").HandlerFunc(handleIndex)
-
-	// Create a new web connector
-	connector := termites_web.NewConnector(graph, upgrader)
-	connector.Bind(router)
+	router.Path("/ws").Methods("GET").Handler(connector)
+	router.PathPrefix("/embedded/").Methods("GET").Handler(http.StripPrefix("/embedded/", termites_web.EmbeddedJS()))
 
 	// For demo purposes we create a generator.
 	// This is where the custom application logic would go.
