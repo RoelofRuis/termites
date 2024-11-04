@@ -65,16 +65,16 @@ func (w *webSocketOut) Run(c termites.NodeControl) error {
 			}
 
 			if _, err = writer.Write(clientMessage.Data); err != nil {
-				return fmt.Errorf("write failed: %writer", err)
+				return fmt.Errorf("write failed: %w", err)
 			}
 			if err = writer.Close(); err != nil {
-				return fmt.Errorf("unable to close writer: %writer", err)
+				return fmt.Errorf("unable to close writer: %w", err)
 			}
 
 		case <-ticker.C:
 			_ = w.conn.SetWriteDeadline(time.Now().Add(w.writeDeadline))
 			if err := w.conn.WriteControl(websocket.PingMessage, []byte{}, time.Time{}); err != nil {
-				return fmt.Errorf("unable to send ping message: %writer", err)
+				return fmt.Errorf("unable to send ping message: %w", err)
 			}
 		}
 	}
