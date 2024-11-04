@@ -92,6 +92,7 @@ func main() {
 Several configuration options can be passed to the graph constructor:
 
 #### Defer starting the processes until Graph.Wait is called
+
 ```golang
 graph := termites.NewGraph(termites.DeferredStart())
 
@@ -139,85 +140,36 @@ event from being fired.
 termites.NewGraph(termites.WithoutSigtermHandler())
 ```
 
-## Module `termites_dbg`
-
-The debug module contains a web debugger that can be hooked into a graph to inspect it.
-
-### Usage
-
-Initialize it by passing it as an option on graph creation. The debugger will be started on port `4242` by default.
-
-```golang
-package main
-
-import "github.com/RoelofRuis/termites/pkg/termites"
-import "github.com/RoelofRuis/termites/pkg/termites_dbg"
-
-func main() {
-	graph := termites.NewGraph(termites_dbg.WithDebugger())
-
-	// ... graph setup code ...
-}
-```
-
-### Debugger Configuration
-
-Configuration options can be passed to the debugger Graph Option.
-
-#### Change the debugger port
-
-```golang
-termites_dbg.WithDebugger(termites_dbg.OnHttpPort(1234))
-```
-
 ## Module `termites_web`
 
 The web module contains components for easy interaction with the web, mainly through it's websocket graph component.
 
 ### Usage
 
-Configure a connector, bind to a router with your custom router logic attached. Then load and connect the pre-served
-javascript code or integrate with your own code to send and retrieve data.
+#### Server side interaction
 
-```golang
-package main
-
-import "github.com/RoelofRuis/termites/pkg/termites"
-import "github.com/RoelofRuis/termites/pkg/termites/termites_web"
-import "github.com/gorilla/mux"
-
-func main() {
-	graph := termites.NewGraph()
-
-	connector := termites_web.NewConnector(graph)
-
-	router := mux.NewRouter()
-	connector.Bind(router)
-
-	// ... your custom (router) setup logic ...
-
-	graph.Wait()
-}
-```
-
-#### Sending messages
-
-To send messages, connect your component to the connector hub:
+Create a component that can send and or receive client messages on its ports.
 
 ```golang
 package yourpackage
 
-import "github.com/RoelofRuis/termites/pkg/termites_web"
+import (
+	"github.com/RoelofRuis/termites/pkg/termites"
+	"github.com/RoelofRuis/termites/pkg/termites_web"
+	"fmt"
+)
 
-type WebSender struct {
+type WebProcessor struct {
+	In  *termites.InPort
 	Out *termites.OutPort
 }
 
-func NewWebSender() *WebSender {
+func NewWebProcessor() *WebProcessor {
 	// The standard termites node setup 
-	builder := termites.NewBuilder("WebSender")
+	builder := termites.NewBuilder("WebProcessor")
 
 	n := &WebSender{
+		In:  termites.NewInPort[termites_web.ClientMessage](builder),
 		Out: termites.NewOutPort[termites_web.ClientMessage](builder),
 	}
 
@@ -227,20 +179,56 @@ func NewWebSender() *WebSender {
 }
 
 func (n *YourNode) Run(_ termites.NodeControl) error {
-	// In this example, web sender just sends a message immediately and then quits.
+	// In this example, web sender reads a message, sends a message and then immediately quits.
 	// Here you could do all kinds of conditional processing, react to other incoming messages, etc.
+
+	msg := <-n.In.Receive()
+	fmt.Printf("Received: %+v\n", msg)
+	
 	n.Out.Send(termites_web.NewClientMessage("your/custom/topic", YourData{42}))
 
 	return nil
 }
 
-// YourData can be any data should be sent to the client.
+// YourData can be any data that should be sent to the client.
 type YourData struct {
 	Count int `json:"count"`
 }
+
 ```
 
-#### Receiving messages
+Configure a connector, bind to a router with your custom router logic attached. Then load and connect the pre-served
+javascript code or integrate with your own client side code to send and retrieve data.
+
+```golang
+package main
+
+import "github.com/RoelofRuis/termites/pkg/termites"
+import "github.com/RoelofRuis/termites/pkg/termites/termites_web"
+import "github.com/gorilla/mux"
+import "yourpackage"
+
+func main() {
+	graph := termites.NewGraph()
+
+	connector := termites_web.NewConnector(graph)
+
+	router := mux.NewRouter()
+	connector.Bind(router)
+
+	processor := yourpackage.NewWebProcessor()
+	graph.Connect(connector.Hub.OutToApp, processor.In)
+	graph.Connect(processor.Out, connector.Hub.InFromApp)
+	
+	// ... other custom (router) setup logic ...
+
+	graph.Wait()
+}
+```
+
+#### Client side interaction
+
+#### Via the pre-served javascript
 
 In your HTML page include:
 
@@ -272,4 +260,35 @@ termites_web.RunBrowser("localhost:8000")
 
 // Component syntax
 manager := termites_web.NewBrowserManager("localhost:8000")
+```
+
+## Module `termites_dbg`
+
+The debug module contains a web debugger that can be hooked into a graph to inspect it.
+
+### Usage
+
+Initialize it by passing it as an option on graph creation. The debugger will be started on port `4242` by default.
+
+```golang
+package main
+
+import "github.com/RoelofRuis/termites/pkg/termites"
+import "github.com/RoelofRuis/termites/pkg/termites_dbg"
+
+func main() {
+	graph := termites.NewGraph(termites_dbg.WithDebugger())
+
+	// ... graph setup code ...
+}
+```
+
+### Debugger Configuration
+
+Configuration options can be passed to the debugger Graph Option.
+
+#### Change the debugger port
+
+```golang
+termites_dbg.WithDebugger(termites_dbg.OnHttpPort(1234))
 ```
