@@ -1,7 +1,6 @@
 package termites_web
 
 import (
-	"fmt"
 	"github.com/RoelofRuis/termites/pkg/termites"
 	"github.com/gorilla/websocket"
 	"time"
@@ -44,7 +43,6 @@ func (w *webSocketIn) Run(c termites.NodeControl) error {
 	}
 
 	w.conn.SetPongHandler(func(string) error {
-		fmt.Printf("PONG!")
 		_ = w.conn.SetReadDeadline(time.Now().Add(w.readDeadline))
 		return nil
 	})
