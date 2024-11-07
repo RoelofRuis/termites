@@ -33,32 +33,20 @@ func Init(graph *termites.Graph, debugger *Debugger) {
 	connector := termites_web.NewConnector(graph, debugger.upgrader)
 
 	router := mux.NewRouter()
+	app, _ := App()
+	router.Path("/").Handler(http.StripPrefix("/", http.FileServer(http.FS(app))))
 	router.Path("/ws").Methods("GET").Handler(connector)
-	router.PathPrefix("/embedded/").Methods("GET").Handler(http.StripPrefix("/embedded/", termites_web.EmbeddedJS()))
-
-	controller := NewWebController()
-	controller.editor = debugger.editor
-
-	router.HandleFunc("/", controller.HandleIndex)
-	router.HandleFunc("/open", controller.HandleOpen)
-
-	// Visualizer
-	visualizer := NewVisualizer(debugger.tempDir.Dir)
-	graph.Connect(debugger.refReceiver.RefsOut, visualizer.RefsIn, termites.WithMailbox(&termites.DebouncedMailbox{Delay: 100 * time.Millisecond}))
-
-	// Open References
-	webUpdater := NewWebUpdater(controller)
-	graph.Connect(debugger.refReceiver.RefsOut, webUpdater.RefsIn, termites.WithMailbox(&termites.DebouncedMailbox{Delay: 100 * time.Millisecond}))
+	router.PathPrefix("/dbg-static/").Methods("GET").Handler(http.StripPrefix("/dbg-static/", http.FileServer(http.Dir(debugger.tempDir.Dir))))
 
 	// State
 	state := termites_web.NewState()
 	graph.Connect(connector.Hub.ConnectionOut, state.ConnectionIn)
 	graph.Connect(state.MessageOut, connector.Hub.InFromApp)
 
+	// Visualizer
+	visualizer := NewVisualizer(debugger.tempDir.Dir)
+	graph.Connect(debugger.refReceiver.RefsOut, visualizer.RefsIn, termites.WithMailbox(&termites.DebouncedMailbox{Delay: 100 * time.Millisecond}))
 	graph.Connect(visualizer.PathOut, state.In, termites.Via(VisualizerAdapter))
-
-	// Serve static files
-	router.PathPrefix("/dbg-static/").Methods("GET").Handler(http.StripPrefix("/dbg-static/", http.FileServer(http.Dir(debugger.tempDir.Dir))))
 
 	// Run termites_web server
 	go func() {
@@ -73,14 +61,12 @@ type Debugger struct {
 
 	httpPort        int
 	upgrader        websocket.Upgrader
-	editor          CodeEditor
 	refReceiver     *refReceiver
 	messageReceiver *messageReceiver
 }
 
 type debuggerConfig struct {
 	httpPort int
-	editor   CodeEditor
 	upgrader websocket.Upgrader
 }
 
@@ -89,7 +75,6 @@ type debuggerConfig struct {
 func NewDebugger(options ...DebuggerOption) *Debugger {
 	config := &debuggerConfig{
 		httpPort: 4242,
-		editor:   nil,
 		upgrader: websocket.Upgrader{
 			ReadBufferSize:  1024,
 			WriteBufferSize: 1024,
@@ -105,7 +90,6 @@ func NewDebugger(options ...DebuggerOption) *Debugger {
 
 		httpPort:        config.httpPort,
 		upgrader:        config.upgrader,
-		editor:          config.editor,
 		refReceiver:     newRefReceiver(),
 		messageReceiver: newMsgReceiver(),
 	}

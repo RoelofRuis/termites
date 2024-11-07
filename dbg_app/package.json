@@ -1,12 +1,23 @@
 {
+  "name": "termites-dbg",
+  "private": false,
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build"
+  },
   "dependencies": {
+    "json-merge-patch": "^1.0.2",
     "vue": "3.4"
   },
   "devDependencies": {
+    "@vitejs/plugin-vue": "^5.1.4",
     "@vue/compiler-sfc": "^3.2.41",
     "browser-sync": "^2.27.10",
     "browser-sync-webpack-plugin": "^2.3.0",
     "laravel-mix": "^6.0.49",
+    "vite": "^5.4.10",
+    "vite-plugin-singlefile": "^2.0.3",
     "vue-loader": "17.4.0"
   }
 }

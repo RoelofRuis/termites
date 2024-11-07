@@ -15,11 +15,3 @@ func WithUpgrader(upgrader websocket.Upgrader) DebuggerOption {
 		conf.upgrader = upgrader
 	}
 }
-
-// Deprecated
-// Determining function file and line was broken in go 1.18
-func OpenIn(editor CodeEditor) DebuggerOption {
-	return func(conf *debuggerConfig) {
-		conf.editor = editor
-	}
-}
