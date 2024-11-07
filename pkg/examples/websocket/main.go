@@ -40,7 +40,7 @@ func main() {
 
 	// For demo purposes we create a generator.
 	// This is where the custom application logic would go.
-	generator := examples.NewGenerator(100 * time.Millisecond)
+	generator := examples.NewGenerator(1000 * time.Millisecond)
 
 	// We collect the web-sharable state in a state instance
 	state := termites_web.NewState()

@@ -31,6 +31,7 @@ func WithDebugger(opts ...DebuggerOption) termites.GraphOption {
 // function to initiate a connection.
 func Init(graph *termites.Graph, debugger *Debugger) {
 	connector := termites_web.NewConnector(graph, debugger.upgrader)
+	graph.Connect(debugger.messageReceiver.MessagesOut, connector.Hub.InFromApp, termites.Via(MessageSentAdapter))
 
 	router := mux.NewRouter()
 	app, _ := App()
@@ -98,6 +99,16 @@ func NewDebugger(options ...DebuggerOption) *Debugger {
 func (d *Debugger) SetEventBus(b termites.EventBus) {
 	b.Subscribe(termites.NodeRefUpdated, d.OnNodeRefUpdated)
 	b.Subscribe(termites.NodeStopped, d.OnNodeStopped)
+	b.Subscribe(termites.MessageSent, d.OnMessageSent)
+}
+
+func (d *Debugger) OnMessageSent(e termites.Event) error {
+	n, ok := e.Data.(termites.MessageSentEvent)
+	if !ok {
+		return termites.InvalidEventError
+	}
+	d.messageReceiver.messageChan <- n
+	return nil
 }
 
 func (d *Debugger) OnNodeRefUpdated(e termites.Event) error {

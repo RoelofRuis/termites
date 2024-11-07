@@ -1,6 +1,8 @@
 package termites_dbg
 
-import "github.com/RoelofRuis/termites/pkg/termites"
+import (
+	"github.com/RoelofRuis/termites/pkg/termites"
+)
 
 type messageReceiver struct {
 	MessagesOut *termites.OutPort
@@ -13,6 +15,7 @@ func newMsgReceiver() *messageReceiver {
 
 	n := &messageReceiver{
 		MessagesOut: termites.NewOutPortNamed[termites.MessageSentEvent](builder, "Events"),
+		messageChan: make(chan termites.MessageSentEvent),
 	}
 
 	builder.OnRun(n.run)
