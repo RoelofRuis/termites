@@ -38,7 +38,6 @@ func (g *Generator) Run(e termites.NodeControl) error {
 
 	counter := 0
 	for {
-		e.LogInfo("Generating the next number...")
 		text := fmt.Sprintf("%d", counter)
 		g.StringOut.Send(text)
 		g.CountOut.Send(Count{counter})

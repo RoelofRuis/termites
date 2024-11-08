@@ -23,15 +23,14 @@ onMounted(() => {
   subscribe("log", prependLog)
   open("ws://" + document.location.host + "/ws")
 })
-
 </script>
 
 <template>
   <div class="app-container">
     <NavBar @tab-selected="selected => tab = selected"/>
-    <GraphContainer v-if="tab === 'graph'"/>
-    <MessageContainer v-if="tab === 'messages'"/>
-    <LogsContainer v-if="tab === 'logs'"/>
+    <GraphContainer v-show="tab === 'graph'"/>
+    <MessageContainer v-show="tab === 'messages'"/>
+    <LogsContainer v-show="tab === 'logs'"/>
   </div>
 </template>
 

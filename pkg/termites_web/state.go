@@ -20,6 +20,10 @@ type State struct {
 }
 
 func NewState() *State {
+	return NewStateWithInitial(make(map[string]json.RawMessage))
+}
+
+func NewStateWithInitial(initialState map[string]json.RawMessage) *State {
 	builder := termites.NewBuilder("State")
 
 	t := &State{
@@ -27,7 +31,7 @@ func NewState() *State {
 		In:           termites.NewInPort[StateMessage](builder),
 		MessageOut:   termites.NewOutPort[ClientMessage](builder),
 
-		fullState: make(map[string]json.RawMessage),
+		fullState: initialState,
 	}
 
 	builder.OnRun(t.Run)

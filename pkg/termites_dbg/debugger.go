@@ -1,6 +1,7 @@
 package termites_dbg
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/gorilla/websocket"
 	"net/http"
@@ -50,7 +51,19 @@ func Init(graph *termites.Graph, debugger *Debugger) {
 	router.PathPrefix("/dbg-static/").Methods("GET").Handler(http.StripPrefix("/dbg-static/", http.FileServer(http.Dir(debugger.tempDir.Dir))))
 
 	// State
-	state := termites_web.NewState()
+	debuggerState, _ := json.Marshal(struct {
+		GraphEnabled    bool `json:"graph_enabled"`
+		MessagesEnabled bool `json:"messages_enabled"`
+		LogsEnabled     bool `json:"logs_enabled"`
+	}{
+		GraphEnabled:    debugger.refReceiver != nil,
+		MessagesEnabled: debugger.messageReceiver != nil,
+		LogsEnabled:     debugger.logReceiver != nil,
+	})
+	initialState := make(map[string]json.RawMessage)
+	initialState["debugger"] = debuggerState
+	state := termites_web.NewStateWithInitial(initialState)
+
 	graph.Connect(connector.Hub.ConnectionOut, state.ConnectionIn)
 	graph.Connect(state.MessageOut, connector.Hub.InFromApp)
 
@@ -80,8 +93,9 @@ type Debugger struct {
 }
 
 type debuggerConfig struct {
-	httpPort        int
-	upgrader        websocket.Upgrader
+	httpPort int
+	upgrader websocket.Upgrader
+
 	trackRefChanges bool
 	trackMessages   bool
 	trackLogs       bool

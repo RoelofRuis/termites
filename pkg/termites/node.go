@@ -80,12 +80,12 @@ func (n *node) ref() NodeRef {
 	}
 
 	return NodeRef{
-		Id:           n.id,
-		Version:      n.refVersion,
-		Name:         n.name,
-		InPorts:      inPortRefs,
-		OutPorts:     outPortRefs,
-		RunInfo:      runInfo,
+		Id:       n.id,
+		Version:  n.refVersion,
+		Name:     n.name,
+		InPorts:  inPortRefs,
+		OutPorts: outPortRefs,
+		RunInfo:  runInfo,
 	}
 }
 
@@ -123,8 +123,10 @@ func (n *node) start(bus EventBus) {
 			})
 		}()
 
-		if err := n.run(n); err != nil {
-			n.bus.Send(LogError(fmt.Sprintf("Node [%s] exited with error", n.name), err))
+		if n.run != nil {
+			if err := n.run(n); err != nil {
+				n.bus.Send(LogError(fmt.Sprintf("Node [%s] exited with error", n.name), err))
+			}
 		}
 	}()
 }

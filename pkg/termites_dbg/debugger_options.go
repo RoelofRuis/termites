@@ -21,3 +21,15 @@ func WithoutMessageTracking() DebuggerOption {
 		conf.trackMessages = false
 	}
 }
+
+func WithoutRefTracking() DebuggerOption {
+	return func(conf *debuggerConfig) {
+		conf.trackRefChanges = true
+	}
+}
+
+func WithoutLogTracking() DebuggerOption {
+	return func(conf *debuggerConfig) {
+		conf.trackLogs = false
+	}
+}
