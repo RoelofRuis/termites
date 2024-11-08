@@ -11,6 +11,10 @@ var MessageSentAdapter = func(event termites.MessageSentEvent) (termites_web.Cli
 	return termites_web.NewClientMessage("message", event)
 }
 
+var LogsAdapter = func(event logItem) (termites_web.ClientMessage, error) {
+	return termites_web.NewClientMessage("log", event)
+}
+
 var VisualizerAdapter = func(visualizerPath string) (termites_web.StateMessage, error) {
 	_, filename := filepath.Split(visualizerPath)
 

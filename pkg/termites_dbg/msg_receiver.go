@@ -4,10 +4,9 @@ import (
 	"github.com/RoelofRuis/termites/pkg/termites"
 )
 
+// messageReceiver handles incoming messages from the target graphs event bus.
 type messageReceiver struct {
 	MessagesOut *termites.OutPort
-
-	messageChan chan termites.MessageSentEvent
 }
 
 func newMsgReceiver() *messageReceiver {
@@ -15,17 +14,16 @@ func newMsgReceiver() *messageReceiver {
 
 	n := &messageReceiver{
 		MessagesOut: termites.NewOutPortNamed[termites.MessageSentEvent](builder, "Events"),
-		messageChan: make(chan termites.MessageSentEvent),
 	}
-
-	builder.OnRun(n.run)
 
 	return n
 }
 
-func (r *messageReceiver) run(_ termites.NodeControl) error {
-	for msg := range r.messageChan {
-		r.MessagesOut.Send(msg)
+func (r *messageReceiver) onMessageSent(e termites.Event) error {
+	msg, ok := e.Data.(termites.MessageSentEvent)
+	if !ok {
+		return termites.InvalidEventError
 	}
+	r.MessagesOut.Send(msg)
 	return nil
 }

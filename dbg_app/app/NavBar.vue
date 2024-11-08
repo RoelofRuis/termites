@@ -20,10 +20,6 @@ defineEmits(['tabSelected'])
         class="nav-item header-item"
         @click="$emit('tabSelected', 'messages')"
     >Messages</div>
-    <div
-        class="nav-item header-item"
-        @click="$emit('tabSelected', 'events')"
-    >Events</div>
   </div>
 </nav>
 </template>

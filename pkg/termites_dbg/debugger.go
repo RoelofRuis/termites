@@ -32,10 +32,17 @@ func WithDebugger(opts ...DebuggerOption) termites.GraphOption {
 func Init(graph *termites.Graph, debugger *Debugger) {
 	connector := termites_web.NewConnector(graph, debugger.upgrader)
 
+	// Messages
 	if debugger.messageReceiver != nil {
 		graph.Connect(debugger.messageReceiver.MessagesOut, connector.Hub.InFromApp, termites.Via(MessageSentAdapter))
 	}
 
+	// Logs
+	if debugger.logReceiver != nil {
+		graph.Connect(debugger.logReceiver.LogsOut, connector.Hub.InFromApp, termites.Via(LogsAdapter))
+	}
+
+	// Web UI
 	router := mux.NewRouter()
 	app, _ := App()
 	router.Path("/").Handler(http.StripPrefix("/", http.FileServer(http.FS(app))))
@@ -48,9 +55,11 @@ func Init(graph *termites.Graph, debugger *Debugger) {
 	graph.Connect(state.MessageOut, connector.Hub.InFromApp)
 
 	// Visualizer
-	visualizer := NewVisualizer(debugger.tempDir.Dir)
-	graph.Connect(debugger.refReceiver.RefsOut, visualizer.RefsIn, termites.WithMailbox(&termites.DebouncedMailbox{Delay: 100 * time.Millisecond}))
-	graph.Connect(visualizer.PathOut, state.In, termites.Via(VisualizerAdapter))
+	if debugger.refReceiver != nil {
+		visualizer := NewVisualizer(debugger.tempDir.Dir)
+		graph.Connect(debugger.refReceiver.RefsOut, visualizer.RefsIn, termites.WithMailbox(&termites.DebouncedMailbox{Delay: 100 * time.Millisecond}))
+		graph.Connect(visualizer.PathOut, state.In, termites.Via(VisualizerAdapter))
+	}
 
 	// Run termites_web server
 	go func() {
@@ -67,6 +76,7 @@ type Debugger struct {
 	upgrader        websocket.Upgrader
 	refReceiver     *refReceiver
 	messageReceiver *messageReceiver
+	logReceiver     *logReceiver
 }
 
 type debuggerConfig struct {
@@ -74,7 +84,6 @@ type debuggerConfig struct {
 	upgrader        websocket.Upgrader
 	trackRefChanges bool
 	trackMessages   bool
-	trackEvents     bool
 	trackLogs       bool
 }
 
@@ -89,7 +98,6 @@ func NewDebugger(options ...DebuggerOption) *Debugger {
 		},
 		trackRefChanges: true,
 		trackMessages:   true,
-		trackEvents:     true,
 		trackLogs:       true,
 	}
 
@@ -107,6 +115,11 @@ func NewDebugger(options ...DebuggerOption) *Debugger {
 		m = newMsgReceiver()
 	}
 
+	var l *logReceiver
+	if config.trackLogs {
+		l = newLogReceiver()
+	}
+
 	return &Debugger{
 		tempDir: NewManagedTempDirectory("debug-"),
 
@@ -114,43 +127,23 @@ func NewDebugger(options ...DebuggerOption) *Debugger {
 		upgrader:        config.upgrader,
 		refReceiver:     r,
 		messageReceiver: m,
+		logReceiver:     l,
 	}
 }
 
 func (d *Debugger) SetEventBus(b termites.EventBus) {
 	if d.refReceiver != nil {
-		b.Subscribe(termites.NodeRefUpdated, d.OnNodeRefUpdated)
-		b.Subscribe(termites.NodeStopped, d.OnNodeStopped)
+		b.Subscribe(termites.NodeRefUpdated, d.refReceiver.onNodeRefUpdated)
+		b.Subscribe(termites.NodeStopped, d.refReceiver.onNodeStopped)
+	}
+
+	if d.logReceiver != nil {
+		b.Subscribe(termites.InfoLog, d.logReceiver.onLog)
+		b.Subscribe(termites.ErrorLog, d.logReceiver.onLog)
+		b.Subscribe(termites.PanicLog, d.logReceiver.onLog)
 	}
 
 	if d.messageReceiver != nil {
-		b.Subscribe(termites.MessageSent, d.OnMessageSent)
+		b.Subscribe(termites.MessageSent, d.messageReceiver.onMessageSent)
 	}
-}
-
-func (d *Debugger) OnMessageSent(e termites.Event) error {
-	n, ok := e.Data.(termites.MessageSentEvent)
-	if !ok {
-		return termites.InvalidEventError
-	}
-	d.messageReceiver.messageChan <- n
-	return nil
-}
-
-func (d *Debugger) OnNodeRefUpdated(e termites.Event) error {
-	n, ok := e.Data.(termites.NodeUpdatedEvent)
-	if !ok {
-		return termites.InvalidEventError
-	}
-	d.refReceiver.refChan <- n.Ref
-	return nil
-}
-
-func (d *Debugger) OnNodeStopped(e termites.Event) error {
-	n, ok := e.Data.(termites.NodeStoppedEvent)
-	if !ok {
-		return termites.InvalidEventError
-	}
-	d.refReceiver.removeChan <- n.Id
-	return nil
 }
