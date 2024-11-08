@@ -11,6 +11,7 @@ func main() {
 	// Explicitly create separate debugger, so we can bind it on graph creation with WithEventSubscriber.
 	debugger := termites_dbg.NewDebugger(
 		termites_dbg.OnHttpPort(4242),
+		termites_dbg.WithoutMessageTracking(), // Disable message tracking as this would create infinite message loops.
 	)
 
 	// Create a new graph

@@ -2,8 +2,9 @@ import {ref} from 'vue'
 
 const messages = ref([])
 
-export function useMessageStream(key) {
+export function useMessageStream() {
     function prepend(message) {
+        message.index = messages.value.length
         messages.value.unshift(message)
     }
 

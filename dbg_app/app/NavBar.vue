@@ -14,8 +14,16 @@ defineEmits(['tabSelected'])
     >Graph</div>
     <div
         class="nav-item header-item"
+        @click="$emit('tabSelected', 'logs')"
+    >Logs</div>
+    <div
+        class="nav-item header-item"
         @click="$emit('tabSelected', 'messages')"
     >Messages</div>
+    <div
+        class="nav-item header-item"
+        @click="$emit('tabSelected', 'events')"
+    >Events</div>
   </div>
 </nav>
 </template>
@@ -28,6 +36,7 @@ defineEmits(['tabSelected'])
   background: #e3e0bf;
   user-select: none;
   padding: 0 20px;
+  height: 40px;
 }
 
 .header-item {

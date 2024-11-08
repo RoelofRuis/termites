@@ -31,7 +31,10 @@ func WithDebugger(opts ...DebuggerOption) termites.GraphOption {
 // function to initiate a connection.
 func Init(graph *termites.Graph, debugger *Debugger) {
 	connector := termites_web.NewConnector(graph, debugger.upgrader)
-	graph.Connect(debugger.messageReceiver.MessagesOut, connector.Hub.InFromApp, termites.Via(MessageSentAdapter))
+
+	if debugger.messageReceiver != nil {
+		graph.Connect(debugger.messageReceiver.MessagesOut, connector.Hub.InFromApp, termites.Via(MessageSentAdapter))
+	}
 
 	router := mux.NewRouter()
 	app, _ := App()
@@ -67,8 +70,12 @@ type Debugger struct {
 }
 
 type debuggerConfig struct {
-	httpPort int
-	upgrader websocket.Upgrader
+	httpPort        int
+	upgrader        websocket.Upgrader
+	trackRefChanges bool
+	trackMessages   bool
+	trackEvents     bool
+	trackLogs       bool
 }
 
 // NewDebugger instantiates a non-connected Debugger, mainly available for advanced usage.
@@ -80,10 +87,24 @@ func NewDebugger(options ...DebuggerOption) *Debugger {
 			ReadBufferSize:  1024,
 			WriteBufferSize: 1024,
 		},
+		trackRefChanges: true,
+		trackMessages:   true,
+		trackEvents:     true,
+		trackLogs:       true,
 	}
 
 	for _, opt := range options {
 		opt(config)
+	}
+
+	var r *refReceiver
+	if config.trackRefChanges {
+		r = newRefReceiver()
+	}
+
+	var m *messageReceiver
+	if config.trackMessages {
+		m = newMsgReceiver()
 	}
 
 	return &Debugger{
@@ -91,15 +112,20 @@ func NewDebugger(options ...DebuggerOption) *Debugger {
 
 		httpPort:        config.httpPort,
 		upgrader:        config.upgrader,
-		refReceiver:     newRefReceiver(),
-		messageReceiver: newMsgReceiver(),
+		refReceiver:     r,
+		messageReceiver: m,
 	}
 }
 
 func (d *Debugger) SetEventBus(b termites.EventBus) {
-	b.Subscribe(termites.NodeRefUpdated, d.OnNodeRefUpdated)
-	b.Subscribe(termites.NodeStopped, d.OnNodeStopped)
-	b.Subscribe(termites.MessageSent, d.OnMessageSent)
+	if d.refReceiver != nil {
+		b.Subscribe(termites.NodeRefUpdated, d.OnNodeRefUpdated)
+		b.Subscribe(termites.NodeStopped, d.OnNodeStopped)
+	}
+
+	if d.messageReceiver != nil {
+		b.Subscribe(termites.MessageSent, d.OnMessageSent)
+	}
 }
 
 func (d *Debugger) OnMessageSent(e termites.Event) error {

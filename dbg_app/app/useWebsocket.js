@@ -1,4 +1,5 @@
 const topicSubscribers = []
+let opened_at_ms = -1
 let ws
 
 export function useWebsocket() {
@@ -19,6 +20,7 @@ export function useWebsocket() {
     }
 
     const open = (wsUrl) => {
+        opened_at_ms = Date.now();
         ws = new WebSocket(wsUrl);
 
         ws.onmessage = (event) => {
@@ -36,6 +38,7 @@ export function useWebsocket() {
     const notifySubscribers = (topic, message) => {
         topicSubscribers.forEach(({regex, callback}) => {
             if (regex.test(topic)) {
+                message.time_since_opened_ms = Date.now() - opened_at_ms
                 callback(message)
             }
         })

@@ -15,3 +15,9 @@ func WithUpgrader(upgrader websocket.Upgrader) DebuggerOption {
 		conf.upgrader = upgrader
 	}
 }
+
+func WithoutMessageTracking() DebuggerOption {
+	return func(conf *debuggerConfig) {
+		conf.trackMessages = false
+	}
+}

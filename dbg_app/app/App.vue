@@ -6,6 +6,8 @@ import {useState} from "./useState";
 import GraphContainer from "./GraphContainer.vue";
 import MessageContainer from "./MessageContainer.vue";
 import {useMessageStream} from "./useMessageStream";
+import EventsContainer from "./EventsContainer.vue";
+import LogsContainer from "./LogsContainer.vue";
 
 const { open, subscribe } = useWebsocket()
 const { patch, set } = useState()
@@ -27,6 +29,8 @@ onMounted(() => {
     <NavBar @tab-selected="selected => tab = selected"/>
     <GraphContainer v-if="tab === 'graph'"/>
     <MessageContainer v-if="tab === 'messages'"/>
+    <EventsContainer v-if="tab === 'events'"/>
+    <LogsContainer v-if="tab === 'logs'"/>
   </div>
 </template>
 
