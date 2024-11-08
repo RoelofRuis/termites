@@ -1,64 +1,107 @@
 <script setup>
+import { msToTime } from './util';
+import { useLogStream } from './useLogStream';
 
-import {useLogStream} from "./useLogStream";
-import {msToTime} from "./util";
+const { logs, clear } = useLogStream();
 
-const { logs, clear } = useLogStream()
-
+const logClass = (log_level) => {
+  return {
+    'log-entry': true,
+    'log-info': log_level === 'info',
+    'log-error': log_level === 'error',
+    'log-panic': log_level === 'panic',
+  };
+};
 </script>
 
 <template>
-<div class="logs-page">
-  <div class="logs-table">
-    <table>
-      <thead>
-        <tr class="header">
-          <th></th>
-          <th>Time</th>
-          <th>Message</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr
-            v-for="log in logs"
-            :class="{info: log.log_level === 'info', error: log.log_level === 'error', panic: log.log_level === 'panic'}"
-        >
-          <th>{{log.index}}</th>
-          <td>{{msToTime(log.time_since_opened_ms)}}</td>
-          <td>{{log.message}}<br/>{{log.error}}{{log.stack}}</td>
-        </tr>
-      </tbody>
-    </table>
+  <div class="log-container">
+    <button class="clear-button" @click="clear">Clear Logs</button>
+    <div v-for="log in logs" :key="log.id" :class="logClass(log.log_level)">
+      <div class="log-header">
+        <span class="log-time">{{ msToTime(log.time_since_opened_ms) }}</span>
+        <span class="log-type">{{ log.log_level.toUpperCase() }}</span>
+      </div>
+      <div class="log-message">{{ log.message }}</div>
+      <div v-if="log.stack_track" class="log-stacktrace">
+        <pre>{{ log.stack_track }}</pre>
+      </div>
+    </div>
   </div>
-  <div class="logs-controls">
-    <span @click="clear">Clear</span>
-  </div>
-</div>
 </template>
 
 <style scoped>
-.logs-page {
-  font-family: monospace;
+.log-container {
+  font-family: Arial, sans-serif;
+  max-width: 800px;
+  margin: auto;
+  padding-top: 10px;
+}
+
+.clear-button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  font-size: 0.9em;
+  cursor: pointer;
+  margin-bottom: 10px;
+  border-radius: 4px;
+  width: 100%;
+}
+
+.clear-button:hover {
+  background-color: #0056b3;
+}
+
+.log-entry {
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  margin: 10px 0;
+  padding: 10px;
+}
+
+.log-header {
   display: flex;
+  justify-content: space-between;
+  font-weight: bold;
 }
 
-.logs-table {
-  flex: 1;
+.log-time {
+  font-size: 0.9em;
+  color: #666;
 }
 
-.logs-controls {
-  flex: 1;
+.log-type {
+  padding: 2px 5px;
+  border-radius: 3px;
 }
 
-.info {
-  background: #a2c4d6;
+.log-info .log-type {
+  background-color: #d9edf7;
+  color: #31708f;
 }
 
-.error {
-  background: #dfbb8f;
+.log-error .log-type {
+  background-color: #f2dede;
+  color: #a94442;
 }
 
-.panic {
-  background: #dc9999;
+.log-panic .log-type {
+  background-color: #fcf8e3;
+  color: #8a6d3b;
+}
+
+.log-message {
+  margin: 5px 0;
+}
+
+.log-stacktrace {
+  background-color: #f7f7f9;
+  padding: 10px;
+  border-radius: 4px;
+  font-size: 0.85em;
+  color: #b94a48;
+  overflow-x: auto;
 }
 </style>

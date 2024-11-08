@@ -42,5 +42,5 @@ type logItem struct {
 	LogLevel string `json:"log_level"`
 	Message  string `json:"message"`
 	Error    string `json:"error"`
-	Stack    string `json:"stack"`
+	Stack    string `json:"stack_trace"`
 }

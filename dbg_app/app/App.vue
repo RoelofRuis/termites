@@ -14,7 +14,7 @@ const {patch, set} = useState()
 const {prepend: prependMessage} = useMessageStream()
 const {prepend: prependLog} = useLogStream()
 
-const tab = ref('graph')
+const tab = ref('messages')
 
 onMounted(() => {
   subscribe("state/patch", patch)
@@ -28,9 +28,15 @@ onMounted(() => {
 <template>
   <div class="app-container">
     <NavBar @tab-selected="selected => tab = selected"/>
-    <GraphContainer v-show="tab === 'graph'"/>
-    <MessageContainer v-show="tab === 'messages'"/>
-    <LogsContainer v-show="tab === 'logs'"/>
+    <GraphContainer
+        v-if="tab === 'graph'"
+    />
+    <MessageContainer
+        v-show="tab === 'messages'"
+    />
+    <LogsContainer
+        v-show="tab === 'logs'"
+    />
   </div>
 </template>
 
