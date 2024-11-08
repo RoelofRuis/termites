@@ -3,7 +3,7 @@
 import {useMessageStream} from "./useMessageStream";
 import {msToTime} from "./util";
 
-const { messages } = useMessageStream()
+const { messages, clear } = useMessageStream()
 
 </script>
 
@@ -29,8 +29,8 @@ const { messages } = useMessageStream()
       </tbody>
     </table>
   </div>
-  <div class="controls">
-
+  <div class="message-controls">
+    <span @click="clear">Clear</span>
   </div>
 </div>
 </template>
@@ -45,11 +45,7 @@ const { messages } = useMessageStream()
   flex: 1;
 }
 
-.header {
-  border-bottom: 1px solid black;
-}
-
-.controls {
+.message-controls {
   flex: 1;
 }
 

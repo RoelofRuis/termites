@@ -9,10 +9,10 @@ import {useMessageStream} from "./useMessageStream";
 import LogsContainer from "./LogsContainer.vue";
 import {useLogStream} from "./useLogStream";
 
-const { open, subscribe } = useWebsocket()
-const { patch, set } = useState()
-const { prepend: prependMessage } = useMessageStream()
-const { prepend: prependLog } = useLogStream()
+const {open, subscribe} = useWebsocket()
+const {patch, set} = useState()
+const {prepend: prependMessage} = useMessageStream()
+const {prepend: prependLog} = useLogStream()
 
 const tab = ref('graph')
 
@@ -35,11 +35,11 @@ onMounted(() => {
 </template>
 
 <style>
-html,body {
+html, body {
   margin: 0;
   padding: 0;
   background: #fff;
-  font-family: sans,serif;
+  font-family: sans, serif;
 }
 
 * {
