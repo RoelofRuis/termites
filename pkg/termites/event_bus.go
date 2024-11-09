@@ -25,7 +25,7 @@ type eventBus struct {
 	eventChan        chan Event
 }
 
-func NewEventBus() *eventBus {
+func newEventBus() *eventBus {
 	bus := &eventBus{
 		subscriptionLock: &sync.RWMutex{},
 		subscriptions:    make(map[EventType][]func(event Event) error),

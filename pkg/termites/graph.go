@@ -32,7 +32,7 @@ func NewGraph(opts ...GraphOption) *Graph {
 		name = "graph-" + RandomID()
 	}
 
-	bus := NewEventBus()
+	bus := newEventBus()
 	closer := &sync.WaitGroup{}
 	closer.Add(1)
 
