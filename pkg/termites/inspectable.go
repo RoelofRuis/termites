@@ -61,12 +61,16 @@ func (n *InspectableNode[A]) Run(_ NodeControl) error {
 }
 
 func (n *InspectableNode[A]) ReceiveWithin(d time.Duration) (A, error) {
+	var unit A
+	if len(n.In.connections) == 0 {
+		return unit, errors.New("called ReceiveWithin on an unconnected InspectableNode\nthis is very likely not what you want as the node cannot receive messages.")
+	}
+
 	timer := time.NewTimer(d)
 	select {
 	case v := <-n.Receive:
 		return v, nil
 	case <-timer.C:
-		var unit A
 		return unit, errors.New("did not receive message within timeout")
 	}
 }

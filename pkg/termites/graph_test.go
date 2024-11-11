@@ -28,12 +28,12 @@ type TestSubscriber struct {
 	teardownCalls uint8
 }
 
-func (t *TestSubscriber) SetEventBus(e EventBus) {
+func (s *TestSubscriber) SetEventBus(e EventBus) {
 
 }
 
-func (h *TestSubscriber) OnNodeRegistered(_ Event) error {
-	h.registerCalls += 1
+func (s *TestSubscriber) OnNodeRegistered(_ Event) error {
+	s.registerCalls += 1
 	return nil
 }
 

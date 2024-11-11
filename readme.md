@@ -1,12 +1,13 @@
 # Termites
 
-Termites is a reactive/dataflow framework.
+Termites is a messaging/dataflow framework.
 
 It aims for easy separable and inspectable components, treating each as a separate *node* in a directed *graph*. The
 nodes communicate by sending messages to each other over *connections* established between their *ports*.
 
-The `termites` core module provides these basic building blocks. Optionally, you can use the debugging tools from
-`termites_dbg` and/or the web components provided in `termites_web`.
+The `termites` core module provides these basic building blocks.
+Optionally, you can use the web components provided in `termites_web`, the storage components provided in `termites_store`
+and the debugging tools from `termites_dbg`.
 
 ### Development status
 
