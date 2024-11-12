@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"github.com/RoelofRuis/termites/pkg/termites"
 	jsonpatch "github.com/evanphx/json-patch/v5"
+	"strings"
 )
 
 type StateMessage struct {
@@ -62,7 +63,27 @@ func (v *State) Run(c termites.NodeControl) error {
 				continue
 			}
 
-			v.fullState[stateMessage.Key] = stateMessage.Data
+			if strings.HasPrefix(stateMessage.Key, "[]") { // handle arrays
+				key := strings.TrimPrefix(stateMessage.Key, "[]")
+				var list []json.RawMessage
+				state, has := v.fullState[key]
+				if has {
+					err := json.Unmarshal(state, &list)
+					if err != nil {
+						c.LogError("failed to unmarshal state", err)
+						continue
+					}
+				}
+				list = append(list, stateMessage.Data)
+				data, err := json.Marshal(list)
+				if err != nil {
+					c.LogError("failed to marshal list", err)
+					continue
+				}
+				v.fullState[key] = data
+			} else {
+				v.fullState[stateMessage.Key] = stateMessage.Data
+			}
 
 			newState, err := json.Marshal(v.fullState)
 			if err != nil {

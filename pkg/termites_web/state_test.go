@@ -3,6 +3,7 @@ package termites_web
 import (
 	"github.com/RoelofRuis/termites/pkg/termites"
 	"testing"
+	"time"
 )
 
 func TestState(t *testing.T) {
@@ -74,8 +75,44 @@ func TestState(t *testing.T) {
 	jsonMustEqual(t, msg.Data, "{\"topic\":\"state/full\",\"payload\":{\"alice\":{\"balance\":42},\"bob\":{\"balance\":8,\"name\":\"Bobby\"}}}")
 }
 
+func TestStateAggregate(t *testing.T) {
+	graph := termites.NewGraph()
+
+	state := NewState()
+
+	stateNode := termites.NewInspectableNode[StateMessage]("State")
+	connectionsNode := termites.NewInspectableNode[ClientConnection]("Connections")
+	clientMessages := termites.NewInspectableNode[ClientMessage]("Client Messages")
+
+	graph.Connect(stateNode.Out, state.In)
+	graph.Connect(connectionsNode.Out, state.ConnectionIn)
+	graph.Connect(state.MessageOut, clientMessages.In)
+
+	connectionsNode.Send <- ClientConnection{ConnType: ClientConnect, Id: "abc123"}
+
+	stateNode.Send <- StateMessage{Key: "[]people", Data: []byte("{\"name\":\"alice\"}")}
+
+	_, _ = clientMessages.ReceiveWithin(1 * time.Second)
+
+	msg, _ := clientMessages.ReceiveWithin(1 * time.Second)
+	if msg.ClientId != "" {
+		t.Errorf("Expected client id to be '', got '%s'", msg.ClientId)
+	}
+
+	jsonMustEqual(t, msg.Data, "{\"topic\":\"state/patch\",\"payload\":{\"people\":[{\"name\":\"alice\"}]}}")
+
+	stateNode.Send <- StateMessage{Key: "[]people", Data: []byte("{\"name\":\"bob\"}")}
+
+	msg, _ = clientMessages.ReceiveWithin(1 * time.Second)
+	if msg.ClientId != "" {
+		t.Errorf("Expected client id to be '', got '%s'", msg.ClientId)
+	}
+
+	jsonMustEqual(t, msg.Data, "{\"topic\":\"state/patch\",\"payload\":{\"people\":[{\"name\":\"alice\"},{\"name\":\"bob\"}]}}")
+}
+
 func jsonMustEqual(t *testing.T, actual []byte, expected string) {
 	if string(actual) != expected {
-		t.Errorf("Expected data to be '%s', got '%s'", expected, actual)
+		t.Errorf("Expected data to be\n'%s'\ngot\n'%s'", expected, actual)
 	}
 }
