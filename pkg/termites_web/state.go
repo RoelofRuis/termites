@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"github.com/RoelofRuis/termites/pkg/termites"
 	jsonpatch "github.com/evanphx/json-patch/v5"
+	"github.com/pkg/errors"
 	"strings"
 )
 
@@ -63,26 +64,14 @@ func (v *State) Run(c termites.NodeControl) error {
 				continue
 			}
 
-			if strings.HasPrefix(stateMessage.Key, "[]") { // handle arrays
+			if strings.HasPrefix(stateMessage.Key, "[]") {
 				key := strings.TrimPrefix(stateMessage.Key, "[]")
-				var list []json.RawMessage
-				state, has := v.fullState[key]
-				if has {
-					err := json.Unmarshal(state, &list)
-					if err != nil {
-						c.LogError("failed to unmarshal state", err)
-						continue
-					}
-				}
-				list = append(list, stateMessage.Data)
-				data, err := json.Marshal(list)
-				if err != nil {
-					c.LogError("failed to marshal list", err)
+				if err := v.appendKey(key, stateMessage.Data); err != nil {
+					c.LogError("failed to marshal state", err)
 					continue
 				}
-				v.fullState[key] = data
 			} else {
-				v.fullState[stateMessage.Key] = stateMessage.Data
+				v.setKey(stateMessage.Key, stateMessage.Data)
 			}
 
 			newState, err := json.Marshal(v.fullState)
@@ -98,6 +87,28 @@ func (v *State) Run(c termites.NodeControl) error {
 			v.MessageOut.Send(clientMessage)
 		}
 	}
+}
+
+func (v *State) setKey(key string, value json.RawMessage) {
+	v.fullState[key] = value
+}
+
+func (v *State) appendKey(key string, value json.RawMessage) error {
+	var list []json.RawMessage
+	state, has := v.fullState[key]
+	if has {
+		err := json.Unmarshal(state, &list)
+		if err != nil {
+			return errors.Wrap(err, "failed to unmarshal state")
+		}
+	}
+	list = append(list, value)
+	data, err := json.Marshal(list)
+	if err != nil {
+		return errors.Wrap(err, "failed to marshal state")
+	}
+	v.fullState[key] = data
+	return nil
 }
 
 // MarshalState adapts any data to be wrapped as a JSON encoded state message.
