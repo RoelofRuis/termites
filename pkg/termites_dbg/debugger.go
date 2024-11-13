@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/websocket"
+	"log"
 	"net/http"
 	"time"
 
@@ -76,6 +77,7 @@ func Init(graph *termites.Graph, debugger *Debugger) {
 
 	// Run termites_web server
 	go func() {
+		log.Printf("Debugger started on port :%d\n", debugger.httpPort)
 		if err := http.ListenAndServe(fmt.Sprintf(":%d", debugger.httpPort), router); err != nil {
 			panic(err)
 		}
