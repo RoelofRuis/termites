@@ -32,7 +32,7 @@ func WithDebugger(opts ...DebuggerOption) termites.GraphOption {
 // Init initializes the given graph with the given debugger. Prefer to use the termites.GraphOption WithDebugger
 // function to initiate a connection.
 func Init(graph *termites.Graph, debugger *Debugger) {
-	connector := termites_web.NewConnector(graph, debugger.upgrader)
+	connector := termites_web.NewConnector(graph, termites_web.WithUpgrader(debugger.upgrader))
 
 	// Messages
 	if debugger.messageReceiver != nil {

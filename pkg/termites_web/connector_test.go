@@ -9,15 +9,10 @@ import (
 	"time"
 )
 
-var upgrader = websocket.Upgrader{
-	ReadBufferSize:  1024,
-	WriteBufferSize: 1024,
-}
-
 func TestConnector_ConnectWebsocket(t *testing.T) {
 	graph := termites.NewGraph()
 
-	connector := NewConnector(graph, upgrader)
+	connector := NewConnector(graph)
 	clientIn := termites.NewInspectableNode[ClientConnection]("ClientConnection")
 	messageIn := termites.NewInspectableNode[ClientMessage]("ClientMessage")
 

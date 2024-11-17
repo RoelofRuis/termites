@@ -11,6 +11,11 @@ import (
 	"time"
 )
 
+var upgrader = websocket.Upgrader{
+	ReadBufferSize:  1024,
+	WriteBufferSize: 1024,
+}
+
 func TestWebSocketIn(t *testing.T) {
 	graph := termites.NewGraph()
 	dataOut := termites.NewInspectableNode[ClientMessage]("ClientMessage")
@@ -22,7 +27,7 @@ func TestWebSocketIn(t *testing.T) {
 			panic(err)
 		}
 
-		ws := newWebsocketIn("test-in", conn)
+		ws := newWebsocketIn("test-in", conn, 512)
 		graph.Connect(ws.DataOut, dataOut.In)
 	})
 

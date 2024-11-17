@@ -12,10 +12,11 @@ type webSocketIn struct {
 	id              string
 	conn            *websocket.Conn
 	readDeadline    time.Duration
+	readLimit       int64
 	graphConnection *termites.Connection
 }
 
-func newWebsocketIn(id string, conn *websocket.Conn) *webSocketIn {
+func newWebsocketIn(id string, conn *websocket.Conn, readLimit int64) *webSocketIn {
 	builder := termites.NewBuilder("websocket IN")
 
 	ws := &webSocketIn{
@@ -24,6 +25,7 @@ func newWebsocketIn(id string, conn *websocket.Conn) *webSocketIn {
 		id:           id,
 		conn:         conn,
 		readDeadline: 60 * time.Second,
+		readLimit:    readLimit,
 	}
 
 	builder.OnRun(ws.Run)
@@ -37,7 +39,7 @@ func (w *webSocketIn) Run(c termites.NodeControl) error {
 		w.graphConnection.Disconnect()
 	}()
 
-	w.conn.SetReadLimit(512)
+	w.conn.SetReadLimit(w.readLimit)
 	if err := w.conn.SetReadDeadline(time.Now().Add(w.readDeadline)); err != nil {
 		return err
 	}

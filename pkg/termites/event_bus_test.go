@@ -26,7 +26,7 @@ func (c *Counter) Count(e Event) error {
 }
 
 func TestEventBus(t *testing.T) {
-	bus := NewEventBus()
+	bus := newEventBus()
 
 	counter := &Counter{
 		counts: make(map[EventType]int),

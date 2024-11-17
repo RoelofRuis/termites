@@ -9,18 +9,38 @@ import (
 )
 
 type Connector struct {
-	graph    *termites.Graph
-	Hub      *Hub
-	upgrader websocket.Upgrader
+	graph     *termites.Graph
+	Hub       *Hub
+	upgrader  websocket.Upgrader
+	readLimit int64
 
 	clientIds map[string]bool
 }
 
-func NewConnector(graph *termites.Graph, upgrader websocket.Upgrader) *Connector {
+type connectorConfig struct {
+	upgrader websocket.Upgrader
+	// Websocket read limit in bytes
+	readLimit int64
+}
+
+func NewConnector(graph *termites.Graph, options ...ConnectorOption) *Connector {
+	config := &connectorConfig{
+		upgrader: websocket.Upgrader{
+			ReadBufferSize:  1024,
+			WriteBufferSize: 1024,
+		},
+		readLimit: 1024,
+	}
+
+	for _, opt := range options {
+		opt(config)
+	}
+
 	return &Connector{
 		graph:     graph,
 		Hub:       newHub(),
-		upgrader:  upgrader,
+		upgrader:  config.upgrader,
+		readLimit: config.readLimit,
 		clientIds: make(map[string]bool),
 	}
 }
@@ -44,7 +64,7 @@ func (c *Connector) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		clientId = proposedId
 	}
 
-	wsIn := newWebsocketIn(clientId, conn)
+	wsIn := newWebsocketIn(clientId, conn, 10000)
 	wsIn.graphConnection = c.graph.Connect(wsIn.DataOut, c.Hub.InFromWeb)
 
 	wsOut := newWebsocketOut(clientId, conn)

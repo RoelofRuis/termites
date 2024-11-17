@@ -1,7 +1,6 @@
 package main
 
 import (
-	"github.com/gorilla/websocket"
 	"log"
 	"net/http"
 	"time"
@@ -15,11 +14,6 @@ import (
 
 const WebURL = "localhost:8008"
 
-var upgrader = websocket.Upgrader{
-	ReadBufferSize:  1024,
-	WriteBufferSize: 1024,
-}
-
 // Setting up a full duplex websocket connection
 func main() {
 	// Create a new graph
@@ -30,7 +24,7 @@ func main() {
 	)
 
 	// Create a new web connector
-	connector := termites_web.NewConnector(graph, upgrader)
+	connector := termites_web.NewConnector(graph)
 
 	// Create a router and bind the appropriate handlers
 	router := mux.NewRouter()
