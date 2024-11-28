@@ -56,6 +56,10 @@ func (c *Connection) notifySent(err error) {
 	if c.adapter != nil {
 		adapterName = c.adapter.name
 	}
+	errorMsg := ""
+	if err != nil {
+		errorMsg = err.Error()
+	}
 	c.from.owner.sendEvent(Event{
 		Type: MessageSent,
 		Data: MessageSentEvent{
@@ -64,7 +68,7 @@ func (c *Connection) notifySent(err error) {
 			ToName:       toName,
 			ToPortName:   toPortName,
 			AdapterName:  adapterName,
-			Error:        err.Error(),
+			Error:        errorMsg,
 		},
 	})
 }
