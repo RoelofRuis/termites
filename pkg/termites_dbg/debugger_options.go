@@ -2,6 +2,15 @@ package termites_dbg
 
 import "github.com/gorilla/websocket"
 
+type debuggerConfig struct {
+	httpPort int
+	upgrader websocket.Upgrader
+
+	trackRefChanges bool
+	trackMessages   bool
+	trackLogs       bool
+}
+
 type DebuggerOption func(conf *debuggerConfig)
 
 func OnHttpPort(port int) DebuggerOption {

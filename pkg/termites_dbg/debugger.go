@@ -94,15 +94,6 @@ type Debugger struct {
 	logReceiver     *logReceiver
 }
 
-type debuggerConfig struct {
-	httpPort int
-	upgrader websocket.Upgrader
-
-	trackRefChanges bool
-	trackMessages   bool
-	trackLogs       bool
-}
-
 // NewDebugger instantiates a non-connected Debugger, mainly available for advanced usage.
 // Prefer to use the termites.GraphOption function WithDebugger to attach it directly to a graph if possible.
 func NewDebugger(options ...DebuggerOption) *Debugger {

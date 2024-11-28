@@ -94,13 +94,6 @@ func (c *Connection) ref() ConnectionRef {
 	}
 }
 
-type connectionConfig struct {
-	from    *OutPort
-	to      *InPort
-	adapter *adapter
-	mailbox MailboxConfig
-}
-
 func newConnection(out *OutPort, opts ...ConnectionOption) (*Connection, error) {
 	if out == nil {
 		return nil, fmt.Errorf("cannot connect nil out port")

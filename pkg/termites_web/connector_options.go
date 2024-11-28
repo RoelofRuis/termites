@@ -2,6 +2,12 @@ package termites_web
 
 import "github.com/gorilla/websocket"
 
+type connectorConfig struct {
+	upgrader websocket.Upgrader
+	// Websocket read limit in bytes
+	readLimit int64
+}
+
 type ConnectorOption func(conf *connectorConfig)
 
 func WithUpgrader(upgrader websocket.Upgrader) ConnectorOption {

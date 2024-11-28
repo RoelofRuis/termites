@@ -17,12 +17,6 @@ type Connector struct {
 	clientIds map[string]bool
 }
 
-type connectorConfig struct {
-	upgrader websocket.Upgrader
-	// Websocket read limit in bytes
-	readLimit int64
-}
-
 func NewConnector(graph *termites.Graph, options ...ConnectorOption) *Connector {
 	config := &connectorConfig{
 		upgrader: websocket.Upgrader{

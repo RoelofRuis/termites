@@ -5,6 +5,13 @@ import (
 	"time"
 )
 
+type connectionConfig struct {
+	from    *OutPort
+	to      *InPort
+	adapter *adapter
+	mailbox MailboxConfig
+}
+
 type ConnectionOption func(conn *connectionConfig)
 
 func Via[A any, B any](transform func(A) (B, error)) ConnectionOption {
