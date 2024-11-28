@@ -34,7 +34,7 @@ const { messages, clear } = useMessageStream();
 .message-error {
   flex: 1;
   color: #dd3322;
-  text-align: left;
+  text-align: right;
   padding-right: 20px;
 }
 
