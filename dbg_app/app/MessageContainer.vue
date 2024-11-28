@@ -16,6 +16,7 @@ const { messages, clear } = useMessageStream();
         <span class="message-from">{{ message.from_name }} ({{ message.from_port_name }})</span>
         <span class="message-arrow">→</span>
         <span class="message-to">{{ message.to_name }} ({{ message.to_port_name }})</span>
+        <span class="message-error" v-if="message.error">{{ message.error }}</span>
       </div>
       <div v-if="message.group_start" class="spacer">---</div>
     </div>
@@ -28,6 +29,13 @@ const { messages, clear } = useMessageStream();
   font-family: Arial, sans-serif;
   max-width: 800px;
   margin: auto;
+}
+
+.message-error {
+  flex: 1;
+  color: #dd3322;
+  text-align: left;
+  padding-right: 20px;
 }
 
 .clear-button {

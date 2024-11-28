@@ -68,7 +68,7 @@ func (l *ConsoleLogger) OnMessageSent(e Event) error {
 
 	connection := formatConnection(ev)
 
-	if ev.Error != nil {
+	if ev.Error != "" {
 		log.Printf("MESSAGE (ERROR) %s: %s", connection, ev.Error)
 		return nil
 	}

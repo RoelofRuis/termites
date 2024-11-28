@@ -64,7 +64,7 @@ func (c *Connection) notifySent(err error) {
 			ToName:       toName,
 			ToPortName:   toPortName,
 			AdapterName:  adapterName,
-			Error:        err,
+			Error:        errors.New("tatso").Error(),
 		},
 	})
 }

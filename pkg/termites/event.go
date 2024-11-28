@@ -74,5 +74,5 @@ type MessageSentEvent struct { // TODO: use ID's
 	ToName       string `json:"to_name"`
 	ToPortName   string `json:"to_port_name"`
 	AdapterName  string `json:"adapter_name"`
-	Error        error  `json:"error"`
+	Error        string `json:"error"`
 }
