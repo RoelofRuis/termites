@@ -11,8 +11,8 @@ func TestDebouncingMailboxWithoutDelay(t *testing.T) {
 	mailbox := mailboxFromConfig(port, &DebouncedMailbox{Delay: 100 * time.Millisecond})
 
 	go func() {
-		mailbox.deliver(Message{Data: 0})
-		mailbox.deliver(Message{Data: 1})
+		_ = mailbox.deliver(Message{Data: 0})
+		_ = mailbox.deliver(Message{Data: 1})
 	}()
 
 	res := <-port.Receive()
@@ -27,9 +27,9 @@ func TestDebouncingMailboxWithDelay(t *testing.T) {
 	mailbox := mailboxFromConfig(port, &DebouncedMailbox{Delay: 100 * time.Millisecond})
 
 	go func() {
-		mailbox.deliver(Message{Data: 0})
+		_ = mailbox.deliver(Message{Data: 0})
 		time.Sleep(200 * time.Millisecond)
-		mailbox.deliver(Message{Data: 1})
+		_ = mailbox.deliver(Message{Data: 1})
 	}()
 
 	res := <-port.Receive()

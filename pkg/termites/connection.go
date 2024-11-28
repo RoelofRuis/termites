@@ -7,6 +7,10 @@ import (
 	"time"
 )
 
+type Message struct {
+	Data interface{}
+}
+
 type Connection struct {
 	id      ConnectionId
 	from    *OutPort
@@ -35,16 +39,14 @@ func (c *Connection) send(data interface{}) {
 		return
 	}
 
-	isDelivered := c.mailbox.deliver(Message{Data: connData})
-
-	if !isDelivered {
-		c.notifySent(errors.New("delivery failed"))
+	if err := c.mailbox.deliver(Message{Data: connData}); err != nil {
+		c.notifySent(err)
 	}
 
 	c.notifySent(nil)
 }
 
-// notifySent notify the
+// notifySent notify the graph that a message was sent.
 func (c *Connection) notifySent(err error) {
 	toName := ""
 	toPortName := ""

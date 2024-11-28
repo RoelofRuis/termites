@@ -1,12 +1,9 @@
 package termites
 
 import (
+	"errors"
 	"time"
 )
-
-type Message struct {
-	Data interface{}
-}
 
 type MailboxConfig interface {
 	IsMailboxConfig()
@@ -32,17 +29,17 @@ type DebouncedMailbox struct {
 func (m *DebouncedMailbox) IsMailboxConfig() {}
 
 func mailboxFromConfig(to *InPort, c MailboxConfig) *mailbox {
-	var deliverFunc func(msg Message) bool
+	var deliverFunc func(msg Message) error
 	switch conf := c.(type) {
 	case *NormalMailbox:
-		deliverFunc = func(msg Message) bool {
+		deliverFunc = func(msg Message) error {
 			ticker := time.NewTimer(conf.ReceiveTimeout)
 			select {
 			case <-ticker.C:
-				return false
+				return errors.New("delivery timed out")
 
 			case to.receive <- msg:
-				return true
+				return nil
 			}
 		}
 
@@ -55,14 +52,14 @@ func mailboxFromConfig(to *InPort, c MailboxConfig) *mailbox {
 			}
 		}()
 
-		deliverFunc = func(msg Message) bool {
+		deliverFunc = func(msg Message) error {
 			ticker := time.NewTimer(conf.ReceiveTimeout)
 			select {
 			case <-ticker.C:
-				return false
+				return errors.New("delivery timed out")
 
 			case messages <- msg:
-				return true
+				return nil
 			}
 		}
 
@@ -85,23 +82,19 @@ func mailboxFromConfig(to *InPort, c MailboxConfig) *mailbox {
 			}
 		}()
 
-		deliverFunc = func(msg Message) bool {
+		deliverFunc = func(msg Message) error {
 			receiver <- msg
-			return true
+			return nil
 		}
 	}
 
 	return &mailbox{
-		to:          to,
-		deliverFunc: deliverFunc,
+		to:      to,
+		deliver: deliverFunc,
 	}
 }
 
 type mailbox struct {
-	to          *InPort
-	deliverFunc func(msg Message) bool
-}
-
-func (m *mailbox) deliver(msg Message) bool {
-	return m.deliverFunc(msg)
+	to      *InPort
+	deliver func(msg Message) error
 }
