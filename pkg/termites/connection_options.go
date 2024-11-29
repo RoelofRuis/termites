@@ -2,7 +2,6 @@ package termites
 
 import (
 	"fmt"
-	"time"
 )
 
 type connectionConfig struct {
@@ -53,8 +52,4 @@ func WithMailbox(conf MailboxConfig) ConnectionOption {
 	return func(conn *connectionConfig) {
 		conn.mailbox = conf
 	}
-}
-
-func WithSmallCapacityMailbox() ConnectionOption {
-	return WithMailbox(&CapacityMailbox{Capacity: 10, ReceiveTimeout: 1 * time.Second})
 }
