@@ -16,7 +16,7 @@ func TestDefaultMailbox(t *testing.T) {
 	res, _ := n.ReceiveWithin(10 * time.Millisecond)
 
 	if res != 0 {
-		t.Errorf("received incorrect message")
+		t.Errorf("expected message %d, got %d", 0, res)
 	}
 }
 
@@ -38,7 +38,7 @@ func TestMailboxWithTimeout(t *testing.T) {
 
 	res, _ := n.ReceiveWithin(1 * time.Second)
 	if res != 0 {
-		t.Errorf("received incorrect message")
+		t.Errorf("expected message %d, got %d", 0, res)
 	}
 
 	wg.Wait()
@@ -94,7 +94,7 @@ func TestDebouncedMailboxWithoutDelay(t *testing.T) {
 	}
 
 	if res != 1 {
-		t.Errorf("received incorrect message")
+		t.Errorf("expected message %d, got %d", 1, res)
 	}
 }
 
@@ -109,12 +109,12 @@ func TestDebouncedMailboxWithDelay(t *testing.T) {
 
 	res, _ := n.ReceiveWithin(1 * time.Second)
 	if res != 0 {
-		t.Errorf("received incorrect message")
+		t.Errorf("expected message %d, got %d", 0, res)
 	}
 
 	res, _ = n.ReceiveWithin(1 * time.Second)
 	if res != 1 {
-		t.Errorf("received incorrect message")
+		t.Errorf("expected message %d, got %d", 1, res)
 	}
 }
 

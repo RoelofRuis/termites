@@ -91,14 +91,19 @@ func sendDebounced(from chan Message, to chan Message, delay time.Duration) {
 	var lastMessage Message
 	for msg := range from {
 		lastMessage = msg
-	nextMessage:
+	trySend:
 		select {
 		case <-time.After(delay):
-			// TODO: this can still block, not sure whether to do something about it...
-			to <- lastMessage
+			select {
+			case to <- lastMessage:
+				break
+			default:
+				goto trySend
+			}
+
 		case nextMsg := <-from:
 			lastMessage = nextMsg
-			goto nextMessage
+			goto trySend
 		}
 	}
 }
