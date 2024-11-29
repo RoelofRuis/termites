@@ -5,10 +5,10 @@ import (
 )
 
 type connectionConfig struct {
-	from    *OutPort
-	to      *InPort
-	adapter *adapter
-	mailbox MailboxConfig
+	from           *OutPort
+	to             *InPort
+	adapter        *adapter
+	mailboxOptions []MailboxOption
 }
 
 type ConnectionOption func(conn *connectionConfig)
@@ -48,8 +48,8 @@ func To(in *InPort) ConnectionOption {
 	}
 }
 
-func WithMailbox(conf MailboxConfig) ConnectionOption {
+func WithMailbox(opts ...MailboxOption) ConnectionOption {
 	return func(conn *connectionConfig) {
-		conn.mailbox = conf
+		conn.mailboxOptions = opts
 	}
 }

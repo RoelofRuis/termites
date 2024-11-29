@@ -102,7 +102,9 @@ func (g *Graph) ConnectBy(out *OutPort, opts ...ConnectionOption) *Connection {
 }
 
 func (g *Graph) start(c *Connection) {
-	c.from.owner.start(g.eventBus)
+	if c.from != nil {
+		c.from.owner.start(g.eventBus)
+	}
 	if c.mailbox != nil && c.mailbox.to != nil {
 		c.mailbox.to.owner.start(g.eventBus)
 	}

@@ -71,7 +71,7 @@ func Init(graph *termites.Graph, debugger *Debugger) {
 	// Visualizer
 	if debugger.refReceiver != nil {
 		visualizer := NewVisualizer(debugger.tempDir.Dir)
-		graph.Connect(debugger.refReceiver.RefsOut, visualizer.RefsIn, termites.WithMailbox(&termites.DebouncedMailbox{Delay: 100 * time.Millisecond}))
+		graph.Connect(debugger.refReceiver.RefsOut, visualizer.RefsIn, termites.WithMailbox(termites.WithDebounce(100*time.Millisecond)))
 		graph.Connect(visualizer.PathOut, state.In, termites.Via(VisualizerAdapter))
 	}
 

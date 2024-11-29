@@ -99,7 +99,7 @@ func newConnection(out *OutPort, opts ...ConnectionOption) (*Connection, error) 
 		return nil, fmt.Errorf("cannot connect nil out port")
 	}
 
-	config := &connectionConfig{from: out, to: nil, adapter: nil, mailbox: nil}
+	config := &connectionConfig{from: out, to: nil, adapter: nil, mailboxOptions: nil}
 
 	for _, opt := range opts {
 		opt(config)
@@ -152,23 +152,23 @@ func newConnection(out *OutPort, opts ...ConnectionOption) (*Connection, error) 
 		)
 	}
 
-	var mailbox *mailbox = nil
+	var mbox *mailbox = nil
 	if config.to != nil {
-		if config.mailbox == nil {
-			config.mailbox = &NormalMailbox{ReceiveTimeout: 1 * time.Second}
+		if config.mailboxOptions == nil {
+			config.mailboxOptions = []MailboxOption{WithTimeout(1 * time.Second)} // TODO: is this a sensible default?
 		}
-		mailbox = mailboxFromConfig(config.to, config.mailbox)
+		mbox = newMailbox(config.to, config.mailboxOptions...)
 	}
 
 	conn := &Connection{
 		id:      NewIdentifier("connection"),
 		from:    out,
-		mailbox: mailbox,
+		mailbox: mbox,
 		adapter: config.adapter,
 	}
 
-	if mailbox != nil {
-		mailbox.to.connect(conn)
+	if mbox != nil {
+		mbox.to.connect(conn)
 	}
 
 	out.connect(conn)
