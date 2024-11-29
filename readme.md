@@ -82,11 +82,30 @@ func main() {
 	nodeA := yourpackage.NewYourNode()
 	nodeB := yourpackage.NewYourNode()
 
-	graph.ConnectTo(nodeA.Out, nodeB.In)
+	graph.Connect(nodeA.Out, nodeB.In)
 
 	graph.Wait()
 }
 ```
+
+### Connection configuration
+
+When connecting nodes, connection options can be passed to configure a single connection.
+
+```golang
+var connectionOptions []ConnectionOption
+graph.Connect(nodeA.Out, nodeB.In, connectionOptions...) 
+```
+
+#### Adding an adapter
+
+The `Via`/`ViaNamed` options insert an adapter function between sender and receiver. 
+The adapter is used to transform the sender data so it adheres to the receiver format.
+
+#### Configure the mailbox
+
+To allow for fine-grained control over how messages are handled upon receiving, use the `WithMailbox` connection option.
+See the available `MailboxOption` to find out what control is possible.
 
 ### Graph configuration
 
