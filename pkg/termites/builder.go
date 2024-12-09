@@ -32,6 +32,10 @@ func NewInPort[A any](b Builder) *InPort {
 	var msg A
 	dataType := reflect.TypeOf(msg)
 
+	if dataType == nil {
+		dataType = reflect.TypeFor[A]()
+	}
+
 	in := newInPort(dataType.Name(), dataType, b.node)
 	b.node.inPorts = append(b.node.inPorts, in)
 
@@ -41,6 +45,10 @@ func NewInPort[A any](b Builder) *InPort {
 func NewOutPort[A any](b Builder) *OutPort {
 	var msg A
 	dataType := reflect.TypeOf(msg)
+
+	if dataType == nil {
+		dataType = reflect.TypeFor[A]()
+	}
 
 	out := newOutPort(dataType.Name(), dataType, b.node)
 	b.node.outPorts = append(b.node.outPorts, out)
