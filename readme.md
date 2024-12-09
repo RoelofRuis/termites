@@ -1,13 +1,12 @@
 # Termites
 
-Termites is a messaging/dataflow framework.
+Termites is a flow-based programming framework.
 
 It aims for easy separable and inspectable components, treating each as a separate *node* in a directed *graph*. The
 nodes communicate by sending messages to each other over *connections* established between their *ports*.
 
 The `termites` core module provides these basic building blocks.
-Optionally, you can use the web components provided in `termites_web`, the storage components provided in `termites_store`
-and the debugging tools from `termites_dbg`.
+Optionally, you can use the web components provided in `termites_web` and the debugging tools from `termites_dbg`.
 
 ### Development status
 
@@ -162,7 +161,7 @@ termites.NewGraph(termites.WithoutSigtermHandler())
 
 ## Module `termites_web`
 
-The web module contains components for easy interaction with the web, mainly through it's websocket graph component.
+The web module contains components for easy interaction with the web, mainly through it's websocket component.
 
 ### Usage
 
