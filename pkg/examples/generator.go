@@ -11,6 +11,12 @@ type Count struct {
 	Count int `json:"count"`
 }
 
+// Mutate shows how to implement the termites_web.Mutation interface for mutating state via a message.
+func (c Count) Mutate(s *WebSharableState) error {
+	s.Generator.Count = c.Count
+	return nil
+}
+
 type Generator struct {
 	StringOut *termites.OutPort
 	CountOut  *termites.OutPort

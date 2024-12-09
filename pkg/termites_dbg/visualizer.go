@@ -18,7 +18,7 @@ func NewVisualizer(fileDir string) *Visualizer {
 
 	n := &Visualizer{
 		RefsIn:  termites.NewInPortNamed[map[termites.NodeId]termites.NodeRef](builder, "Refs"),
-		PathOut: termites.NewOutPortNamed[string](builder, "Path"),
+		PathOut: termites.NewOutPortNamed[visualizerMessage](builder, "Path"),
 		writer: &graphWriter{
 			rootDir:      fileDir,
 			writeDotFile: false,
@@ -50,7 +50,7 @@ func (v *Visualizer) Run(c termites.NodeControl) error {
 			continue
 		}
 
-		v.PathOut.Send(path)
+		v.PathOut.Send(visualizerMessage{path: path})
 	}
 
 	return nil

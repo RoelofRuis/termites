@@ -1,7 +1,6 @@
 package termites_dbg
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/gorilla/websocket"
 	"log"
@@ -52,18 +51,13 @@ func Init(graph *termites.Graph, debugger *Debugger) {
 	router.PathPrefix("/dbg-static/").Methods("GET").Handler(http.StripPrefix("/dbg-static/", http.FileServer(http.Dir(debugger.tempDir.Dir))))
 
 	// State
-	debuggerState, _ := json.Marshal(struct {
-		GraphEnabled    bool `json:"graph_enabled"`
-		MessagesEnabled bool `json:"messages_enabled"`
-		LogsEnabled     bool `json:"logs_enabled"`
-	}{
-		GraphEnabled:    debugger.refReceiver != nil,
-		MessagesEnabled: debugger.messageReceiver != nil,
-		LogsEnabled:     debugger.logReceiver != nil,
+	state := termites_web.NewStateBroadcaster(&debuggerState{
+		Debugger: struct {
+			GraphEnabled    bool `json:"graph_enabled"`
+			MessagesEnabled bool `json:"messages_enabled"`
+			LogsEnabled     bool `json:"logs_enabled"`
+		}{GraphEnabled: debugger.refReceiver != nil, MessagesEnabled: debugger.messageReceiver != nil, LogsEnabled: debugger.logReceiver != nil},
 	})
-	initialState := make(map[string]json.RawMessage)
-	initialState["debugger"] = debuggerState
-	state := termites_web.NewStateWithInitial(initialState)
 
 	graph.Connect(connector.Hub.ConnectionOut, state.ConnectionIn)
 	graph.Connect(state.MessageOut, connector.Hub.InFromApp)
@@ -72,7 +66,7 @@ func Init(graph *termites.Graph, debugger *Debugger) {
 	if debugger.refReceiver != nil {
 		visualizer := NewVisualizer(debugger.tempDir.Dir)
 		graph.Connect(debugger.refReceiver.RefsOut, visualizer.RefsIn, termites.WithMailbox(termites.WithDebounce(100*time.Millisecond)))
-		graph.Connect(visualizer.PathOut, state.In, termites.Via(VisualizerAdapter))
+		graph.Connect(visualizer.PathOut, state.MutationsIn, termites_web.AsMutationFor[*debuggerState]())
 	}
 
 	// Run termites_web server

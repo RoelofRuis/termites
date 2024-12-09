@@ -36,11 +36,11 @@ func main() {
 	// This is where the custom application logic would go.
 	generator := examples.NewGenerator(1000 * time.Millisecond)
 
-	// We collect the web-sharable state in a state instance
-	state := termites_web.NewState()
-	graph.Connect(state.MessageOut, connector.Hub.InFromApp)
-	graph.Connect(connector.Hub.ConnectionOut, state.ConnectionIn)
-	graph.Connect(generator.CountOut, state.In, termites.Via(termites_web.MarshalState("generator")))
+	// We hold the web-sharable state in a state broadcaster
+	broadcaster := termites_web.NewStateBroadcaster(&examples.WebSharableState{})
+	graph.Connect(broadcaster.MessageOut, connector.Hub.InFromApp)
+	graph.Connect(connector.Hub.ConnectionOut, broadcaster.ConnectionIn)
+	graph.Connect(generator.CountOut, broadcaster.MutationsIn, termites_web.AsMutationFor[*examples.WebSharableState]())
 
 	go func() {
 		// Run the webserver

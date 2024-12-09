@@ -32,6 +32,7 @@ func (c *Connection) send(data interface{}) {
 		}
 		if err != nil {
 			c.notifySent(err)
+			return
 		}
 	}
 
