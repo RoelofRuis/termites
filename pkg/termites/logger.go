@@ -56,8 +56,8 @@ func (l *ConsoleLogger) OnLogPanic(e Event) error {
 	}
 
 	log.Printf("PANIC: %s", ev.Message)
-	log.Printf("---- error message ----\n%v\n----- end message ------", ev.RecoveredData)
-	log.Printf("----- stack trace -----\n%s\n------ end trace -------", ev.Stack)
+	log.Printf("ERROR: %v", ev.RecoveredData)
+	log.Printf("\n----- stack trace -----\n%s\n------ end trace -------", ev.Stack)
 	return nil
 }
 
