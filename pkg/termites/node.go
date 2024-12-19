@@ -112,7 +112,7 @@ func (n *node) start(bus EventBus) {
 		n.sendRef()
 		defer func() {
 			if err := recover(); err != nil {
-				n.bus.Send(LogPanic(fmt.Sprintf("Node [%s] crashed", n.name), string(debug.Stack())))
+				n.bus.Send(LogPanic(fmt.Sprintf("Node [%s] crashed\n", n.name), string(debug.Stack()), err))
 			}
 
 			n.bus.Send(Event{

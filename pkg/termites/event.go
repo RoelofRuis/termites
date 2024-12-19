@@ -39,8 +39,9 @@ type ErrorLogEvent struct {
 }
 
 type PanicLogEvent struct {
-	Message string
-	Stack   string
+	Message       string
+	Stack         string
+	RecoveredData any
 }
 
 func LogInfo(msg string) Event {
@@ -51,8 +52,8 @@ func LogError(msg string, err error) Event {
 	return Event{Type: ErrorLog, Data: ErrorLogEvent{Message: msg, Error: err}}
 }
 
-func LogPanic(msg string, stack string) Event {
-	return Event{Type: PanicLog, Data: PanicLogEvent{Message: msg, Stack: stack}}
+func LogPanic(msg string, stack string, recoveredData any) Event {
+	return Event{Type: PanicLog, Data: PanicLogEvent{Message: msg, Stack: stack, RecoveredData: recoveredData}}
 }
 
 type RegisterTeardownEvent struct {

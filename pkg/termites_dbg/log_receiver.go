@@ -1,6 +1,7 @@
 package termites_dbg
 
 import (
+	"fmt"
 	"github.com/RoelofRuis/termites/pkg/termites"
 )
 
@@ -29,7 +30,7 @@ func (l *logReceiver) onLog(logEvent termites.Event) error {
 		break
 
 	case termites.PanicLogEvent:
-		l.LogsOut.Send(logItem{LogLevel: "panic", Message: evt.Message, Stack: evt.Stack})
+		l.LogsOut.Send(logItem{LogLevel: "panic", Message: evt.Message, Stack: evt.Stack, Error: fmt.Sprintf("%v", evt.RecoveredData)})
 
 	default:
 		return termites.InvalidEventError
