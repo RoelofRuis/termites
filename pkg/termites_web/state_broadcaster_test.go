@@ -30,7 +30,7 @@ func TestStateBroadcaster(t *testing.T) {
 
 	broadcaster := NewStateBroadcaster(&testState{Users: make(map[string]testUser)})
 
-	mutations := termites.NewInspectableNode[Mutation[*testState]]("Mutations")
+	mutations := termites.NewInspectableNode[termites.Mutation[*testState]]("Mutations")
 	connectionsNode := termites.NewInspectableNode[ClientConnection]("Connections")
 	clientMessages := termites.NewInspectableNode[ClientMessage]("Client Messages")
 

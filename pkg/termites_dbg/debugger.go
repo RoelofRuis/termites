@@ -66,7 +66,7 @@ func Init(graph *termites.Graph, debugger *Debugger) {
 	if debugger.refReceiver != nil {
 		visualizer := NewVisualizer(debugger.tempDir.Dir)
 		graph.Connect(debugger.refReceiver.RefsOut, visualizer.RefsIn, termites.WithMailbox(termites.WithDebounce(100*time.Millisecond)))
-		graph.Connect(visualizer.PathOut, state.MutationsIn, termites_web.AsMutationFor[*debuggerState]())
+		graph.Connect(visualizer.PathOut, state.MutationsIn, termites.AsMutationFor[*debuggerState]())
 	}
 
 	// Run termites_web server

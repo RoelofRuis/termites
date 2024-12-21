@@ -40,7 +40,7 @@ func main() {
 	broadcaster := termites_web.NewStateBroadcaster(&examples.WebSharableState{})
 	graph.Connect(broadcaster.MessageOut, connector.Hub.InFromApp)
 	graph.Connect(connector.Hub.ConnectionOut, broadcaster.ConnectionIn)
-	graph.Connect(generator.CountOut, broadcaster.MutationsIn, termites_web.AsMutationFor[*examples.WebSharableState]())
+	graph.Connect(generator.CountOut, broadcaster.MutationsIn, termites.AsMutationFor[*examples.WebSharableState]())
 
 	go func() {
 		// Run the webserver
