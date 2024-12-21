@@ -126,6 +126,8 @@ func (n *node) start(bus EventBus) {
 		if n.run != nil {
 			if err := n.run(n); err != nil {
 				n.bus.Send(LogError(fmt.Sprintf("Node [%s] exited with error", n.name), err))
+			} else {
+				n.bus.Send(LogInfo(fmt.Sprintf("Node [%s] exited", n.name)))
 			}
 		}
 	}()
